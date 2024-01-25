@@ -27,7 +27,7 @@
     "Azure"
   ],
   "devDependencies": {
-    "@handy-common-utils/dev-dependencies-jest": "^1.2.5"
+    "@handy-common-utils/dev-dependencies-jest": "^1.2.6"
   },
   "lint-staged": {
     "**/*": "prettier --write --ignore-unknown"
