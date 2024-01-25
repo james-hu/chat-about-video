@@ -13,10 +13,17 @@
     "prepublish": "npm run compile",
     "preversion": "generate-api-docs-and-update-readme && git add README.md"
   },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/james-hu/chat-about-video.git"
+  "optionalDependencies": {
+    "@ffmpeg-installer/ffmpeg": "^1.1.0"
   },
+  "devDependencies": {
+    "@handy-common-utils/dev-dependencies-jest": "^1.2.6"
+  },
+  "lint-staged": {
+    "**/*": "prettier --write --ignore-unknown"
+  },
+  "author": "James Hu",
+  "license": "Apache-2.0",
   "keywords": [
     "ChatGPT",
     "OpenAI",
@@ -26,14 +33,10 @@
     "AI",
     "Azure"
   ],
-  "devDependencies": {
-    "@handy-common-utils/dev-dependencies-jest": "^1.2.6"
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/james-hu/chat-about-video.git"
   },
-  "lint-staged": {
-    "**/*": "prettier --write --ignore-unknown"
-  },
-  "author": "James Hu",
-  "license": "Apache-2.0",
   "bugs": {
     "url": "https://github.com/james-hu/chat-about-video/issues"
   },
