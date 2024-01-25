@@ -1,0 +1,41 @@
+{
+  "name": "chat-about-video",
+  "version": "1.0.0",
+  "description": "Chat about a video clip using Azure OpenAI GPT-4 Turbo with Vision",
+  "main": "index.js",
+  "scripts": {
+    "format:all": "prettier --write --ignore-unknown .",
+    "pretest": "eslint . --ext .ts",
+    "test": "jest --coverage",
+    "compile": "shx rm -rf dist && tsc",
+    "prepare": "husky install",
+    "prepack": "npm run compile",
+    "prepublish": "npm run compile",
+    "preversion": "generate-api-docs-and-update-readme && git add README.md"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/james-hu/chat-about-video.git"
+  },
+  "keywords": [
+    "ChatGPT",
+    "OpenAI",
+    "GPT",
+    "Video",
+    "chat",
+    "AI",
+    "Azure"
+  ],
+  "devDependencies": {
+    "@handy-common-utils/dev-dependencies-jest": "^1.2.5"
+  },
+  "lint-staged": {
+    "**/*": "prettier --write --ignore-unknown"
+  },
+  "author": "James Hu",
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/james-hu/chat-about-video/issues"
+  },
+  "homepage": "https://github.com/james-hu/chat-about-video#readme"
+}
