@@ -1,14 +1,22 @@
 /* eslint-disable max-params */
-import ffmpeg from '@ffmpeg-installer/ffmpeg';
 import { execFile } from 'node:child_process';
 import path from 'node:path';
 import { promisify } from 'node:util';
 
-import { VideoFramesExtractor } from './index';
+import { VideoFramesExtractor } from './types';
 
-const execute = promisify(execFile);
+const execFileAsync = promisify(execFile);
 
-export const extractVideoFrames: VideoFramesExtractor = async (inputFile, outputDir, intervalSec, format = 'jpg', width?, height?, startSec = 0, endSec?) => {
+let ffmpegPath = 'ffmpeg';
+try {
+  // eslint-disable-next-line unicorn/prefer-module
+  const ffmpeg = require('@ffmpeg-installer/ffmpeg');
+  ffmpegPath = ffmpeg.path;
+} catch {
+  // ignore error and expect ffmpeg is on system PATH
+}
+
+export const extractVideoFramesWithFfmpeg: VideoFramesExtractor = async (inputFile, outputDir, intervalSec, format = 'jpg', width?, height?, startSec = 0, endSec?) => {
   const args1: string[] = [
     '-y',
     '-accurate_seek',
@@ -23,7 +31,7 @@ export const extractVideoFrames: VideoFramesExtractor = async (inputFile, output
   ];
 
   for (let i = startSec; i <= (endSec ?? Number.POSITIVE_INFINITY); i += intervalSec) {
-    const { stderr } = await execute(ffmpeg.path, [
+    const { stderr } = await execFileAsync(ffmpegPath, [
       ...args1,
       `${i}`,
       ...args2,

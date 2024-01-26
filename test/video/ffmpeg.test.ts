@@ -2,7 +2,7 @@
 import { describe, expect, it } from '@jest/globals';
 import { existsSync, rmSync } from 'node:fs';
 
-import { extractVideoFrames } from '../../src/video/ffmpeg';
+import { extractVideoFramesWithFfmpeg } from '../../src/video';
 
 
 describe('ffmpeg extractVideoFrames', () => {
@@ -17,8 +17,8 @@ describe('ffmpeg extractVideoFrames', () => {
     expect(existsSync('/tmp/000004.jpg')).toBe(false);
 
     const file = `${__dirname}/000001.mp4`;
-    await extractVideoFrames(file, '/tmp', 1);
-    
+    await extractVideoFramesWithFfmpeg(file, '/tmp', 1);
+
     expect(existsSync('/tmp/000001.jpg')).toBe(true);
     expect(existsSync('/tmp/000002.jpg')).toBe(true);
     expect(existsSync('/tmp/000003.jpg')).toBe(true);
