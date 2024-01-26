@@ -1,5 +1,6 @@
 /* eslint-disable max-params */
 import { execFile } from 'node:child_process';
+import fs from 'node:fs';
 import path from 'node:path';
 import { promisify } from 'node:util';
 
@@ -32,6 +33,7 @@ export const extractVideoFramesWithFfmpeg: VideoFramesExtractor = async (inputFi
 
   const result: string[] = [];
 
+  fs.mkdirSync(outputDir, { recursive: true });
   for (let i = startSec; i <= (endSec ?? Number.POSITIVE_INFINITY); i += intervalSec) {
     const fileName = `${String(i).padStart(6, '0')}.${format}`;
     const { stderr } = await execFileAsync(ffmpegPath, [

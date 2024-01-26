@@ -40,5 +40,11 @@
   "bugs": {
     "url": "https://github.com/james-hu/chat-about-video/issues"
   },
-  "homepage": "https://github.com/james-hu/chat-about-video#readme"
+  "homepage": "https://github.com/james-hu/chat-about-video#readme",
+  "dependencies": {
+    "@azure/openai": "^1.0.0-beta.11",
+    "@azure/storage-blob": "^12.17.0",
+    "@handy-common-utils/promise-utils": "^1.4.1",
+    "nanoid": "^3.3.7"
+  }
 }
