@@ -30,15 +30,21 @@ export const extractVideoFramesWithFfmpeg: VideoFramesExtractor = async (inputFi
     ...(width || height ? ['-vf', `scale=${width ?? 'iw'}:${height ?? 'ih'}`] : []),
   ];
 
+  const result: string[] = [];
+
   for (let i = startSec; i <= (endSec ?? Number.POSITIVE_INFINITY); i += intervalSec) {
+    const fileName = `${String(i).padStart(6, '0')}.${format}`;
     const { stderr } = await execFileAsync(ffmpegPath, [
       ...args1,
       `${i}`,
       ...args2,
-      path.join(outputDir, `${String(i).padStart(6, '0')}.${format}`),
+      path.join(outputDir, fileName),
     ]);
     if (stderr && stderr.includes('Output file is empty, nothing was encoded')) {
       break;
     }
+    result.push(fileName);
   }
+
+  return result;
 };
