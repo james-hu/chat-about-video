@@ -8,20 +8,64 @@ import path from 'node:path';
 import { FileBatchUploader, createAzureBlobStorageFileBatchUploader } from './storage';
 import { VideoFramesExtractor, extractVideoFramesWithFfmpeg } from './video';
 
+/**
+ * Option settings for ChatAboutVideo
+ */
 export interface ChatAboutVideoOptions {
+  /**
+   * Name/ID of the deployment
+   */
   openAiDeploymentName: string;
+  /**
+   * Temporary directory for storing temporary files.
+   * If not specified, them temporary directory of the OS will be used.
+   */
   tmpDir: string;
 
+  /**
+   * Function for extracting frames from the video.
+   * If not specified, a default function using ffmpeg will be used.
+   */
   videoFramesExtractor: VideoFramesExtractor;
+  /**
+   * Intervals between frames to be extracted. The unit is second.
+   * Default value is 5.
+   */
   videoFramesInterval: number;
+  /**
+   * Video frame width, default is 200.
+   * If both videoFrameWidth and videoFrameHeight are not specified,
+   * then the frames will not be resized/scaled.
+   */
   videoFrameWidth: number | undefined;
+  /**
+   * Video frame height, default is undefined which means the scaling
+   * will be determined by the videoFrameWidth option.
+   * If both videoFrameWidth and videoFrameHeight are not specified,
+   * then the frames will not be resized/scaled.
+   */
   videoFrameHeight: number | undefined;
 
+  /**
+   * Function for uploading files
+   */
   fileBatchUploader: FileBatchUploader;
+  /**
+   * Storage container for storing frame images of the video.
+   */
   storageContainerName: string;
+  /**
+   * Path prefix to be prepended for storing frame images of the video.
+   */
   storagePathPrefix: string;
 
+  /**
+   * Initial prompts to be added to the chat history before frame images.
+   */
   initialPrompts?: ChatRequestMessage[];
+  /**
+   * Prompts to be added to the chat history right after frame images.
+   */
   startPrompts?: ChatRequestMessage[];
 }
 
@@ -48,9 +92,23 @@ export class ChatAboutVideo {
   protected client: OpenAIClient;
   constructor(
     options: Partial<ChatAboutVideoOptions> & Required<Pick<ChatAboutVideoOptions, 'openAiDeploymentName'|'storageContainerName'>> & {
+      /**
+       * Endpoint URL for accessing the deployment
+       */
       openAiEndpoint: string;
+      /**
+       * API key for accessing the deployment
+       */
       openAiApiKey: string;
+      /**
+       * Azure Storage connection string.
+       * Frame images of the video will be uploaded to blob storage using this connection string.
+       */
       azureStorageConnectionString?: string;
+      /**
+       * Number of seconds for the generated download URL to be valid.
+       * Download URLs will be generated for the deployment to access uploaded frame images.
+       */
       downloadUrlExpirationSeconds?: number;
     },
     protected log: ConsoleLineLogger = consoleWithoutColour(),
@@ -75,6 +133,11 @@ export class ChatAboutVideo {
     this.client = new OpenAIClient(options.openAiEndpoint, new AzureKeyCredential(options.openAiApiKey));
   }
 
+  /**
+   * Start a conversation about a video.
+   * @param videoFile Path to a video file in local file system.
+   * @returns The conversation.
+   */
   async startConversation(videoFile: string): Promise<Conversation> {
     const conversationId = generateRandomString(24); // equivalent to uuid
     const videoFramesDir = path.join(this.options.tmpDir, conversationId);
@@ -132,6 +195,12 @@ export class Conversation {
     protected log: ConsoleLineLogger = consoleWithoutColour(),
   ) { }
 
+  /**
+   * Say something in the conversation, and get the response from AI
+   * @param message The message to say in the conversation.
+   * @param options Options for fine control.
+   * @returns The response/completion
+   */
   async say(message: string, options?: GetChatCompletionsOptions): Promise<string|undefined> {
     this.messages.push({
       role: 'user',
