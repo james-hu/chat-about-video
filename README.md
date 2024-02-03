@@ -11,7 +11,7 @@ npm i chat-about-video
 import chalk from 'chalk';
 import readline from 'node:readline';
 
-import { ChatAboutVideo } from '../src';
+import { ChatAboutVideo } from 'chat-about-video';
 
 const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
 const prompt = (question: string) => new Promise<string>((resolve) => rl.question(question, resolve));
