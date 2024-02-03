@@ -20,12 +20,12 @@ async function demo() {
   const conversation = await chat.startConversation(process.env.DEMO_VIDEO!);
   
   while(true) {
-    const question = await prompt('\nUser: ');
+    const question = await prompt(chalk.red('\nUser: '));
     if (!question) {
       continue;
     }
     const answer = await conversation.say(question);
-    console.log('\nAI:', answer);
+    console.log(chalk.blue('\nAI:' + answer));
   }
 }
 
