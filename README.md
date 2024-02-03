@@ -4,6 +4,7 @@ Chat about a video clip using Azure OpenAI GPT-4 Turbo with Vision
 Example usage:
 
 ```shell
+sudo apt install ffmpeg # or npm i @ffmpeg-installer/ffmpeg
 npm i chat-about-video
 ```
 
