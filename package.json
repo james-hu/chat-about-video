@@ -1,6 +1,6 @@
 {
   "name": "chat-about-video",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "Chat about a video clip using Azure OpenAI GPT-4 Turbo with Vision",
   "main": "index.js",
   "scripts": {

@@ -96,15 +96,19 @@ demo().catch((error) => console.log(JSON.stringify(error, null, 2)));
 
 ▸ **startConversation**(`videoFile`): `Promise`\<[`Conversation`](#classeschatconversationmd)\>
 
+Start a conversation about a video.
+
 ###### Parameters
 
-| Name | Type |
-| :------ | :------ |
-| `videoFile` | `string` |
+| Name | Type | Description |
+| :------ | :------ | :------ |
+| `videoFile` | `string` | Path to a video file in local file system. |
 
 ###### Returns
 
 `Promise`\<[`Conversation`](#classeschatconversationmd)\>
+
+The conversation.
 
 
 <a name="classeschatconversationmd"></a>
@@ -146,16 +150,20 @@ demo().catch((error) => console.log(JSON.stringify(error, null, 2)));
 
 ▸ **say**(`message`, `options?`): `Promise`\<`undefined` \| `string`\>
 
+Say something in the conversation, and get the response from AI
+
 ###### Parameters
 
-| Name | Type |
-| :------ | :------ |
-| `message` | `string` |
-| `options?` | `GetChatCompletionsOptions` |
+| Name | Type | Description |
+| :------ | :------ | :------ |
+| `message` | `string` | The message to say in the conversation. |
+| `options?` | `GetChatCompletionsOptions` | Options for fine control. |
 
 ###### Returns
 
 `Promise`\<`undefined` \| `string`\>
+
+The response/completion
 
 ## Interfaces
 
@@ -166,21 +174,23 @@ demo().catch((error) => console.log(JSON.stringify(error, null, 2)));
 
 [chat](#moduleschatmd).ChatAboutVideoOptions
 
+Option settings for ChatAboutVideo
+
 #### Properties
 
 | Property | Description |
 | --- | --- |
-| **fileBatchUploader**: [`FileBatchUploader`](#filebatchuploader) |  |
-| `Optional` **initialPrompts**: `ChatRequestMessage`[] |  |
-| **openAiDeploymentName**: `string` |  |
-| `Optional` **startPrompts**: `ChatRequestMessage`[] |  |
-| **storageContainerName**: `string` |  |
-| **storagePathPrefix**: `string` |  |
-| **tmpDir**: `string` |  |
-| **videoFrameHeight**: `undefined` \| `number` |  |
-| **videoFrameWidth**: `undefined` \| `number` |  |
-| **videoFramesExtractor**: [`VideoFramesExtractor`](#videoframesextractor) |  |
-| **videoFramesInterval**: `number` | ## Modules |
+| **fileBatchUploader**: [`FileBatchUploader`](#filebatchuploader) | Function for uploading files |
+| `Optional` **initialPrompts**: `ChatRequestMessage`[] | Initial prompts to be added to the chat history before frame images. |
+| **openAiDeploymentName**: `string` | Name/ID of the deployment |
+| `Optional` **startPrompts**: `ChatRequestMessage`[] | Prompts to be added to the chat history right after frame images. |
+| **storageContainerName**: `string` | Storage container for storing frame images of the video. |
+| **storagePathPrefix**: `string` | Path prefix to be prepended for storing frame images of the video. |
+| **tmpDir**: `string` | Temporary directory for storing temporary files.<br>If not specified, them temporary directory of the OS will be used. |
+| **videoFrameHeight**: `undefined` \| `number` | Video frame height, default is undefined which means the scaling<br>will be determined by the videoFrameWidth option.<br>If both videoFrameWidth and videoFrameHeight are not specified,<br>then the frames will not be resized/scaled. |
+| **videoFrameWidth**: `undefined` \| `number` | Video frame width, default is 200.<br>If both videoFrameWidth and videoFrameHeight are not specified,<br>then the frames will not be resized/scaled. |
+| **videoFramesExtractor**: [`VideoFramesExtractor`](#videoframesextractor) | Function for extracting frames from the video.<br>If not specified, a default function using ffmpeg will be used. |
+| **videoFramesInterval**: `number` | Intervals between frames to be extracted. The unit is second.<br>Default value is 5.<br><br>## Modules |
 
 
 
