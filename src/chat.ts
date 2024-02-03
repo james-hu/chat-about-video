@@ -1,7 +1,7 @@
 /* eslint-disable unicorn/no-array-push-push */
 import { AzureKeyCredential, ChatCompletions, ChatRequestAssistantMessage, ChatRequestMessage, ChatRequestSystemMessage, ChatRequestUserMessage, OpenAIClient } from '@azure/openai';
 import { BlobServiceClient } from '@azure/storage-blob';
-import { nanoid } from 'nanoid/';
+import { generateRandomString } from '@handy-common-utils/misc-utils';
 import os from 'node:os';
 import path from 'node:path';
 
@@ -58,7 +58,7 @@ export class ChatAboutVideo {
   }
 
   async startConversation(videoFile: string): Promise<Conversation> {
-    const conversationId = nanoid();
+    const conversationId = generateRandomString(24); // equivalent to uuid
     const videoFramesDir = path.join(this.options.tmpDir, conversationId);
     const frameImageFiles = await this.options.videoFramesExtractor(videoFile, videoFramesDir, this.options.videoFramesInterval, undefined, this.options.videoFrameWidth, this.options.videoFrameHeight);
     this.log && this.log(`Extracted ${frameImageFiles.length} frames from video`, frameImageFiles);
