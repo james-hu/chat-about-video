@@ -1,7 +1,7 @@
 /* eslint-disable unicorn/no-array-push-push */
 import { AzureKeyCredential, ChatCompletions, ChatRequestAssistantMessage, ChatRequestMessage, ChatRequestSystemMessage, ChatRequestUserMessage, OpenAIClient } from '@azure/openai';
 import { BlobServiceClient } from '@azure/storage-blob';
-import { generateRandomString } from '@handy-common-utils/misc-utils';
+import { ConsoleLineLogger, consoleWithoutColour, generateRandomString } from '@handy-common-utils/misc-utils';
 import os from 'node:os';
 import path from 'node:path';
 
@@ -35,7 +35,7 @@ export class ChatAboutVideo {
       azureStorageConnectionString?: string;
       downloadUrlExpirationSeconds?: number;
     },
-    protected log: Log = console.log,
+    protected log: ConsoleLineLogger = consoleWithoutColour(),
   ) {
     let fileBatchUploader = options.fileBatchUploader;
     if (!fileBatchUploader && options.azureStorageConnectionString && options.storageContainerName) {
@@ -61,16 +61,16 @@ export class ChatAboutVideo {
     const conversationId = generateRandomString(24); // equivalent to uuid
     const videoFramesDir = path.join(this.options.tmpDir, conversationId);
     const frameImageFiles = await this.options.videoFramesExtractor(videoFile, videoFramesDir, this.options.videoFramesInterval, undefined, this.options.videoFrameWidth, this.options.videoFrameHeight);
-    this.log && this.log(`Extracted ${frameImageFiles.length} frames from video`, frameImageFiles);
+    this.log.debug(`Extracted ${frameImageFiles.length} frames from video`, frameImageFiles);
     if (frameImageFiles.length > 10) {
       const previousLength = frameImageFiles.length;
       // It allows only no more than 10 images
       frameImageFiles.splice(10);
-      this.log && this.log(`Truncated ${previousLength} frames to 10`);
+      this.log.debug(`Truncated ${previousLength} frames to 10`);
     }
 
     const frameImageUrls = await this.options.fileBatchUploader(videoFramesDir, frameImageFiles, this.options.storageContainerName, `${this.options.storagePathPrefix}${conversationId}/`);
-    this.log && this.log(`Uploaded ${frameImageUrls.length} frames to storage`, frameImageUrls);
+    this.log.debug(`Uploaded ${frameImageUrls.length} frames to storage`, frameImageUrls);
 
     const messages: ChatRequestMessage[] = [
       {
@@ -100,7 +100,7 @@ export class ChatAboutVideo {
     const result = await this.client.getChatCompletions(this.options.openAiDeploymentName, messages, {
       maxTokens: 4000,
     });
-    this.log && this.log('First result from chat', JSON.stringify(result, null, 2));
+    this.log.debug('First result from chat', JSON.stringify(result, null, 2));
     const response = chatResponse(result);
     if (response) {
       messages.push({
@@ -124,7 +124,7 @@ export class Conversation {
     protected deploymentName: string,
     protected conversationId: string,
     protected messages: ChatRequestMessage[],
-    protected log: Log = console.log,
+    protected log: ConsoleLineLogger = consoleWithoutColour(),
   ) { }
 
   async say(message: string): Promise<string|undefined> {
@@ -139,8 +139,8 @@ export class Conversation {
       role: 'assistant',
       content: chatResponse(result),
     } as ChatRequestAssistantMessage);
-    this.log && this.log('Result from chat', JSON.stringify(result, null, 2));
-    this.log && this.log('Messages', JSON.stringify(this.messages, null, 2));
+    this.log.debug('Result from chat', JSON.stringify(result, null, 2));
+    this.log.debug('Message history', JSON.stringify(this.messages, null, 2));
     const response = chatResponse(result);
     return response;
   }
