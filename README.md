@@ -9,9 +9,7 @@ npm i chat-about-video
 ```
 
 ```javascript
-import chalk from 'chalk';
 import readline from 'node:readline';
-
 import { ChatAboutVideo } from 'chat-about-video';
 
 const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
