@@ -39,7 +39,7 @@ async function demo() {
   }
 }
 
-demo().catch((error) => console.log(chalk.red(JSON.stringify(error, null, 2))));
+demo().catch((error) => console.log(JSON.stringify(error, null, 2)));
 
 ```
 
