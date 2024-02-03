@@ -17,7 +17,8 @@
     "@ffmpeg-installer/ffmpeg": "^1.1.0"
   },
   "devDependencies": {
-    "@handy-common-utils/dev-dependencies-jest": "^1.2.6"
+    "@handy-common-utils/dev-dependencies-jest": "^1.2.6",
+    "chalk": "^4.1.2"
   },
   "lint-staged": {
     "**/*": "prettier --write --ignore-unknown"
@@ -45,6 +46,6 @@
     "@azure/openai": "^1.0.0-beta.11",
     "@azure/storage-blob": "^12.17.0",
     "@handy-common-utils/promise-utils": "^1.4.1",
-    "nanoid": "^3.3.7"
+    "nanoid": "3.3.5"
   }
 }

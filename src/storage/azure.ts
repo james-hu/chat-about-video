@@ -9,11 +9,11 @@ import { FileBatchUploader } from './types';
 const readFileAsync = promisify(readFile);
 
 async function generateDownloadUrl(blockBlobClient: BlockBlobClient, expirationSeconds: number): Promise<string> {
-  const sasToken = await blockBlobClient.generateSasUrl({
+  const url = await blockBlobClient.generateSasUrl({
     expiresOn: new Date(Date.now() + expirationSeconds * 1000),
     permissions: BlobSASPermissions.parse('r'),
   });
-  return blockBlobClient.url + '?' + sasToken;
+  return url;
 }
 
 export function createAzureBlobStorageFileBatchUploader(blobServiceClient: BlobServiceClient, expirationSeconds: number, parallelism = 3): FileBatchUploader {

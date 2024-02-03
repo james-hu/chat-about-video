@@ -23,6 +23,8 @@ export interface ChatAboutVideoOptions {
 
 }
 
+export type Log = typeof console.log;
+
 export class ChatAboutVideo {
   protected options: ChatAboutVideoOptions;
   protected client: OpenAIClient;
@@ -33,7 +35,7 @@ export class ChatAboutVideo {
       azureStorageConnectionString?: string;
       downloadUrlExpirationSeconds?: number;
     },
-    protected log: typeof console.log = console.log,
+    protected log: Log = console.log,
   ) {
     let fileBatchUploader = options.fileBatchUploader;
     if (!fileBatchUploader && options.azureStorageConnectionString && options.storageContainerName) {
@@ -60,6 +62,12 @@ export class ChatAboutVideo {
     const videoFramesDir = path.join(this.options.tmpDir, conversationId);
     const frameImageFiles = await this.options.videoFramesExtractor(videoFile, videoFramesDir, this.options.videoFramesInterval, undefined, this.options.videoFrameWidth, this.options.videoFrameHeight);
     this.log && this.log(`Extracted ${frameImageFiles.length} frames from video`, frameImageFiles);
+    if (frameImageFiles.length > 10) {
+      const previousLength = frameImageFiles.length;
+      // It allows only no more than 10 images
+      frameImageFiles.splice(10);
+      this.log && this.log(`Truncated ${previousLength} frames to 10`);
+    }
 
     const frameImageUrls = await this.options.fileBatchUploader(videoFramesDir, frameImageFiles, this.options.storageContainerName, `${this.options.storagePathPrefix}${conversationId}/`);
     this.log && this.log(`Uploaded ${frameImageUrls.length} frames to storage`, frameImageUrls);
@@ -89,8 +97,10 @@ export class ChatAboutVideo {
       content: 'Now you have all the frames in the video. I am going to give you instructions.',
     } as ChatRequestUserMessage);
 
-    const result = await this.client.getChatCompletions(this.options.openAiDeploymentName, messages);
-    this.log && this.log('First result from chat', result);
+    const result = await this.client.getChatCompletions(this.options.openAiDeploymentName, messages, {
+      maxTokens: 4000,
+    });
+    this.log && this.log('First result from chat', JSON.stringify(result, null, 2));
     const response = chatResponse(result);
     if (response) {
       messages.push({
@@ -109,17 +119,28 @@ function chatResponse(result: ChatCompletions): string | undefined {
 }
 
 export class Conversation {
-  constructor(protected client: OpenAIClient, protected deploymentName: string, protected conversationId: string, protected messages: ChatRequestMessage[]) { }
+  constructor(
+    protected client: OpenAIClient,
+    protected deploymentName: string,
+    protected conversationId: string,
+    protected messages: ChatRequestMessage[],
+    protected log: Log = console.log,
+  ) { }
+
   async say(message: string): Promise<string|undefined> {
     this.messages.push({
       role: 'user',
       content: message,
     } as ChatRequestUserMessage);
-    const result = await this.client.getChatCompletions(this.deploymentName, this.messages);
+    const result = await this.client.getChatCompletions(this.deploymentName, this.messages, {
+      maxTokens: 4000,
+    });
     this.messages.push({
       role: 'assistant',
       content: chatResponse(result),
     } as ChatRequestAssistantMessage);
+    this.log && this.log('Result from chat', JSON.stringify(result, null, 2));
+    this.log && this.log('Messages', JSON.stringify(this.messages, null, 2));
     const response = chatResponse(result);
     return response;
   }

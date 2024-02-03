@@ -1,4 +1,4 @@
-import { describe, it } from '@jest/globals';
+import { describe, xdescribe, it } from '@jest/globals';
 import readline from 'node:readline';
 
 import { ChatAboutVideo } from '../src';
@@ -7,14 +7,14 @@ const rl = readline.createInterface({ input: process.stdin, output: process.stdo
 const prompt = (question: string) => new Promise<string>((resolve) => rl.question(question, resolve));
 
 
-describe('ChatAboutVideo', () => {
+xdescribe('ChatAboutVideo', () => {
   describe('End-to-end demo', () => {
     it('demo', async () => {
       const chat = new ChatAboutVideo({
-        openAiEndpoint: 'https://james-ai-experiments.openai.azure.com/',
+        openAiEndpoint: process.env.AZURE_OPENAI_API_ENDPOINT!,
         openAiApiKey: process.env.AZURE_OPENAI_API_KEY!,
         azureStorageConnectionString: process.env.AZURE_STORAGE_CONNECTION_STRING!,
-        openAiDeploymentName: 'vision-experiment',
+        openAiDeploymentName: 'gpt4vision',
         storageContainerName: 'vision-experiment-input',
         storagePathPrefix: 'video-frames/',
       });
@@ -28,6 +28,6 @@ describe('ChatAboutVideo', () => {
         const answer = await conversation.say(question);
         console.log('\nAI:', answer);
       }
-    }, 3600);
+    }, 3600 * 1000);
   });
 });
