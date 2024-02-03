@@ -24,7 +24,7 @@ async function demo() {
     if (!question) {
       continue;
     }
-    const answer = await conversation.say(question);
+    const answer = await conversation.say(question, { maxTokens: 2000 });
     console.log(chalk.blue('\nAI:' + answer));
   }
 }

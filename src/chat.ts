@@ -1,5 +1,5 @@
 /* eslint-disable unicorn/no-array-push-push */
-import { AzureKeyCredential, ChatCompletions, ChatRequestAssistantMessage, ChatRequestMessage, ChatRequestSystemMessage, ChatRequestUserMessage, OpenAIClient } from '@azure/openai';
+import { AzureKeyCredential, ChatCompletions, ChatRequestAssistantMessage, ChatRequestMessage, ChatRequestSystemMessage, ChatRequestUserMessage, GetChatCompletionsOptions, OpenAIClient } from '@azure/openai';
 import { BlobServiceClient } from '@azure/storage-blob';
 import { ConsoleLineLogger, consoleWithoutColour, generateRandomString } from '@handy-common-utils/misc-utils';
 import os from 'node:os';
@@ -21,9 +21,27 @@ export interface ChatAboutVideoOptions {
   storageContainerName: string;
   storagePathPrefix: string;
 
+  initialPrompts?: ChatRequestMessage[];
+  startPrompts?: ChatRequestMessage[];
 }
 
-export type Log = typeof console.log;
+const DEFAULT_INITIAL_PROMPTS = [
+  {
+    role: 'system',
+    content: 'You are a helpful assistant who can understand video. Based on frames extracted from the video, you are able to understand what is happening in the video. You will be given video frames by the user, then you will follow the instructions from the user. You answers should be objective, concise and accurate.',
+  } as ChatRequestSystemMessage,
+  {
+    role: 'user',
+    content: 'I am going to give you the frames extracted from the video, then I will let you know when I am going to give you instructions.',
+  } as ChatRequestUserMessage,
+];
+
+const DEFAULT_START_PROMPTS = [
+  {
+    role: 'user',
+    content: 'Now you have all the frames in the video. I am going to give you instructions.',
+  } as ChatRequestUserMessage,
+];
 
 export class ChatAboutVideo {
   protected options: ChatAboutVideoOptions;
@@ -72,16 +90,8 @@ export class ChatAboutVideo {
     const frameImageUrls = await this.options.fileBatchUploader(videoFramesDir, frameImageFiles, this.options.storageContainerName, `${this.options.storagePathPrefix}${conversationId}/`);
     this.log.debug(`Uploaded ${frameImageUrls.length} frames to storage`, frameImageUrls);
 
-    const messages: ChatRequestMessage[] = [
-      {
-        role: 'system',
-        content: 'You are a helpful assistant who can understand video. Based on video frames extracted from the video, you are able to understand what is happening in the video. You will be given video frames by the user, then you will follow the instructions from the user. You answers should be objective, concise and accurate.',
-      } as ChatRequestSystemMessage,
-      {
-        role: 'user',
-        content: 'I am going to give you the frames extracted from the video, then I will let you know when I am going to give you instructions.',
-      } as ChatRequestUserMessage,
-    ];
+    const messages: ChatRequestMessage[] = [];
+    messages.push(...(this.options.initialPrompts ?? DEFAULT_INITIAL_PROMPTS));
     messages.push(...frameImageUrls.map((url) => ({
       role: 'user',
       content: [{
@@ -92,14 +102,9 @@ export class ChatAboutVideo {
         },
       }],
     } as ChatRequestUserMessage)));
-    messages.push({
-      role: 'user',
-      content: 'Now you have all the frames in the video. I am going to give you instructions.',
-    } as ChatRequestUserMessage);
+    messages.push(...(this.options.startPrompts ?? DEFAULT_START_PROMPTS));
 
-    const result = await this.client.getChatCompletions(this.options.openAiDeploymentName, messages, {
-      maxTokens: 4000,
-    });
+    const result = await this.client.getChatCompletions(this.options.openAiDeploymentName, messages);
     this.log.debug('First result from chat', JSON.stringify(result, null, 2));
     const response = chatResponse(result);
     if (response) {
@@ -127,14 +132,12 @@ export class Conversation {
     protected log: ConsoleLineLogger = consoleWithoutColour(),
   ) { }
 
-  async say(message: string): Promise<string|undefined> {
+  async say(message: string, options?: GetChatCompletionsOptions): Promise<string|undefined> {
     this.messages.push({
       role: 'user',
       content: message,
     } as ChatRequestUserMessage);
-    const result = await this.client.getChatCompletions(this.deploymentName, this.messages, {
-      maxTokens: 4000,
-    });
+    const result = await this.client.getChatCompletions(this.deploymentName, this.messages, options);
     this.messages.push({
       role: 'assistant',
       content: chatResponse(result),
