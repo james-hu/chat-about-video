@@ -92,9 +92,10 @@ export class ChatAboutVideo {
   constructor(
     options: Partial<ChatAboutVideoOptions> & Required<Pick<ChatAboutVideoOptions, 'openAiDeploymentName'|'storageContainerName'>> & {
       /**
-       * Endpoint URL for accessing the deployment
+       * Endpoint URL for accessing the deployment in Azure,
+       * or undefined for non-Azure OpenAI API.
        */
-      openAiEndpoint: string;
+      openAiEndpoint?: string;
       /**
        * API key for accessing the deployment
        */
@@ -144,7 +145,12 @@ export class ChatAboutVideo {
       tmpDir: os.tmpdir(),
       ...options,
     };
-    this.client = new OpenAIClient(options.openAiEndpoint, new AzureKeyCredential(options.openAiApiKey));
+    // eslint-disable-next-line unicorn/prefer-ternary
+    if (options.openAiEndpoint) {
+      this.client = new OpenAIClient(options.openAiEndpoint, new AzureKeyCredential(options.openAiApiKey));
+    } else {
+      this.client = new OpenAIClient({ key: options.openAiApiKey });
+    }
   }
 
   /**
