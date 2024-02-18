@@ -50,10 +50,11 @@ demo().catch((error) => console.log(JSON.stringify(error, null, 2)));
 
 ### Modules
 
+- [aws](#modulesawsmd)
+- [azure](#modulesazuremd)
 - [chat](#moduleschatmd)
 - [index](#modulesindexmd)
 - [storage](#modulesstoragemd)
-- [storage/azure](#modulesstorage_azuremd)
 - [storage/types](#modulesstorage_typesmd)
 - [video](#modulesvideomd)
 - [video/ffmpeg](#modulesvideo_ffmpegmd)
@@ -194,6 +195,52 @@ Option settings for ChatAboutVideo
 
 
 
+<a name="modulesawsmd"></a>
+
+### Module: aws
+
+#### Functions
+
+##### createAwsS3FileBatchUploader
+
+▸ **createAwsS3FileBatchUploader**(`s3Client`, `expirationSeconds`, `parallelism?`): [`FileBatchUploader`](#filebatchuploader)
+
+###### Parameters
+
+| Name | Type | Default value |
+| :------ | :------ | :------ |
+| `s3Client` | `S3Client` | `undefined` |
+| `expirationSeconds` | `number` | `undefined` |
+| `parallelism` | `number` | `3` |
+
+###### Returns
+
+[`FileBatchUploader`](#filebatchuploader)
+
+
+<a name="modulesazuremd"></a>
+
+### Module: azure
+
+#### Functions
+
+##### createAzureBlobStorageFileBatchUploader
+
+▸ **createAzureBlobStorageFileBatchUploader**(`blobServiceClient`, `expirationSeconds`, `parallelism?`): [`FileBatchUploader`](#filebatchuploader)
+
+###### Parameters
+
+| Name | Type | Default value |
+| :------ | :------ | :------ |
+| `blobServiceClient` | `BlobServiceClient` | `undefined` |
+| `expirationSeconds` | `number` | `undefined` |
+| `parallelism` | `number` | `3` |
+
+###### Returns
+
+[`FileBatchUploader`](#filebatchuploader)
+
+
 <a name="moduleschatmd"></a>
 
 ### Module: chat
@@ -244,15 +291,21 @@ Re-exports [VideoFramesExtractor](#videoframesextractor)
 
 ___
 
-##### createAzureBlobStorageFileBatchUploader
-
-Re-exports [createAzureBlobStorageFileBatchUploader](#createazureblobstoragefilebatchuploader)
-
-___
-
 ##### extractVideoFramesWithFfmpeg
 
 Re-exports [extractVideoFramesWithFfmpeg](#extractvideoframeswithffmpeg)
+
+___
+
+##### lazyCreatedFileBatchUploader
+
+Re-exports [lazyCreatedFileBatchUploader](#lazycreatedfilebatchuploader)
+
+___
+
+##### lazyCreatedVideoFramesExtractor
+
+Re-exports [lazyCreatedVideoFramesExtractor](#lazycreatedvideoframesextractor)
 
 
 <a name="modulesstoragemd"></a>
@@ -265,30 +318,17 @@ Re-exports [extractVideoFramesWithFfmpeg](#extractvideoframeswithffmpeg)
 
 Re-exports [FileBatchUploader](#filebatchuploader)
 
-___
-
-##### createAzureBlobStorageFileBatchUploader
-
-Re-exports [createAzureBlobStorageFileBatchUploader](#createazureblobstoragefilebatchuploader)
-
-
-<a name="modulesstorage_azuremd"></a>
-
-### Module: storage/azure
-
 #### Functions
 
-##### createAzureBlobStorageFileBatchUploader
+##### lazyCreatedFileBatchUploader
 
-▸ **createAzureBlobStorageFileBatchUploader**(`blobServiceClient`, `expirationSeconds`, `parallelism?`): [`FileBatchUploader`](#filebatchuploader)
+▸ **lazyCreatedFileBatchUploader**(`creator`): [`FileBatchUploader`](#filebatchuploader)
 
 ###### Parameters
 
-| Name | Type | Default value |
-| :------ | :------ | :------ |
-| `blobServiceClient` | `BlobServiceClient` | `undefined` |
-| `expirationSeconds` | `number` | `undefined` |
-| `parallelism` | `number` | `3` |
+| Name | Type |
+| :------ | :------ |
+| `creator` | `Promise`\<[`FileBatchUploader`](#filebatchuploader)\> |
 
 ###### Returns
 
@@ -338,6 +378,22 @@ ___
 ##### extractVideoFramesWithFfmpeg
 
 Re-exports [extractVideoFramesWithFfmpeg](#extractvideoframeswithffmpeg)
+
+#### Functions
+
+##### lazyCreatedVideoFramesExtractor
+
+▸ **lazyCreatedVideoFramesExtractor**(`creator`): [`VideoFramesExtractor`](#videoframesextractor)
+
+###### Parameters
+
+| Name | Type |
+| :------ | :------ |
+| `creator` | `Promise`\<[`VideoFramesExtractor`](#videoframesextractor)\> |
+
+###### Returns
+
+[`VideoFramesExtractor`](#videoframesextractor)
 
 
 <a name="modulesvideo_ffmpegmd"></a>
