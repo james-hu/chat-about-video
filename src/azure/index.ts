@@ -4,7 +4,7 @@ import { readFile } from 'node:fs';
 import path from 'node:path';
 import { promisify } from 'node:util';
 
-import { FileBatchUploader } from './types';
+import { FileBatchUploader } from '../storage/types';
 
 const readFileAsync = promisify(readFile);
 

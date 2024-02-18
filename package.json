@@ -2,7 +2,6 @@
   "name": "chat-about-video",
   "version": "1.0.4",
   "description": "Chat about a video clip using Azure OpenAI GPT-4 Turbo with Vision",
-  "main": "index.js",
   "scripts": {
     "format:all": "prettier --write --ignore-unknown .",
     "pretest": "eslint . --ext .ts",
@@ -13,12 +12,45 @@
     "prepublish": "npm run compile",
     "preversion": "generate-api-docs-and-update-readme && git add README.md"
   },
+  "files": [
+    "dist"
+  ],
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./azure": {
+      "types": "./dist/azure/index.d.ts",
+      "default": "./dist/azure.index.js"
+    },
+    "./aws": {
+      "types": "./dist/aws/index.d.ts",
+      "default": "./dist/aws.index.js"
+    }
+  },
+  "typesVersions": {
+    "*": {
+      "azure": [
+        "./dist/azure.index.d.ts"
+      ],
+      "aws": [
+        "./dist/aws.index.d.ts"
+      ],
+      "*": [
+        "./dist/index.d.ts"
+      ]
+    }
+  },
   "optionalDependencies": {
+    "@azure/storage-blob": "^12.17.0",
+    "@handy-common-utils/aws-utils": "^2.9.0",
     "@ffmpeg-installer/ffmpeg": "^1.1.0"
   },
   "dependencies": {
     "@azure/openai": "^1.0.0-beta.11",
-    "@azure/storage-blob": "^12.17.0",
     "@handy-common-utils/misc-utils": "^1.5.0",
     "@handy-common-utils/promise-utils": "^1.4.1"
   },
@@ -38,6 +70,7 @@
     "Video",
     "chat",
     "AI",
+    "AWS",
     "Azure"
   ],
   "repository": {

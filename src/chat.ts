@@ -1,11 +1,10 @@
 /* eslint-disable unicorn/no-array-push-push */
 import { AzureKeyCredential, ChatCompletions, ChatRequestAssistantMessage, ChatRequestMessage, ChatRequestSystemMessage, ChatRequestUserMessage, GetChatCompletionsOptions, OpenAIClient } from '@azure/openai';
-import { BlobServiceClient } from '@azure/storage-blob';
 import { ConsoleLineLogger, consoleWithoutColour, generateRandomString } from '@handy-common-utils/misc-utils';
 import os from 'node:os';
 import path from 'node:path';
 
-import { FileBatchUploader, createAzureBlobStorageFileBatchUploader } from './storage';
+import { FileBatchUploader, lazyCreatedFileBatchUploader } from './storage';
 import { VideoFramesExtractor, extractVideoFramesWithFfmpeg } from './video';
 
 /**
@@ -114,10 +113,25 @@ export class ChatAboutVideo {
     protected log: ConsoleLineLogger = consoleWithoutColour(),
   ) {
     let fileBatchUploader = options.fileBatchUploader;
-    if (!fileBatchUploader && options.azureStorageConnectionString && options.storageContainerName) {
-      fileBatchUploader = createAzureBlobStorageFileBatchUploader(BlobServiceClient.fromConnectionString(options.azureStorageConnectionString), options.downloadUrlExpirationSeconds ?? 3600); 
-    } else {
-      throw new Error('Either fileBatchUploader or (azureStorageConnectionString and storageContainerName)must be provided');
+    if (!fileBatchUploader) {
+      if (!options.storageContainerName) {
+        throw new Error('Either fileBatchUploader or storageContainerName must be provided');
+      }
+      // eslint-disable-next-line unicorn/prefer-ternary
+      if (options.azureStorageConnectionString) {
+        // use Azure
+        fileBatchUploader = lazyCreatedFileBatchUploader(
+          Promise.all([import('./azure'), import('@azure/storage-blob')])
+            .then(([azure, storageBlob]) => azure.createAzureBlobStorageFileBatchUploader(
+              storageBlob.BlobServiceClient.fromConnectionString(options.azureStorageConnectionString!),
+              options.downloadUrlExpirationSeconds ?? 3600,
+            ))); 
+      } else {
+        // use AWS
+        fileBatchUploader = lazyCreatedFileBatchUploader(
+          Promise.all([import('./aws'), import('@aws-sdk/client-s3')])
+            .then(([aws, clientS3]) => aws.createAwsS3FileBatchUploader(new clientS3.S3Client(), options.downloadUrlExpirationSeconds ?? 3600))); 
+      }
     }
 
     this.options = {

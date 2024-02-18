@@ -1,3 +1,10 @@
+// This script can be executed with a command line like this from the project root directory:
+// export AZURE_OPENAI_API_ENDPOINT=..
+// export AZURE_OPENAI_API_KEY=...
+// export AZURE_STORAGE_CONNECTION_STRING=...
+// DEMO_VIDEO=~/Downloads/test1.mp4 npx ts-node test/demo.ts
+//
+
 /* eslint-disable node/no-unpublished-import */
 import chalk from 'chalk';
 import readline from 'node:readline';
