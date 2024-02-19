@@ -32,6 +32,11 @@ export interface ChatAboutVideoOptions {
    */
   videoFramesInterval: number;
   /**
+   * Maximum number of frames to be extracted.
+   * Default value is 10 which is the current per-request limitation of ChatGPT Vision.
+   */
+  videoFramesLimit: number;
+  /**
    * Video frame width, default is 200.
    * If both videoFrameWidth and videoFrameHeight are not specified,
    * then the frames will not be resized/scaled.
@@ -140,6 +145,7 @@ export class ChatAboutVideo {
       storagePathPrefix: '',
       videoFramesExtractor: extractVideoFramesWithFfmpeg,
       videoFramesInterval: 5,
+      videoFramesLimit: 10,
       videoFrameWidth: 200,
       videoFrameHeight: undefined,
       tmpDir: os.tmpdir(),
@@ -163,11 +169,11 @@ export class ChatAboutVideo {
     const videoFramesDir = path.join(this.options.tmpDir, conversationId);
     const frameImageFiles = await this.options.videoFramesExtractor(videoFile, videoFramesDir, this.options.videoFramesInterval, undefined, this.options.videoFrameWidth, this.options.videoFrameHeight);
     this.log.debug(`Extracted ${frameImageFiles.length} frames from video`, frameImageFiles);
-    if (frameImageFiles.length > 10) {
+    const maxNumFrames = this.options.videoFramesLimit;
+    if (frameImageFiles.length > maxNumFrames) {
       const previousLength = frameImageFiles.length;
-      // It allows only no more than 10 images
-      frameImageFiles.splice(10);
-      this.log.debug(`Truncated ${previousLength} frames to 10`);
+      frameImageFiles.splice(maxNumFrames);
+      this.log.debug(`Truncated ${previousLength} frames to ${maxNumFrames}`);
     }
 
     const frameImageUrls = await this.options.fileBatchUploader(videoFramesDir, frameImageFiles, this.options.storageContainerName, `${this.options.storagePathPrefix}${conversationId}/`);
