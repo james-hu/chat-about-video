@@ -191,7 +191,8 @@ Option settings for ChatAboutVideo
 | **videoFrameHeight**: `undefined` \| `number` | Video frame height, default is undefined which means the scaling<br>will be determined by the videoFrameWidth option.<br>If both videoFrameWidth and videoFrameHeight are not specified,<br>then the frames will not be resized/scaled. |
 | **videoFrameWidth**: `undefined` \| `number` | Video frame width, default is 200.<br>If both videoFrameWidth and videoFrameHeight are not specified,<br>then the frames will not be resized/scaled. |
 | **videoFramesExtractor**: [`VideoFramesExtractor`](#videoframesextractor) | Function for extracting frames from the video.<br>If not specified, a default function using ffmpeg will be used. |
-| **videoFramesInterval**: `number` | Intervals between frames to be extracted. The unit is second.<br>Default value is 5.<br><br>## Modules |
+| **videoFramesInterval**: `number` | Intervals between frames to be extracted. The unit is second.<br>Default value is 5. |
+| **videoFramesLimit**: `number` | Maximum number of frames to be extracted.<br>Default value is 10 which is the current per-request limitation of ChatGPT Vision.<br><br>## Modules |
 
 
 
