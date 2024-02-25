@@ -25,10 +25,10 @@ export interface ChatAboutVideoOptions {
   videoRetrievalIndex?: {
     endpoint: string;
     apiKey: string;
-    indexName: string;
-    createIndexIfNotExist?: boolean;
-    deleteIndexAfterConversation?: boolean;
-    deleteDocumentAfterConversation?: boolean;
+    indexName?: string;
+    createIndexIfNotExists?: boolean;
+    deleteIndexWhenConversationEnds?: boolean;
+    deleteDocumentWhenConversationEnds?: boolean;
   };
 
   extractVideoFrames?: {
@@ -104,7 +104,7 @@ const DEFAULT_START_PROMPTS = [
 ];
 
 export type ChatAboutVideoConstructorOptions = Partial<Omit<ChatAboutVideoOptions, 'videoRetrievalIndex' | 'extractVideoFrames'>> & Required<Pick<ChatAboutVideoOptions, 'openAiDeploymentName'|'storageContainerName'>> & {
-  videoRetrievalIndex?: Partial<ChatAboutVideoOptions['videoRetrievalIndex']> & Pick<Exclude<ChatAboutVideoOptions['videoRetrievalIndex'], undefined>, 'endpoint' | 'apiKey' | 'indexName'>;
+  videoRetrievalIndex?: Partial<ChatAboutVideoOptions['videoRetrievalIndex']> & Pick<Exclude<ChatAboutVideoOptions['videoRetrievalIndex'], undefined>, 'endpoint' | 'apiKey'>;
   extractVideoFrames?: Partial<Exclude<ChatAboutVideoOptions['extractVideoFrames'], undefined>>;
 } & {
   /**
@@ -177,9 +177,9 @@ export class ChatAboutVideo {
         ...options.extractVideoFrames,
       } : undefined,
       videoRetrievalIndex: options.videoRetrievalIndex ? {
-        createIndexIfNotExist: true,
-        deleteDocumentAfterConversation: true,
-        deleteIndexAfterConversation: false,
+        createIndexIfNotExists: true,
+        deleteDocumentWhenConversationEnds: true,
+        deleteIndexWhenConversationEnds: false,
         ...options.videoRetrievalIndex,
       } : undefined,
     };
@@ -256,8 +256,12 @@ export class ChatAboutVideo {
     const [videoUrl] = await this.options.fileBatchUploader(path.dirname(videoFile), [path.basename(videoFile)], this.options.storageContainerName, `${this.options.storagePathPrefix}${conversationId}/`);
 
     const videoRetrievalIndex = this.options.videoRetrievalIndex!;
-    const { endpoint, apiKey, indexName, createIndexIfNotExist } = videoRetrievalIndex;
-
+    const { endpoint, apiKey, indexName: specifiedIndexName, createIndexIfNotExists: createIndexIfNotExist, deleteDocumentWhenConversationEnds: deleteDocumentAfterConversation, deleteIndexWhenConversationEnds: deleteIndexAfterConversation } = videoRetrievalIndex;
+    const indexName = specifiedIndexName ?? conversationId;
+    const ingestionName = conversationId;
+    const documentId = conversationId;
+    const documentUrl = videoUrl;
+  
     const { VideoRetrievalApiClient } = await import('./azure');
     const videoRetrievalIndexClient = new VideoRetrievalApiClient(endpoint, apiKey, indexName);
     
@@ -265,9 +269,7 @@ export class ChatAboutVideo {
       await videoRetrievalIndexClient.createIndexIfNotExist(indexName);
     }
 
-    const ingestionName = conversationId;
-    const documentId = conversationId;
-    const documentUrl = videoUrl;
+
     await videoRetrievalIndexClient.ingest(indexName, ingestionName, {
       moderation: false,
       generateInsightIntervals: true,
@@ -312,6 +314,13 @@ export class ChatAboutVideo {
             } as any,
           ],
         },
+      },
+      cleanup: async () => {
+        if (deleteIndexAfterConversation) {
+          await videoRetrievalIndexClient.deleteIndex(indexName);
+        } else if (deleteDocumentAfterConversation) {
+          await videoRetrievalIndexClient.deleteDocument(indexName, documentUrl);
+        }
       },
     };
   }

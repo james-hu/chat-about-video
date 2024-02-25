@@ -1,3 +1,4 @@
+import { generateRandomString } from '@handy-common-utils/misc-utils';
 import { FIBONACCI_SEQUENCE, withRetry } from '@handy-common-utils/promise-utils';
 import Axios, { AxiosInstance, isAxiosError } from 'axios';
 
@@ -65,6 +66,17 @@ export class VideoRetrievalApiClient {
     await this.axios.put(`/indexes/${indexName}/ingestions/${ingestionName}?api-version=${this.apiVersion}`, ingestion);
   }
 
+  async deleteDocument(indexName: string, documentUrl: string): Promise<void> {
+    await this.createIngestion(indexName, `delete-${generateRandomString(24)}`, {
+      videos: [
+        {
+          mode: 'remove',
+          documentUrl,
+        },
+      ],
+    });
+  }
+
   async getIngestion(indexName: string, ingestionName: string): Promise<IngestionSummary> {
     const response = await this.axios.get<IngestionSummary>(`/indexes/${indexName}/ingestions/${ingestionName}?api-version=${this.apiVersion}`);
     return response.data;
@@ -116,7 +128,7 @@ export interface IngestionRequest {
 
 export interface VideoIngestion {
   mode: 'add' | 'update' | 'remove';
-  documentId: string;
+  documentId?: string;
   documentUrl: string;
   metadata?: object;
   userData?: object;
