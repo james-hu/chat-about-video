@@ -6,6 +6,8 @@ import { promisify } from 'node:util';
 
 import { FileBatchUploader } from '../storage/types';
 
+export * from './video-retrieval-api-client';
+
 const readFileAsync = promisify(readFile);
 
 async function generateDownloadUrl(blockBlobClient: BlockBlobClient, expirationSeconds: number): Promise<string> {

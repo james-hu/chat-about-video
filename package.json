@@ -46,13 +46,14 @@
   },
   "optionalDependencies": {
     "@azure/storage-blob": "^12.17.0",
-    "@handy-common-utils/aws-utils": "^2.9.0",
-    "@ffmpeg-installer/ffmpeg": "^1.1.0"
+    "@ffmpeg-installer/ffmpeg": "^1.1.0",
+    "@handy-common-utils/aws-utils": "^2.9.0"
   },
   "dependencies": {
     "@azure/openai": "^1.0.0-beta.11",
     "@handy-common-utils/misc-utils": "^1.5.0",
-    "@handy-common-utils/promise-utils": "^1.4.1"
+    "@handy-common-utils/promise-utils": "^1.4.1",
+    "axios": "^1.6.7"
   },
   "devDependencies": {
     "@handy-common-utils/dev-dependencies-jest": "^1.2.6",
