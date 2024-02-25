@@ -1,11 +1,12 @@
 /* eslint-disable unicorn/no-array-push-push */
-import { AzureKeyCredential, ChatCompletions, ChatRequestAssistantMessage, ChatRequestMessage, ChatRequestSystemMessage, ChatRequestUserMessage, GetChatCompletionsOptions, OpenAIClient } from '@azure/openai';
+import { AzureKeyCredential, ChatCompletions, ChatMessageContentItem, ChatRequestAssistantMessage, ChatRequestMessage, ChatRequestSystemMessage, ChatRequestUserMessage, GetChatCompletionsOptions, OpenAIClient } from '@azure/openai';
 import { ConsoleLineLogger, consoleWithoutColour, generateRandomString } from '@handy-common-utils/misc-utils';
 import os from 'node:os';
 import path from 'node:path';
 
 import { FileBatchUploader, lazyCreatedFileBatchUploader } from './storage';
 import { VideoFramesExtractor, extractVideoFramesWithFfmpeg } from './video';
+
 
 /**
  * Option settings for ChatAboutVideo
@@ -21,34 +22,45 @@ export interface ChatAboutVideoOptions {
    */
   tmpDir: string;
 
-  /**
-   * Function for extracting frames from the video.
-   * If not specified, a default function using ffmpeg will be used.
-   */
-  videoFramesExtractor: VideoFramesExtractor;
-  /**
-   * Intervals between frames to be extracted. The unit is second.
-   * Default value is 5.
-   */
-  videoFramesInterval: number;
-  /**
-   * Maximum number of frames to be extracted.
-   * Default value is 10 which is the current per-request limitation of ChatGPT Vision.
-   */
-  videoFramesLimit: number;
-  /**
-   * Video frame width, default is 200.
-   * If both videoFrameWidth and videoFrameHeight are not specified,
-   * then the frames will not be resized/scaled.
-   */
-  videoFrameWidth: number | undefined;
-  /**
-   * Video frame height, default is undefined which means the scaling
-   * will be determined by the videoFrameWidth option.
-   * If both videoFrameWidth and videoFrameHeight are not specified,
-   * then the frames will not be resized/scaled.
-   */
-  videoFrameHeight: number | undefined;
+  videoRetrievalIndex?: {
+    endpoint: string;
+    apiKey: string;
+    indexName: string;
+    createIndexIfNotExist?: boolean;
+    deleteIndexAfterConversation?: boolean;
+    deleteDocumentAfterConversation?: boolean;
+  };
+
+  extractVideoFrames?: {
+    /**
+     * Function for extracting frames from the video.
+     * If not specified, a default function using ffmpeg will be used.
+     */
+    extractor: VideoFramesExtractor;
+    /**
+     * Intervals between frames to be extracted. The unit is second.
+     * Default value is 5.
+     */
+    interval: number;
+    /**
+     * Maximum number of frames to be extracted.
+     * Default value is 10 which is the current per-request limitation of ChatGPT Vision.
+     */
+    limit: number;
+    /**
+     * Video frame width, default is 200.
+     * If both videoFrameWidth and videoFrameHeight are not specified,
+     * then the frames will not be resized/scaled.
+     */
+    width: number | undefined;
+    /**
+     * Video frame height, default is undefined which means the scaling
+     * will be determined by the videoFrameWidth option.
+     * If both videoFrameWidth and videoFrameHeight are not specified,
+     * then the frames will not be resized/scaled.
+     */
+    height: number | undefined;
+  }
 
   /**
    * Function for uploading files
@@ -91,31 +103,42 @@ const DEFAULT_START_PROMPTS = [
   } as ChatRequestUserMessage,
 ];
 
+export type ChatAboutVideoConstructorOptions = Partial<Omit<ChatAboutVideoOptions, 'videoRetrievalIndex' | 'extractVideoFrames'>> & Required<Pick<ChatAboutVideoOptions, 'openAiDeploymentName'|'storageContainerName'>> & {
+  videoRetrievalIndex?: Partial<ChatAboutVideoOptions['videoRetrievalIndex']> & Pick<Exclude<ChatAboutVideoOptions['videoRetrievalIndex'], undefined>, 'endpoint' | 'apiKey' | 'indexName'>;
+  extractVideoFrames?: Partial<Exclude<ChatAboutVideoOptions['extractVideoFrames'], undefined>>;
+} & {
+  /**
+   * Endpoint URL for accessing the deployment in Azure,
+   * or undefined for non-Azure OpenAI API.
+   */
+  openAiEndpoint?: string;
+  /**
+   * API key for accessing the deployment
+   */
+  openAiApiKey: string;
+  /**
+   * Azure Storage connection string.
+   * Frame images of the video will be uploaded to blob storage using this connection string.
+   */
+  azureStorageConnectionString?: string;
+  /**
+   * Number of seconds for the generated download URL to be valid.
+   * Download URLs will be generated for the deployment to access uploaded frame images.
+   */
+  downloadUrlExpirationSeconds?: number;
+}
+
+interface PreparationResult {
+  messages: ChatRequestMessage[],
+  options?: GetChatCompletionsOptions,
+  cleanup?: () => Promise<void>;
+}
+
 export class ChatAboutVideo {
   protected options: ChatAboutVideoOptions;
   protected client: OpenAIClient;
   constructor(
-    options: Partial<ChatAboutVideoOptions> & Required<Pick<ChatAboutVideoOptions, 'openAiDeploymentName'|'storageContainerName'>> & {
-      /**
-       * Endpoint URL for accessing the deployment in Azure,
-       * or undefined for non-Azure OpenAI API.
-       */
-      openAiEndpoint?: string;
-      /**
-       * API key for accessing the deployment
-       */
-      openAiApiKey: string;
-      /**
-       * Azure Storage connection string.
-       * Frame images of the video will be uploaded to blob storage using this connection string.
-       */
-      azureStorageConnectionString?: string;
-      /**
-       * Number of seconds for the generated download URL to be valid.
-       * Download URLs will be generated for the deployment to access uploaded frame images.
-       */
-      downloadUrlExpirationSeconds?: number;
-    },
+    options: ChatAboutVideoConstructorOptions,
     protected log: ConsoleLineLogger = consoleWithoutColour(),
   ) {
     let fileBatchUploader = options.fileBatchUploader;
@@ -143,13 +166,22 @@ export class ChatAboutVideo {
     this.options = {
       fileBatchUploader,
       storagePathPrefix: '',
-      videoFramesExtractor: extractVideoFramesWithFfmpeg,
-      videoFramesInterval: 5,
-      videoFramesLimit: 10,
-      videoFrameWidth: 200,
-      videoFrameHeight: undefined,
       tmpDir: os.tmpdir(),
       ...options,
+      extractVideoFrames: (options.extractVideoFrames || !options.videoRetrievalIndex) ? {
+        extractor: extractVideoFramesWithFfmpeg,
+        interval: 5,
+        limit: 10,
+        width: 200,
+        height: undefined,
+        ...options.extractVideoFrames,
+      } : undefined,
+      videoRetrievalIndex: options.videoRetrievalIndex ? {
+        createIndexIfNotExist: true,
+        deleteDocumentAfterConversation: true,
+        deleteIndexAfterConversation: false,
+        ...options.videoRetrievalIndex,
+      } : undefined,
     };
     // eslint-disable-next-line unicorn/prefer-ternary
     if (options.openAiEndpoint) {
@@ -166,10 +198,35 @@ export class ChatAboutVideo {
    */
   async startConversation(videoFile: string): Promise<Conversation> {
     const conversationId = generateRandomString(24); // equivalent to uuid
+    const messages: ChatRequestMessage[] = [];
+    messages.push(...(this.options.initialPrompts ?? DEFAULT_INITIAL_PROMPTS));
+
+    const { messages: videoContextMessages, options: chatCompletionsOptions, cleanup } = this.options.extractVideoFrames ?
+      await this.prepareVideoFrames(conversationId, videoFile) : await this.prepareVideoRetrievalIndex(conversationId, videoFile);
+    messages.push(...videoContextMessages);
+
+    messages.push(...(this.options.startPrompts ?? DEFAULT_START_PROMPTS));
+
+    const result = await this.client.getChatCompletions(this.options.openAiDeploymentName, messages, chatCompletionsOptions);
+    this.log.debug('First result from chat', JSON.stringify(result, null, 2));
+    const response = chatResponse(result);
+    if (response) {
+      messages.push({
+        role: 'assistant',
+        content: response,
+      } as ChatRequestAssistantMessage);
+    }
+
+    const conversation = new Conversation(this.client, this.options.openAiDeploymentName, conversationId, messages, chatCompletionsOptions, cleanup);
+    return conversation;
+  }
+
+  protected async prepareVideoFrames(conversationId: string, videoFile: string): Promise<PreparationResult> {
+    const extractVideoFrames = this.options.extractVideoFrames!;
     const videoFramesDir = path.join(this.options.tmpDir, conversationId);
-    const frameImageFiles = await this.options.videoFramesExtractor(videoFile, videoFramesDir, this.options.videoFramesInterval, undefined, this.options.videoFrameWidth, this.options.videoFrameHeight);
+    const frameImageFiles = await extractVideoFrames.extractor(videoFile, videoFramesDir, extractVideoFrames.interval, undefined, extractVideoFrames.width, extractVideoFrames.height);
     this.log.debug(`Extracted ${frameImageFiles.length} frames from video`, frameImageFiles);
-    const maxNumFrames = this.options.videoFramesLimit;
+    const maxNumFrames = extractVideoFrames.limit;
     if (frameImageFiles.length > maxNumFrames) {
       const previousLength = frameImageFiles.length;
       frameImageFiles.splice(maxNumFrames);
@@ -180,7 +237,6 @@ export class ChatAboutVideo {
     this.log.debug(`Uploaded ${frameImageUrls.length} frames to storage`, frameImageUrls);
 
     const messages: ChatRequestMessage[] = [];
-    messages.push(...(this.options.initialPrompts ?? DEFAULT_INITIAL_PROMPTS));
     messages.push(...frameImageUrls.map((url) => ({
       role: 'user',
       content: [{
@@ -191,20 +247,73 @@ export class ChatAboutVideo {
         },
       }],
     } as ChatRequestUserMessage)));
-    messages.push(...(this.options.startPrompts ?? DEFAULT_START_PROMPTS));
+    return {
+      messages,
+    };
+  }
 
-    const result = await this.client.getChatCompletions(this.options.openAiDeploymentName, messages);
-    this.log.debug('First result from chat', JSON.stringify(result, null, 2));
-    const response = chatResponse(result);
-    if (response) {
-      messages.push({
-        role: 'assistant',
-        content: response,
-      } as ChatRequestAssistantMessage);
+  protected async prepareVideoRetrievalIndex(conversationId: string, videoFile: string): Promise<PreparationResult> {
+    const [videoUrl] = await this.options.fileBatchUploader(path.dirname(videoFile), [path.basename(videoFile)], this.options.storageContainerName, `${this.options.storagePathPrefix}${conversationId}/`);
+
+    const videoRetrievalIndex = this.options.videoRetrievalIndex!;
+    const { endpoint, apiKey, indexName, createIndexIfNotExist } = videoRetrievalIndex;
+
+    const { VideoRetrievalApiClient } = await import('./azure');
+    const videoRetrievalIndexClient = new VideoRetrievalApiClient(endpoint, apiKey, indexName);
+    
+    if (createIndexIfNotExist) {
+      await videoRetrievalIndexClient.createIndexIfNotExist(indexName);
     }
 
-    const conversation = new Conversation(this.client, this.options.openAiDeploymentName, conversationId, messages);
-    return conversation;
+    const ingestionName = conversationId;
+    const documentId = conversationId;
+    const documentUrl = videoUrl;
+    await videoRetrievalIndexClient.ingest(indexName, ingestionName, {
+      moderation: false,
+      generateInsightIntervals: true,
+      filterDefectedFrames: true,
+      includeSpeechTranscript: true,
+      videos: [
+        {
+          mode: 'add',
+          documentId,
+          documentUrl,
+        },
+      ],
+    });
+    this.log.debug(`Indexed video in index ${indexName}`);
+
+    const messages: ChatRequestMessage[] = [];
+    messages.push({
+      role: 'user',
+      content: [
+        {
+          type: 'acv_document_id',
+          acv_document_id: documentId,
+        } as unknown as ChatMessageContentItem,
+      ],
+    } as ChatRequestUserMessage);
+    return {
+      messages,
+      options: {
+        azureExtensionOptions: {
+          enhancements: {
+            video: {
+              enabled: true,
+            },
+          } as any,
+          extensions: [
+            {
+              type: 'AzureComputerVisionVideoIndex',
+              endpoint,
+              computerVisionApiKey: apiKey,
+              indexName,
+              videoUrls: [videoUrl],
+            } as any,
+          ],
+        },
+      },
+    };
   }
 }
 
@@ -218,6 +327,8 @@ export class Conversation {
     protected deploymentName: string,
     protected conversationId: string,
     protected messages: ChatRequestMessage[],
+    protected options?: GetChatCompletionsOptions,
+    protected cleanup?: () => Promise<void>,
     protected log: ConsoleLineLogger = consoleWithoutColour(),
   ) { }
 
@@ -232,7 +343,7 @@ export class Conversation {
       role: 'user',
       content: message,
     } as ChatRequestUserMessage);
-    const result = await this.client.getChatCompletions(this.deploymentName, this.messages, options);
+    const result = await this.client.getChatCompletions(this.deploymentName, this.messages, { ...this.options, ...options });
     this.messages.push({
       role: 'assistant',
       content: chatResponse(result),
@@ -241,5 +352,11 @@ export class Conversation {
     this.log.debug('Message history', JSON.stringify(this.messages, null, 2));
     const response = chatResponse(result);
     return response;
+  }
+
+  async end(): Promise<void> {
+    if (this.cleanup) {
+      await this.cleanup();
+    }
   }
 }
