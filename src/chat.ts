@@ -1,3 +1,4 @@
+/* eslint-disable unicorn/prefer-string-replace-all */
 /* eslint-disable unicorn/no-array-push-push */
 import { AzureKeyCredential, ChatCompletions, ChatMessageContentItem, ChatRequestAssistantMessage, ChatRequestMessage, ChatRequestSystemMessage, ChatRequestUserMessage, GetChatCompletionsOptions, OpenAIClient } from '@azure/openai';
 import { ConsoleLineLogger, consoleWithoutColour, generateRandomString } from '@handy-common-utils/misc-utils';
@@ -257,13 +258,13 @@ export class ChatAboutVideo {
 
     const videoRetrievalIndex = this.options.videoRetrievalIndex!;
     const { endpoint, apiKey, indexName: specifiedIndexName, createIndexIfNotExists: createIndexIfNotExist, deleteDocumentWhenConversationEnds: deleteDocumentAfterConversation, deleteIndexWhenConversationEnds: deleteIndexAfterConversation } = videoRetrievalIndex;
-    const indexName = specifiedIndexName ?? conversationId;
+    const indexName = specifiedIndexName ?? conversationId.toLowerCase().replace(/[^\dA-Za-z]/g, '-');
     const ingestionName = conversationId;
     const documentId = conversationId;
     const documentUrl = videoUrl;
   
     const { VideoRetrievalApiClient } = await import('./azure');
-    const videoRetrievalIndexClient = new VideoRetrievalApiClient(endpoint, apiKey, indexName);
+    const videoRetrievalIndexClient = new VideoRetrievalApiClient(endpoint, apiKey);
     
     if (createIndexIfNotExist) {
       await videoRetrievalIndexClient.createIndexIfNotExist(indexName);
