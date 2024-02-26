@@ -84,11 +84,11 @@ export class VideoRetrievalApiClient {
 
   async ingest(indexName: string, ingestionName: string, ingestion: IngestionRequest, backoff: number[] = Array.from({ length: FIBONACCI_SEQUENCE.length }, (_v, i) => 10000 * Math.min(FIBONACCI_SEQUENCE[i], 10))): Promise<void> {
     await this.createIngestion(indexName, ingestionName, ingestion);
-    const ingestionResult = await withRetry(() => this.getIngestion(indexName, ingestionName), backoff, (result, _error) => {
+    const ingestionResult = await withRetry(() => this.getIngestion(indexName, ingestionName), backoff, (_error, result) => {
       switch (result?.state) {
-        case 'notStarted':
-        case 'partiallySucceeded':
-        case 'running': {
+        case 'NotStarted':
+        case 'PartiallySucceeded':
+        case 'Running': {
           return true;
         }
         default: {
@@ -96,7 +96,7 @@ export class VideoRetrievalApiClient {
         }
       }
     });
-    if (ingestionResult.state !== 'completed') {
+    if (ingestionResult.state !== 'Completed') {
       throw new Error(`Ingestion ${ingestionName} for index ${indexName} didn't complete. State: ${ingestionResult.state}`);
     }
   }
@@ -104,7 +104,7 @@ export class VideoRetrievalApiClient {
 
 export interface IngestionSummary {
   name: string;
-  state: 'notStarted' | 'running' | 'completed' | 'failed' | 'partiallySucceeded';
+  state: 'NotStarted' | 'Running' | 'Completed' | 'Failed' | 'PartiallySucceeded';
   batchName?: string;
   createdDateTime: string;
   lastModifiedDateTime: string;
