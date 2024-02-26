@@ -554,7 +554,7 @@ The response/completion
 | `Optional` **fileStatusDetails**: [`IngestionStatusDetail`](#interfacesazure_video_retrieval_api_clientingestionstatusdetailmd)[] |  |
 | **lastModifiedDateTime**: `string` |  |
 | **name**: `string` |  |
-| **state**: ``"notStarted"`` \| ``"running"`` \| ``"failed"`` \| ``"completed"`` \| ``"partiallySucceeded"`` |  |
+| **state**: ``"NotStarted"`` \| ``"Running"`` \| ``"Completed"`` \| ``"Failed"`` \| ``"PartiallySucceeded"`` |  |
 
 
 
