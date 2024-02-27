@@ -8,14 +8,14 @@ Chat about a video clip using the powerful OpenAI GPT-4 Vision.
 
 There are two approaches for feeding video content into GPT-4 Vision. `chat-about-video` supports both of them.
 
-### Frame image extraction:
+__Frame image extraction:__
 
 - Integrate GPT-4 vision from Microsoft Azure or OpenAI effortlessly.
 - Utilize ffmpeg integration provided by this package for frame image extraction or opt for a DIY approach.
 - Store frame images with ease, supporting Azure Blob Storage and AWS S3.
 - GPT-4 vision allows analysis of up to 10 frame images.
 
-### Video indexing with Microsoft Azure:
+__Video indexing with Microsoft Azure:__
 
 - Exclusively supported by GPT-4 vision from Microsoft Azure.
 - Ingest videos seamlessly into Microsoft Azure's Video Retrieval Index.
