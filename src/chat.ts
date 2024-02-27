@@ -1,6 +1,6 @@
 /* eslint-disable unicorn/prefer-string-replace-all */
 /* eslint-disable unicorn/no-array-push-push */
-import { AzureKeyCredential, ChatCompletions, ChatMessageContentItem, ChatRequestAssistantMessage, ChatRequestMessage, ChatRequestSystemMessage, ChatRequestUserMessage, GetChatCompletionsOptions, OpenAIClient } from '@azure/openai';
+import { AzureKeyCredential, ChatCompletions, ChatMessageContentItem, ChatRequestAssistantMessage, ChatRequestMessage, ChatRequestSystemMessage, ChatRequestUserMessage, GetChatCompletionsOptions, OpenAIClient, OpenAIKeyCredential } from '@azure/openai';
 import { ConsoleLineLogger, consoleWithoutColour, generateRandomString } from '@handy-common-utils/misc-utils';
 import os from 'node:os';
 import path from 'node:path';
@@ -188,7 +188,7 @@ export class ChatAboutVideo {
     if (options.openAiEndpoint) {
       this.client = new OpenAIClient(options.openAiEndpoint, new AzureKeyCredential(options.openAiApiKey));
     } else {
-      this.client = new OpenAIClient({ key: options.openAiApiKey });
+      this.client = new OpenAIClient(new OpenAIKeyCredential(options.openAiApiKey));
     }
   }
 
