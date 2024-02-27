@@ -2,6 +2,11 @@
 
 Chat about a video clip using the powerful OpenAI GPT-4 Vision.
 
+[![Version](https://img.shields.io/npm/v/chat-about-video.svg)](https://npmjs.org/package/chat-about-video)
+[![Downloads/week](https://img.shields.io/npm/dw/chat-about-video.svg)](https://npmjs.org/package/chat-about-video)
+[![License](https://img.shields.io/npm/l/chat-about-video.svg)](https://github.com/james-hu/chat-about-video/blob/master/package.json)
+
+
 `chat-about-video` is an open-source NPM package designed to accelerate the development of conversation applications about video content. Harnessing the capabilities of OpenAI GPT-4 Vision services from Microsoft Azure or OpenAI, this package opens up a range of usage scenarios with minimal effort.
 
 ## Usage scenarios
