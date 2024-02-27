@@ -1,12 +1,83 @@
 # chat-about-video
-Chat about a video clip using Azure OpenAI GPT-4 Turbo with Vision
 
-Example usage:
+Chat about a video clip using the powerful OpenAI GPT-4 Vision.
+
+`chat-about-video` is an open-source NPM package designed to accelerate the development of conversation applications about video content. Harnessing the capabilities of OpenAI GPT-4 Vision services from Microsoft Azure or OpenAI, this package opens up a range of usage scenarios with minimal effort.
+
+## Usage scenarios
+
+There are two approaches for feeding video content into GPT-4 Vision. `chat-about-video` supports both of them.
+
+### Frame image extraction:
+
+- Integrate GPT-4 vision from Microsoft Azure or OpenAI effortlessly.
+- Utilize ffmpeg integration provided by this package for frame image extraction or opt for a DIY approach.
+- Store frame images with ease, supporting Azure Blob Storage and AWS S3.
+- GPT-4 vision allows analysis of up to 10 frame images.
+
+### Video indexing with Microsoft Azure:
+
+- Exclusively supported by GPT-4 vision from Microsoft Azure.
+- Ingest videos seamlessly into Microsoft Azure's Video Retrieval Index.
+- Automatic extraction of up to 20 frame images using Video Retrieval Indexer.
+- Default integration of speech transcription for enhanced comprehension.
+- Flexible storage options with support for Azure Blob Storage and AWS S3.
+
+
+## Usage
+
+### Installation
+
+Add chat-about-video as a dependency to your Node.js application using the following command:
 
 ```shell
-sudo apt install ffmpeg # or npm i @ffmpeg-installer/ffmpeg
 npm i chat-about-video
 ```
+### Dependencies
+
+If you intend to utilize ffmpeg for extracting video frame images, ensure it is installed on your system. You can install it using either a system package manager or a helper NPM package:
+
+```shell
+sudo apt install ffmpeg
+# or
+npm i @ffmpeg-installer/ffmpeg
+```
+
+If you plan to use Azure Blob Storage, include the following dependency:
+
+```shell
+npm i @azure/storage-blob
+```
+
+For using AWS S3, install the following dependencies:
+
+```shell
+npm i @handy-common-utils/aws-utils @aws-sdk/s3-request-presigner @aws-sdk/client-s3
+```
+
+### Usage in code
+
+To integrate `chat-about-video` into your Node.js application, follow these simple steps:
+
+1. Instantiate the `ChatAboutVideo` class by creating an instance. The constructor allows you to pass in configuration options.
+  - Most configuration options come with sensible default values, but you can specify your own for further customization.
+2. Use the `startConversation(videoFilePath)` function to initiate a conversation about a video clip. This function returns a `Conversation` object. The video file or its frame images are sent to Azure Blob Storage or AWS S3 during this step.
+3. Interact with GPT by using the `say(question, { maxTokens: 2000 })` function within the conversation. You can pass in a question, and will receive an answer.
+  - Message history is automatically kept during the conversation, providing context for a more coherent dialogue.
+  - The second parameter of the `say(...)` function allows you to specify your own for further customization.
+4. Wrap up the conversation using the `end()` function. This ensures proper clean-up and resource management.
+
+### Examples
+
+Below is an example chat application, which
+
+- uses GPT deployment (named 'gpt4vision') hosted in Microsoft Azure;
+- uses ffmpeg to extract video frame images;
+- stores video frame images in Azure Blob Storage;
+  - container name: 'vision-experiment-input'
+  - object path prefix: 'video-frames/'
+- reads credentials from environment variables
+- reads input video file path from environment variable 'DEMO_VIDEO'
 
 ```javascript
 import readline from 'node:readline';
@@ -17,11 +88,11 @@ const prompt = (question: string) => new Promise<string>((resolve) => rl.questio
 
 async function demo() {
   const chat = new ChatAboutVideo({
-    openAiEndpoint: process.env.AZURE_OPENAI_API_ENDPOINT!,
-    openAiApiKey: process.env.AZURE_OPENAI_API_KEY!,
-    azureStorageConnectionString: process.env.AZURE_STORAGE_CONNECTION_STRING!,
-    openAiDeploymentName: 'gpt4vision',
-    storageContainerName: 'vision-experiment-input',
+    openAiEndpoint: process.env.AZURE_OPENAI_API_ENDPOINT!, // This line is not needed if you are using GTP provided by OpenAI rather than by Microsoft Azure.
+    openAiApiKey: process.env.OPENAI_API_KEY!, // This is the API key.
+    azureStorageConnectionString: process.env.AZURE_STORAGE_CONNECTION_STRING!, // This line is not needed if you'd like to use AWS S3.
+    openAiDeploymentName: 'gpt4vision', // For GPT provided by OpenAI, this is the model name. For GPT provided by Microsoft Azure, this is the deployment name.
+    storageContainerName: 'vision-experiment-input', // Blob container name in Azure or S3 bucket name in AWS
     storagePathPrefix: 'video-frames/',
   });
 
@@ -32,13 +103,61 @@ async function demo() {
     if (!question) {
       continue;
     }
+    if (['exit', 'quit'].includes(question.toLowerCase().trim())) {
+      break;
+    }
     const answer = await conversation.say(question, { maxTokens: 2000 });
     console.log('\nAI:' + answer);
   }
 }
 
-demo().catch((error) => console.log(JSON.stringify(error, null, 2)));
+demo().catch((error) => console.error(error));
+```
 
+Below is an example showing how to create an instance of `ChatAboutVideo` that
+
+- uses GPT provided by OpenAI;
+- uses ffmpeg to extract video frame images;
+- stores video frame images in AWS S3;
+  - bucket name: 'my-s3-bucket'
+  - object path prefix: 'video-frames/'
+- reads API key from environment variable 'OPENAI_API_KEY'
+
+```javascript
+  const chat = new ChatAboutVideo({
+    openAiApiKey: process.env.OPENAI_API_KEY!,
+    openAiDeploymentName: 'gpt-4-vision-preview',
+    storageContainerName: 'my-s3-bucket',
+    storagePathPrefix: 'video-frames/',
+  } as any);
+```
+
+Below is an example showing how to create an instance of `ChatAboutVideo` that
+
+- uses GPT deployment (named 'gpt4vision') hosted in Microsoft Azure;
+- uses Microsoft Video Retrieval Index to extract frames and analyse the video
+  - A randomly named index is created automatically.
+  - The index is also deleted automatically when the conversation ends.
+- stores video file in Azure Blob Storage;
+  - container name: 'vision-experiment-input'
+  - object path prefix: 'videos/'
+- reads credentials from environment variables
+
+```javascript
+  const chat = new ChatAboutVideo({
+    openAiEndpoint: process.env.AZURE_OPENAI_API_ENDPOINT!,
+    openAiApiKey: process.env.AZURE_OPENAI_API_KEY!,
+    azureStorageConnectionString: process.env.AZURE_STORAGE_CONNECTION_STRING!,
+    openAiDeploymentName: 'gpt4vision',
+    storageContainerName: 'vision-experiment-input',
+    storagePathPrefix: 'videos/',
+    videoRetrievalIndex: {
+      endpoint: process.env.AZURE_CV_API_ENDPOINT!,
+      apiKey: process.env.AZURE_CV_API_KEY!,
+      createIndexIfNotExists: true,
+      deleteIndexWhenConversationEnds: true,
+    },
+  });
 ```
 
 # API
