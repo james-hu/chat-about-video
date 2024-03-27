@@ -218,7 +218,7 @@ export class ChatAboutVideo {
       } as ChatRequestAssistantMessage);
     }
 
-    const conversation = new Conversation(this.client, this.options.openAiDeploymentName, conversationId, messages, chatCompletionsOptions, cleanup);
+    const conversation = new Conversation(this.client, this.options.openAiDeploymentName, conversationId, messages, chatCompletionsOptions, cleanup, this.log);
     return conversation;
   }
 
