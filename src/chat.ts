@@ -349,18 +349,21 @@ export class Conversation {
    * @returns The response/completion
    */
   async say(message: string, options?: GetChatCompletionsOptions): Promise<string|undefined> {
-    this.messages.push({
+    const newMessage: ChatRequestUserMessage = {
       role: 'user',
       content: message,
-    } as ChatRequestUserMessage);
-    const result = await this.client.getChatCompletions(this.deploymentName, this.messages, { ...this.options, ...options });
-    this.messages.push({
-      role: 'assistant',
-      content: chatResponse(result),
-    } as ChatRequestAssistantMessage);
+    };
+
+    const result = await this.client.getChatCompletions(this.deploymentName, [...this.messages, newMessage], { ...this.options, ...options });
     this.log.debug('Result from chat', JSON.stringify(result, null, 2));
-    this.log.debug('Message history', JSON.stringify(this.messages, null, 2));
     const response = chatResponse(result);
+    this.messages.push(
+      newMessage,
+      {
+        role: 'assistant',
+        content: response,
+      } as ChatRequestAssistantMessage);
+    this.log.debug('Updated message history', JSON.stringify(this.messages, null, 2));
     return response;
   }
 
