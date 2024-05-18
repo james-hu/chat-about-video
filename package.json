@@ -1,6 +1,6 @@
 {
   "name": "chat-about-video",
-  "version": "2.3.4",
+  "version": "2.4.0",
   "description": "Chat about a video clip using Azure OpenAI GPT-4 Turbo with Vision",
   "scripts": {
     "format:all": "prettier --write --ignore-unknown .",

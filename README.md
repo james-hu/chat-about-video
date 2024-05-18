@@ -178,6 +178,7 @@ Below is an example showing how to create an instance of `ChatAboutVideo` that
 - [azure](#modulesazuremd)
 - [azure/video-retrieval-api-client](#modulesazure_video_retrieval_api_clientmd)
 - [chat](#moduleschatmd)
+- [client-hack](#modulesclient_hackmd)
 - [index](#modulesindexmd)
 - [storage](#modulesstoragemd)
 - [storage/types](#modulesstorage_typesmd)
@@ -901,6 +902,27 @@ Re-exports [VideoRetrievalApiClient](#classesazure_video_retrieval_api_clientvid
 ##### ChatAboutVideoConstructorOptions
 
 Ƭ **ChatAboutVideoConstructorOptions**: `Partial`\<`Omit`\<[`ChatAboutVideoOptions`](#interfaceschatchataboutvideooptionsmd), ``"videoRetrievalIndex"`` \| ``"extractVideoFrames"``\>\> & `Required`\<`Pick`\<[`ChatAboutVideoOptions`](#interfaceschatchataboutvideooptionsmd), ``"openAiDeploymentName"`` \| ``"storageContainerName"``\>\> & \{ `extractVideoFrames?`: `Partial`\<`Exclude`\<[`ChatAboutVideoOptions`](#interfaceschatchataboutvideooptionsmd)[``"extractVideoFrames"``], `undefined`\>\> ; `videoRetrievalIndex?`: `Partial`\<[`ChatAboutVideoOptions`](#interfaceschatchataboutvideooptionsmd)[``"videoRetrievalIndex"``]\> & `Pick`\<`Exclude`\<[`ChatAboutVideoOptions`](#interfaceschatchataboutvideooptionsmd)[``"videoRetrievalIndex"``], `undefined`\>, ``"endpoint"`` \| ``"apiKey"``\>  } & \{ `azureStorageConnectionString?`: `string` ; `downloadUrlExpirationSeconds?`: `number` ; `openAiApiKey`: `string` ; `openAiEndpoint?`: `string`  }
+
+
+<a name="modulesclient_hackmd"></a>
+
+### Module: client-hack
+
+#### Functions
+
+##### fixClient
+
+▸ **fixClient**(`openAIClient`): `void`
+
+###### Parameters
+
+| Name | Type |
+| :------ | :------ |
+| `openAIClient` | `any` |
+
+###### Returns
+
+`void`
 
 
 <a name="modulesindexmd"></a>
