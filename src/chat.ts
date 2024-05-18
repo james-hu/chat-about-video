@@ -5,6 +5,7 @@ import { ConsoleLineLogger, consoleWithoutColour, generateRandomString } from '@
 import os from 'node:os';
 import path from 'node:path';
 
+import { fixClient } from './client-hack';
 import { FileBatchUploader, lazyCreatedFileBatchUploader } from './storage';
 import { VideoFramesExtractor, extractVideoFramesWithFfmpeg } from './video';
 
@@ -190,6 +191,7 @@ export class ChatAboutVideo {
     } else {
       this.client = new OpenAIClient(new OpenAIKeyCredential(options.openAiApiKey));
     }
+    fixClient(this.client);
   }
 
   /**
@@ -308,10 +310,12 @@ export class ChatAboutVideo {
           extensions: [
             {
               type: 'AzureComputerVisionVideoIndex',
-              endpoint,
-              computerVisionApiKey: apiKey,
-              indexName,
-              videoUrls: [videoUrl],
+              parameters: {
+                endpoint: endpoint,
+                computer_vision_api_key: apiKey,
+                index_name: indexName,
+                video_urls: [videoUrl],
+              },
             } as any,
           ],
         },

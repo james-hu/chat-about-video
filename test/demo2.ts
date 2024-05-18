@@ -3,9 +3,12 @@
 // export AZURE_OPENAI_API_KEY=...
 // export AZURE_STORAGE_CONNECTION_STRING=...
 // export AZURE_CV_API_KEY=...
-// DEMO_VIDEO=~/Downloads/test1.mp4 npx ts-node test/demo.ts
+// export AZURE_OPENAI_DEPLOYMENT_NAME=...
+// export AZURE_STORAGE_CONTAINER_NAME=...
+// ENABLE_DEBUG=true DEMO_VIDEO=~/Downloads/test1.mp4 npx ts-node test/demo2.ts
 //
 
+import { consoleWithColour } from '@handy-common-utils/misc-utils';
 /* eslint-disable node/no-unpublished-import */
 import chalk from 'chalk';
 import readline from 'node:readline';
@@ -20,8 +23,8 @@ async function demo() {
     openAiEndpoint: process.env.AZURE_OPENAI_API_ENDPOINT!,
     openAiApiKey: process.env.AZURE_OPENAI_API_KEY!,
     azureStorageConnectionString: process.env.AZURE_STORAGE_CONNECTION_STRING!,
-    openAiDeploymentName: 'gpt4vision',
-    storageContainerName: 'vision-experiment-input',
+    openAiDeploymentName: process.env.AZURE_OPENAI_DEPLOYMENT_NAME || 'gpt4vision',
+    storageContainerName: process.env.AZURE_STORAGE_CONTAINER_NAME || 'vision-experiment-input',
     storagePathPrefix: 'video-frames/',
     videoRetrievalIndex: {
       endpoint: process.env.AZURE_CV_API_ENDPOINT!,
@@ -29,7 +32,7 @@ async function demo() {
       createIndexIfNotExists: true,
       deleteIndexWhenConversationEnds: true,
     },
-  });
+  }, consoleWithColour({ debug: process.env.ENABLE_DEBUG === 'true' }, chalk));
 
   const conversation = await chat.startConversation(process.env.DEMO_VIDEO!);
   
@@ -44,4 +47,4 @@ async function demo() {
 }
 
 // eslint-disable-next-line unicorn/prefer-top-level-await
-demo().catch((error) => console.log(chalk.red(JSON.stringify(error, null, 2))));
+demo().catch((error) => console.log(chalk.red(JSON.stringify(error, null, 2)), (error as Error).stack));
