@@ -1,15 +1,13 @@
-// This is a demo utilising GPT-4 Vision preview hosted in Azure.
-// Azure Video Retrieval Indexer is used for extracting information from the input video.
-// Information in Azure Video Retrieval Indexer is supplied to GPT.
+// This is a demo utilising GPT-4 Vision preview hosted in OpenAI.
+// OpenAI API allows more than 10 (maximum allowed by Azure's OpenAI API) images to be supplied.
+// Video frame images are uploaded to Azure Blob Storage and then made available to GPT from there.
 //
 // This script can be executed with a command line like this from the project root directory:
-// export AZURE_OPENAI_API_ENDPOINT=..
-// export AZURE_OPENAI_API_KEY=...
+// export OPENAI_API_KEY=...
 // export AZURE_STORAGE_CONNECTION_STRING=...
-// export AZURE_CV_API_KEY=...
-// export AZURE_OPENAI_DEPLOYMENT_NAME=...
+// export OPENAI_MODEL_NAME=...
 // export AZURE_STORAGE_CONTAINER_NAME=...
-// ENABLE_DEBUG=true DEMO_VIDEO=~/Downloads/test1.mp4 npx ts-node test/demo2.ts
+// ENABLE_DEBUG=true DEMO_VIDEO=~/Downloads/test1.mp4 npx ts-node test/demo.ts
 //
 
 import { consoleWithColour } from '@handy-common-utils/misc-utils';
@@ -24,17 +22,14 @@ const prompt = (question: string) => new Promise<string>((resolve) => rl.questio
 
 async function demo() {
   const chat = new ChatAboutVideo({
-    openAiEndpoint: process.env.AZURE_OPENAI_API_ENDPOINT!,
-    openAiApiKey: process.env.AZURE_OPENAI_API_KEY!,
+    openAiApiKey: process.env.OPENAI_API_KEY!,
     azureStorageConnectionString: process.env.AZURE_STORAGE_CONNECTION_STRING!,
-    openAiDeploymentName: process.env.AZURE_OPENAI_DEPLOYMENT_NAME || 'gpt4vision',
+    openAiDeploymentName: process.env.OPENAI_MODEL_NAME || 'gpt-4-vision-preview', // or gpt-4o
     storageContainerName: process.env.AZURE_STORAGE_CONTAINER_NAME || 'vision-experiment-input',
     storagePathPrefix: 'video-frames/',
-    videoRetrievalIndex: {
-      endpoint: process.env.AZURE_CV_API_ENDPOINT!,
-      apiKey: process.env.AZURE_CV_API_KEY!,
-      createIndexIfNotExists: true,
-      deleteIndexWhenConversationEnds: true,
+    extractVideoFrames: {
+      limit: 100,
+      interval: 2,
     },
   }, consoleWithColour({ debug: process.env.ENABLE_DEBUG === 'true' }, chalk));
 
@@ -51,4 +46,4 @@ async function demo() {
 }
 
 // eslint-disable-next-line unicorn/prefer-top-level-await
-demo().catch((error) => console.log(chalk.red(JSON.stringify(error, null, 2)), (error as Error).stack));
+demo().catch((error) => console.log(chalk.red(JSON.stringify(error, null, 2))));

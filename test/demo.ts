@@ -1,3 +1,7 @@
+// This is a demo utilising GPT-4 Vision preview hosted in Azure.
+// Up to 10 (maximum allowed by Azure's OpenAI API) frames are extracted from the input video.
+// Video frame images are uploaded to Azure Blob Storage and then made available to GPT from there.
+//
 // This script can be executed with a command line like this from the project root directory:
 // export AZURE_OPENAI_API_ENDPOINT=..
 // export AZURE_OPENAI_API_KEY=...

@@ -1,13 +1,13 @@
 # chat-about-video
 
-Chat about a video clip using the powerful OpenAI GPT-4 Vision.
+Chat about a video clip using the powerful OpenAI GPT-4 Vision or GPT-4o.
 
 [![Version](https://img.shields.io/npm/v/chat-about-video.svg)](https://npmjs.org/package/chat-about-video)
 [![Downloads/week](https://img.shields.io/npm/dw/chat-about-video.svg)](https://npmjs.org/package/chat-about-video)
 [![License](https://img.shields.io/npm/l/chat-about-video.svg)](https://github.com/james-hu/chat-about-video/blob/master/package.json)
 
 
-`chat-about-video` is an open-source NPM package designed to accelerate the development of conversation applications about video content. Harnessing the capabilities of OpenAI GPT-4 Vision services from Microsoft Azure or OpenAI, this package opens up a range of usage scenarios with minimal effort.
+`chat-about-video` is an open-source NPM package designed to accelerate the development of conversation applications about video content. Harnessing the capabilities of OpenAI GPT-4 Vision or GPT-4o services from Microsoft Azure or OpenAI, this package opens up a range of usage scenarios with minimal effort.
 
 ## Usage scenarios
 
@@ -15,14 +15,15 @@ There are two approaches for feeding video content into GPT-4 Vision. `chat-abou
 
 __Frame image extraction:__
 
-- Integrate GPT-4 vision from Microsoft Azure or OpenAI effortlessly.
+- Integrate GPT-4 Vision or GPT-4o from Microsoft Azure or OpenAI effortlessly.
 - Utilize ffmpeg integration provided by this package for frame image extraction or opt for a DIY approach.
 - Store frame images with ease, supporting Azure Blob Storage and AWS S3.
-- GPT-4 vision allows analysis of up to 10 frame images.
+- GPT-4 Vision hosted in Azure allows analysis of up to 10 frame images.
+- GPT-4 Vision or GPT-4o hosted in OpenAI allows analysis of more than 10 frame images.
 
 __Video indexing with Microsoft Azure:__
 
-- Exclusively supported by GPT-4 vision from Microsoft Azure.
+- Exclusively supported by GPT-4 Vision from Microsoft Azure.
 - Ingest videos seamlessly into Microsoft Azure's Video Retrieval Index.
 - Automatic extraction of up to 20 frame images using Video Retrieval Indexer.
 - Default integration of speech transcription for enhanced comprehension.
@@ -76,7 +77,7 @@ To integrate `chat-about-video` into your Node.js application, follow these simp
 
 Below is an example chat application, which
 
-- uses GPT deployment (named 'gpt4vision') hosted in Microsoft Azure;
+- uses GPT deployment (in this example, it is named 'gpt4vision') hosted in Microsoft Azure;
 - uses ffmpeg to extract video frame images;
 - stores video frame images in Azure Blob Storage;
   - container name: 'vision-experiment-input'
@@ -131,15 +132,19 @@ Below is an example showing how to create an instance of `ChatAboutVideo` that
 ```javascript
   const chat = new ChatAboutVideo({
     openAiApiKey: process.env.OPENAI_API_KEY!,
-    openAiDeploymentName: 'gpt-4-vision-preview',
+    openAiDeploymentName: 'gpt-4-vision-preview', // or 'gpt-4o'
     storageContainerName: 'my-s3-bucket',
     storagePathPrefix: 'video-frames/',
+    extractVideoFrames: {
+      limit: 30,    // override default value 10
+      interval: 2,  // override default value 5
+    },
   } as any);
 ```
 
 Below is an example showing how to create an instance of `ChatAboutVideo` that
 
-- uses GPT deployment (named 'gpt4vision') hosted in Microsoft Azure;
+- uses GPT deployment (in this example, it is named 'gpt4vision') hosted in Microsoft Azure;
 - uses Microsoft Video Retrieval Index to extract frames and analyse the video
   - A randomly named index is created automatically.
   - The index is also deleted automatically when the conversation ends.
