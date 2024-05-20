@@ -10,7 +10,7 @@ export function fixClient(openAIClient: any) {
               if (property === 'post') {
                 return function (...args: any[]) {
                   const body = args[0]?.body;
-                  console.log(body);
+                  // console.log(body);
                   if (body && Array.isArray(body.data_sources) && body.data_sources?.[0]?.type === 'AzureComputerVisionVideoIndex' && body.enhancements?.video?.enabled !== true) {
                     body.enhancements = {
                       video: {
@@ -18,7 +18,7 @@ export function fixClient(openAIClient: any) {
                       },
                     };
                   }
-                  console.log(JSON.stringify(body, null, 2));
+                  // console.log(JSON.stringify(body, null, 2));
                   return target.post(...args);
                 };
               }
