@@ -210,15 +210,15 @@ export class ChatAboutVideo {
 
     messages.push(...(this.options.startPrompts ?? DEFAULT_START_PROMPTS));
 
-    const result = await this.client.getChatCompletions(this.options.openAiDeploymentName, messages, chatCompletionsOptions);
-    this.log.debug('First result from chat', JSON.stringify(result, null, 2));
-    const response = chatResponse(result);
-    if (response) {
-      messages.push({
-        role: 'assistant',
-        content: response,
-      } as ChatRequestAssistantMessage);
-    }
+    // const result = await this.client.getChatCompletions(this.options.openAiDeploymentName, messages, chatCompletionsOptions);
+    // this.log.debug('First result from chat', JSON.stringify(result, null, 2));
+    // const response = chatResponse(result);
+    // if (response) {
+    //   messages.push({
+    //     role: 'assistant',
+    //     content: response,
+    //   } as ChatRequestAssistantMessage);
+    // }
 
     const conversation = new Conversation(this.client, this.options.openAiDeploymentName, conversationId, messages, chatCompletionsOptions, cleanup, this.log);
     return conversation;
