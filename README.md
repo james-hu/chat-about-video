@@ -465,7 +465,7 @@ Start a conversation about a video.
 | :------ | :------ | :------ |
 | `videoFile` | `string` | Path to a video file in local file system. |
 | `options?` | `Object` | overriding options for this conversation |
-| `options.chatCompletions?` | `Partial`\<`GetChatCompletionsOptions`\> | - |
+| `options.chatCompletions?` | `Partial`\<[`ChatOptions`](#chatoptions)\> | - |
 | `options.extractVideoFrames?` | `Partial`\<\{ `extractor`: [`VideoFramesExtractor`](#videoframesextractor) ; `height`: `undefined` \| `number` ; `interval`: `number` ; `limit`: `number` ; `width`: `undefined` \| `number`  }\> | - |
 | `options.videoRetrievalIndex?` | `Partial`\<\{ `apiKey`: `string` ; `createIndexIfNotExists?`: `boolean` ; `deleteDocumentWhenConversationEnds?`: `boolean` ; `deleteIndexWhenConversationEnds?`: `boolean` ; `endpoint`: `string` ; `indexName?`: `string`  }\> | - |
 
@@ -498,7 +498,7 @@ The conversation.
 | `messages` | `ChatRequestMessage`[] |
 | `options?` | `GetChatCompletionsOptions` |
 | `cleanup?` | () => `Promise`\<`void`\> |
-| `log` | `LineLogger`\<(`message?`: `any`, ...`optionalParams`: `any`[]) => `void`, (`message?`: `any`, ...`optionalParams`: `any`[]) => `void`, (`message?`: `any`, ...`optionalParams`: `any`[]) => `void`, (`message?`: `any`, ...`optionalParams`: `any`[]) => `void`\> |
+| `log` | `undefined` \| `LineLogger`\<(`message?`: `any`, ...`optionalParams`: `any`[]) => `void`, (`message?`: `any`, ...`optionalParams`: `any`[]) => `void`, (`message?`: `any`, ...`optionalParams`: `any`[]) => `void`, (`message?`: `any`, ...`optionalParams`: `any`[]) => `void`\> |
 
 #### Properties
 
@@ -508,7 +508,7 @@ The conversation.
 | `Protected` **client**: `OpenAIClient` |  |
 | `Protected` **conversationId**: `string` |  |
 | `Protected` **deploymentName**: `string` |  |
-| `Protected` **log**: `LineLogger`\<(`message?`: `any`, ...`optionalParams`: `any`[]) => `void`, (`message?`: `any`, ...`optionalParams`: `any`[]) => `void`, (`message?`: `any`, ...`optionalParams`: `any`[]) => `void`, (`message?`: `any`, ...`optionalParams`: `any`[]) => `void`\> |  |
+| `Protected` **log**: `undefined` \| `LineLogger`\<(`message?`: `any`, ...`optionalParams`: `any`[]) => `void`, (`message?`: `any`, ...`optionalParams`: `any`[]) => `void`, (`message?`: `any`, ...`optionalParams`: `any`[]) => `void`, (`message?`: `any`, ...`optionalParams`: `any`[]) => `void`\> |  |
 | `Protected` **messages**: `ChatRequestMessage`[] |  |
 | `Protected` `Optional` **options**: `GetChatCompletionsOptions` |  |
 
@@ -536,7 +536,7 @@ Say something in the conversation, and get the response from AI
 | Name | Type | Description |
 | :------ | :------ | :------ |
 | `message` | `string` | The message to say in the conversation. |
-| `options?` | `GetChatCompletionsOptions` | Options for fine control. |
+| `options?` | [`ChatOptions`](#chatoptions) | Options for fine control. |
 
 ###### Returns
 
@@ -925,6 +925,12 @@ Re-exports [VideoRetrievalApiClient](#classesazure_video_retrieval_api_clientvid
 
 ___
 
+##### ChatOptions
+
+Ƭ **ChatOptions**: `GetChatCompletionsOptions` & \{ `throttleBackoff?`: `number`[]  }
+
+___
+
 ##### ExtractVideoFramesOptions
 
 Ƭ **ExtractVideoFramesOptions**: `Exclude`\<[`ChatAboutVideoOptions`](#interfaceschatchataboutvideooptionsmd)[``"extractVideoFrames"``], `undefined`\>
@@ -978,6 +984,12 @@ ___
 ##### ChatAboutVideoOptions
 
 Re-exports [ChatAboutVideoOptions](#interfaceschatchataboutvideooptionsmd)
+
+___
+
+##### ChatOptions
+
+Re-exports [ChatOptions](#chatoptions)
 
 ___
 
