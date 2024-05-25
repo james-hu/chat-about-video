@@ -9,6 +9,13 @@ Chat about a video clip using the powerful OpenAI GPT-4 Vision or GPT-4o.
 
 `chat-about-video` is an open-source NPM package designed to accelerate the development of conversation applications about video content. Harnessing the capabilities of OpenAI GPT-4 Vision or GPT-4o services from Microsoft Azure or OpenAI, this package opens up a range of usage scenarios with minimal effort.
 
+Key features:
+
+- ChatGPT models hosted in both Azure and OpenAI are supported.
+- Frame images are extracted from the input video, and uploaded for ChatGPT to consume.
+- It can automatically retry on receiving throttling (HTTP status code 429) responses from the API.
+- Options supported by the underlying API are exposed for customisation.
+
 ## Usage scenarios
 
 There are two approaches for feeding video content into GPT-4 Vision. `chat-about-video` supports both of them.
