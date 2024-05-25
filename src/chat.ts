@@ -144,7 +144,7 @@ export class ChatAboutVideo {
   protected client: OpenAIClient;
   constructor(
     options: ChatAboutVideoConstructorOptions,
-    protected log: ConsoleLineLogger = consoleWithoutColour(),
+    protected log: ConsoleLineLogger | undefined = consoleWithoutColour(),
   ) {
     let fileBatchUploader = options.fileBatchUploader;
     if (!fileBatchUploader) {
@@ -218,16 +218,6 @@ export class ChatAboutVideo {
 
     messages.push(...(this.options.startPrompts ?? DEFAULT_START_PROMPTS));
 
-    // const result = await this.client.getChatCompletions(this.options.openAiDeploymentName, messages, chatCompletionsOptions);
-    // this.log.debug('First result from chat', JSON.stringify(result, null, 2));
-    // const response = chatResponse(result);
-    // if (response) {
-    //   messages.push({
-    //     role: 'assistant',
-    //     content: response,
-    //   } as ChatRequestAssistantMessage);
-    // }
-
     const conversation = new Conversation(this.client, this.options.openAiDeploymentName, conversationId, messages, { ...chatCompletionsOptions, ...options?.chatCompletions }, cleanup, this.log);
     return conversation;
   }
@@ -239,16 +229,16 @@ export class ChatAboutVideo {
     };
     const videoFramesDir = path.join(this.options.tmpDir, conversationId);
     const frameImageFiles = await extractVideoFrames.extractor(videoFile, videoFramesDir, extractVideoFrames.interval, undefined, extractVideoFrames.width, extractVideoFrames.height);
-    this.log.debug(`Extracted ${frameImageFiles.length} frames from video`, frameImageFiles);
+    this.log && this.log.debug(`Extracted ${frameImageFiles.length} frames from video`, frameImageFiles);
     const maxNumFrames = extractVideoFrames.limit;
     if (frameImageFiles.length > maxNumFrames) {
       const previousLength = frameImageFiles.length;
       frameImageFiles.splice(maxNumFrames);
-      this.log.debug(`Truncated ${previousLength} frames to ${maxNumFrames}`);
+      this.log && this.log.debug(`Truncated ${previousLength} frames to ${maxNumFrames}`);
     }
 
     const frameImageUrls = await this.options.fileBatchUploader(videoFramesDir, frameImageFiles, this.options.storageContainerName, `${this.options.storagePathPrefix}${conversationId}/`);
-    this.log.debug(`Uploaded ${frameImageUrls.length} frames to storage`, frameImageUrls);
+    this.log && this.log.debug(`Uploaded ${frameImageUrls.length} frames to storage`, frameImageUrls);
 
     const messages: ChatRequestMessage[] = [];
     messages.push(...frameImageUrls.map((url) => ({
@@ -300,7 +290,7 @@ export class ChatAboutVideo {
         },
       ],
     });
-    this.log.debug(`Indexed video in index ${indexName}`);
+    this.log && this.log.debug(`Indexed video in index ${indexName}`);
 
     const messages: ChatRequestMessage[] = [];
     messages.push({
@@ -373,7 +363,7 @@ export class Conversation {
     };
 
     const result = await this.client.getChatCompletions(this.deploymentName, [...this.messages, newMessage], { ...this.options, ...options });
-    this.log.debug('Result from chat', JSON.stringify(result, null, 2));
+    this.log && this.log.debug('Result from chat', JSON.stringify(result, null, 2));
     const response = chatResponse(result);
     this.messages.push(
       newMessage,
@@ -381,7 +371,7 @@ export class Conversation {
         role: 'assistant',
         content: response,
       } as ChatRequestAssistantMessage);
-    this.log.debug('Updated message history', JSON.stringify(this.messages, null, 2));
+    this.log && this.log.debug('Updated message history', JSON.stringify(this.messages, null, 2));
     return response;
   }
 

@@ -67,6 +67,8 @@ To integrate `chat-about-video` into your Node.js application, follow these simp
 
 1. Instantiate the `ChatAboutVideo` class by creating an instance. The constructor allows you to pass in configuration options.
   - Most configuration options come with sensible default values, but you can specify your own for further customization.
+  - The second constructor argument is a logger. If not specified, a default logging will be created for logging to the console.
+    If logging is not needed, you can pass in `undefined`. 
 2. Use the `startConversation(videoFilePath)` function to initiate a conversation about a video clip. This function returns a `Conversation` object. The video file or its frame images are sent to Azure Blob Storage or AWS S3 during this step.
 3. Interact with GPT by using the `say(question, { maxTokens: 2000 })` function within the conversation. You can pass in a question, and will receive an answer.
   - Message history is automatically kept during the conversation, providing context for a more coherent dialogue.
@@ -139,7 +141,7 @@ Below is an example showing how to create an instance of `ChatAboutVideo` that
       limit: 30,    // override default value 10
       interval: 2,  // override default value 5
     },
-  } as any);
+  });
 ```
 
 Below is an example showing how to create an instance of `ChatAboutVideo` that
