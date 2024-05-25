@@ -203,13 +203,17 @@ export class ChatAboutVideo {
    * @param options overriding options for this conversation
    * @returns The conversation.
    */
-  async startConversation(videoFile: string, options?: Partial<ExtractVideoFramesOptions> | Partial<VideoRetrievalIndexOptions>): Promise<Conversation> {
+  async startConversation(videoFile: string, options?: {
+    chatCompletions?: Partial<GetChatCompletionsOptions>;
+    extractVideoFrames?: Partial<ExtractVideoFramesOptions>;
+    videoRetrievalIndex?: Partial<VideoRetrievalIndexOptions>;
+  }): Promise<Conversation> {
     const conversationId = generateRandomString(24); // equivalent to uuid
     const messages: ChatRequestMessage[] = [];
     messages.push(...(this.options.initialPrompts ?? DEFAULT_INITIAL_PROMPTS));
 
     const { messages: videoContextMessages, options: chatCompletionsOptions, cleanup } = this.options.extractVideoFrames ?
-      await this.prepareVideoFrames(conversationId, videoFile, options as ExtractVideoFramesOptions) : await this.prepareVideoRetrievalIndex(conversationId, videoFile, options as VideoRetrievalIndexOptions);
+      await this.prepareVideoFrames(conversationId, videoFile, options?.extractVideoFrames) : await this.prepareVideoRetrievalIndex(conversationId, videoFile, options?.videoRetrievalIndex);
     messages.push(...videoContextMessages);
 
     messages.push(...(this.options.startPrompts ?? DEFAULT_START_PROMPTS));
@@ -224,7 +228,7 @@ export class ChatAboutVideo {
     //   } as ChatRequestAssistantMessage);
     // }
 
-    const conversation = new Conversation(this.client, this.options.openAiDeploymentName, conversationId, messages, chatCompletionsOptions, cleanup, this.log);
+    const conversation = new Conversation(this.client, this.options.openAiDeploymentName, conversationId, messages, { ...chatCompletionsOptions, ...options?.chatCompletions }, cleanup, this.log);
     return conversation;
   }
 
