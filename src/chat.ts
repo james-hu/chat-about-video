@@ -90,18 +90,18 @@ export interface ChatAboutVideoOptions {
 const DEFAULT_INITIAL_PROMPTS = [
   {
     role: 'system',
-    content: 'You are a helpful assistant who can understand video. Based on frames extracted from the video, you are able to understand what is happening in the video. You will be given video frames by the user, then you will follow the instructions from the user. You answers should be objective, concise and accurate.',
+    content: 'You are an AI specialized in analyzing video content. The user will provide frames from a video and ask questions about the content. Your task is to provide objective, concise, and accurate answers based solely on the provided frames. Do not acknowledge or repeat the user\'s questions, and avoid any explanations. Provide only the necessary information and answer the questions directly.',
   } as ChatRequestSystemMessage,
   {
     role: 'user',
-    content: 'I am going to give you the frames extracted from the video, then I will let you know when I am going to give you instructions.',
+    content: 'I am going to give you frames extracted from the video, then I will let you know when I am going to give you instructions.',
   } as ChatRequestUserMessage,
 ];
 
 const DEFAULT_START_PROMPTS = [
   {
     role: 'user',
-    content: 'Now you have all the frames in the video. I am going to give you instructions.',
+    content: 'Now I have given you all the frames in the video. I am going to give you instructions.',
   } as ChatRequestUserMessage,
 ];
 
