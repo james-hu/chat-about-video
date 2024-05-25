@@ -397,14 +397,14 @@ ___
 | Name | Type |
 | :------ | :------ |
 | `options` | [`ChatAboutVideoConstructorOptions`](#chataboutvideoconstructoroptions) |
-| `log` | `LineLogger`\<(`message?`: `any`, ...`optionalParams`: `any`[]) => `void`, (`message?`: `any`, ...`optionalParams`: `any`[]) => `void`, (`message?`: `any`, ...`optionalParams`: `any`[]) => `void`, (`message?`: `any`, ...`optionalParams`: `any`[]) => `void`\> |
+| `log` | `undefined` \| `LineLogger`\<(`message?`: `any`, ...`optionalParams`: `any`[]) => `void`, (`message?`: `any`, ...`optionalParams`: `any`[]) => `void`, (`message?`: `any`, ...`optionalParams`: `any`[]) => `void`, (`message?`: `any`, ...`optionalParams`: `any`[]) => `void`\> |
 
 #### Properties
 
 | Property | Description |
 | --- | --- |
 | `Protected` **client**: `OpenAIClient` |  |
-| `Protected` **log**: `LineLogger`\<(`message?`: `any`, ...`optionalParams`: `any`[]) => `void`, (`message?`: `any`, ...`optionalParams`: `any`[]) => `void`, (`message?`: `any`, ...`optionalParams`: `any`[]) => `void`, (`message?`: `any`, ...`optionalParams`: `any`[]) => `void`\> |  |
+| `Protected` **log**: `undefined` \| `LineLogger`\<(`message?`: `any`, ...`optionalParams`: `any`[]) => `void`, (`message?`: `any`, ...`optionalParams`: `any`[]) => `void`, (`message?`: `any`, ...`optionalParams`: `any`[]) => `void`, (`message?`: `any`, ...`optionalParams`: `any`[]) => `void`\> |  |
 | `Protected` **options**: [`ChatAboutVideoOptions`](#interfaceschatchataboutvideooptionsmd) |  |
 
 
@@ -412,7 +412,7 @@ ___
 
 ##### prepareVideoFrames
 
-▸ `Protected` **prepareVideoFrames**(`conversationId`, `videoFile`): `Promise`\<`PreparationResult`\>
+▸ `Protected` **prepareVideoFrames**(`conversationId`, `videoFile`, `extractVideoFramesOptions?`): `Promise`\<`PreparationResult`\>
 
 ###### Parameters
 
@@ -420,6 +420,7 @@ ___
 | :------ | :------ |
 | `conversationId` | `string` |
 | `videoFile` | `string` |
+| `extractVideoFramesOptions?` | `Partial`\<\{ `extractor`: [`VideoFramesExtractor`](#videoframesextractor) ; `height`: `undefined` \| `number` ; `interval`: `number` ; `limit`: `number` ; `width`: `undefined` \| `number`  }\> |
 
 ###### Returns
 
@@ -429,7 +430,7 @@ ___
 
 ##### prepareVideoRetrievalIndex
 
-▸ `Protected` **prepareVideoRetrievalIndex**(`conversationId`, `videoFile`): `Promise`\<`PreparationResult`\>
+▸ `Protected` **prepareVideoRetrievalIndex**(`conversationId`, `videoFile`, `videoRetrievalIndexOptions?`): `Promise`\<`PreparationResult`\>
 
 ###### Parameters
 
@@ -437,6 +438,7 @@ ___
 | :------ | :------ |
 | `conversationId` | `string` |
 | `videoFile` | `string` |
+| `videoRetrievalIndexOptions?` | `Partial`\<\{ `apiKey`: `string` ; `createIndexIfNotExists?`: `boolean` ; `deleteDocumentWhenConversationEnds?`: `boolean` ; `deleteIndexWhenConversationEnds?`: `boolean` ; `endpoint`: `string` ; `indexName?`: `string`  }\> |
 
 ###### Returns
 
@@ -446,7 +448,7 @@ ___
 
 ##### startConversation
 
-▸ **startConversation**(`videoFile`): `Promise`\<[`Conversation`](#classeschatconversationmd)\>
+▸ **startConversation**(`videoFile`, `options?`): `Promise`\<[`Conversation`](#classeschatconversationmd)\>
 
 Start a conversation about a video.
 
@@ -455,6 +457,10 @@ Start a conversation about a video.
 | Name | Type | Description |
 | :------ | :------ | :------ |
 | `videoFile` | `string` | Path to a video file in local file system. |
+| `options?` | `Object` | overriding options for this conversation |
+| `options.chatCompletions?` | `Partial`\<`GetChatCompletionsOptions`\> | - |
+| `options.extractVideoFrames?` | `Partial`\<\{ `extractor`: [`VideoFramesExtractor`](#videoframesextractor) ; `height`: `undefined` \| `number` ; `interval`: `number` ; `limit`: `number` ; `width`: `undefined` \| `number`  }\> | - |
+| `options.videoRetrievalIndex?` | `Partial`\<\{ `apiKey`: `string` ; `createIndexIfNotExists?`: `boolean` ; `deleteDocumentWhenConversationEnds?`: `boolean` ; `deleteIndexWhenConversationEnds?`: `boolean` ; `endpoint`: `string` ; `indexName?`: `string`  }\> | - |
 
 ###### Returns
 
@@ -910,6 +916,18 @@ Re-exports [VideoRetrievalApiClient](#classesazure_video_retrieval_api_clientvid
 
 Ƭ **ChatAboutVideoConstructorOptions**: `Partial`\<`Omit`\<[`ChatAboutVideoOptions`](#interfaceschatchataboutvideooptionsmd), ``"videoRetrievalIndex"`` \| ``"extractVideoFrames"``\>\> & `Required`\<`Pick`\<[`ChatAboutVideoOptions`](#interfaceschatchataboutvideooptionsmd), ``"openAiDeploymentName"`` \| ``"storageContainerName"``\>\> & \{ `extractVideoFrames?`: `Partial`\<`Exclude`\<[`ChatAboutVideoOptions`](#interfaceschatchataboutvideooptionsmd)[``"extractVideoFrames"``], `undefined`\>\> ; `videoRetrievalIndex?`: `Partial`\<[`ChatAboutVideoOptions`](#interfaceschatchataboutvideooptionsmd)[``"videoRetrievalIndex"``]\> & `Pick`\<`Exclude`\<[`ChatAboutVideoOptions`](#interfaceschatchataboutvideooptionsmd)[``"videoRetrievalIndex"``], `undefined`\>, ``"endpoint"`` \| ``"apiKey"``\>  } & \{ `azureStorageConnectionString?`: `string` ; `downloadUrlExpirationSeconds?`: `number` ; `openAiApiKey`: `string` ; `openAiEndpoint?`: `string`  }
 
+___
+
+##### ExtractVideoFramesOptions
+
+Ƭ **ExtractVideoFramesOptions**: `Exclude`\<[`ChatAboutVideoOptions`](#interfaceschatchataboutvideooptionsmd)[``"extractVideoFrames"``], `undefined`\>
+
+___
+
+##### VideoRetrievalIndexOptions
+
+Ƭ **VideoRetrievalIndexOptions**: `Exclude`\<[`ChatAboutVideoOptions`](#interfaceschatchataboutvideooptionsmd)[``"videoRetrievalIndex"``], `undefined`\>
+
 
 <a name="modulesclient_hackmd"></a>
 
@@ -962,6 +980,12 @@ Re-exports [Conversation](#classeschatconversationmd)
 
 ___
 
+##### ExtractVideoFramesOptions
+
+Re-exports [ExtractVideoFramesOptions](#extractvideoframesoptions)
+
+___
+
 ##### FileBatchUploader
 
 Re-exports [FileBatchUploader](#filebatchuploader)
@@ -971,6 +995,12 @@ ___
 ##### VideoFramesExtractor
 
 Re-exports [VideoFramesExtractor](#videoframesextractor)
+
+___
+
+##### VideoRetrievalIndexOptions
+
+Re-exports [VideoRetrievalIndexOptions](#videoretrievalindexoptions)
 
 ___
 
