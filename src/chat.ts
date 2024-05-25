@@ -2,6 +2,7 @@
 /* eslint-disable unicorn/no-array-push-push */
 import { AzureKeyCredential, ChatCompletions, ChatMessageContentItem, ChatRequestAssistantMessage, ChatRequestMessage, ChatRequestSystemMessage, ChatRequestUserMessage, GetChatCompletionsOptions, OpenAIClient, OpenAIKeyCredential } from '@azure/openai';
 import { ConsoleLineLogger, consoleWithoutColour, generateRandomString } from '@handy-common-utils/misc-utils';
+import { withRetry } from '@handy-common-utils/promise-utils';
 import os from 'node:os';
 import path from 'node:path';
 
@@ -89,6 +90,12 @@ export interface ChatAboutVideoOptions {
 
 export type ExtractVideoFramesOptions = Exclude<ChatAboutVideoOptions['extractVideoFrames'], undefined>;
 export type VideoRetrievalIndexOptions = Exclude<ChatAboutVideoOptions['videoRetrievalIndex'], undefined>;
+export type ChatOptions = GetChatCompletionsOptions & {
+  /**
+   * Array of retry backoff periods (unit: milliseconds) for situations that the server returns 429 response
+   */
+  throttleBackoff?: number[];
+};
 
 const DEFAULT_INITIAL_PROMPTS = [
   {
@@ -135,7 +142,7 @@ export type ChatAboutVideoConstructorOptions = Partial<Omit<ChatAboutVideoOption
 
 interface PreparationResult {
   messages: ChatRequestMessage[],
-  options?: GetChatCompletionsOptions,
+  options?: ChatOptions,
   cleanup?: () => Promise<void>;
 }
 
@@ -204,7 +211,7 @@ export class ChatAboutVideo {
    * @returns The conversation.
    */
   async startConversation(videoFile: string, options?: {
-    chatCompletions?: Partial<GetChatCompletionsOptions>;
+    chatCompletions?: Partial<ChatOptions>;
     extractVideoFrames?: Partial<ExtractVideoFramesOptions>;
     videoRetrievalIndex?: Partial<VideoRetrievalIndexOptions>;
   }): Promise<Conversation> {
@@ -347,7 +354,7 @@ export class Conversation {
     protected messages: ChatRequestMessage[],
     protected options?: GetChatCompletionsOptions,
     protected cleanup?: () => Promise<void>,
-    protected log: ConsoleLineLogger = consoleWithoutColour(),
+    protected log: ConsoleLineLogger|undefined = consoleWithoutColour(),
   ) { }
 
   /**
@@ -356,14 +363,17 @@ export class Conversation {
    * @param options Options for fine control.
    * @returns The response/completion
    */
-  async say(message: string, options?: GetChatCompletionsOptions): Promise<string|undefined> {
+  async say(message: string, options?: ChatOptions): Promise<string|undefined> {
     const newMessage: ChatRequestUserMessage = {
       role: 'user',
       content: message,
     };
 
-    const result = await this.client.getChatCompletions(this.deploymentName, [...this.messages, newMessage], { ...this.options, ...options });
+    const effectiveOptions = { ...this.options, ...options };
+    const messagesToSend = [...this.messages, newMessage];
+    const result = await withRetry(() => this.client.getChatCompletions(this.deploymentName, messagesToSend, effectiveOptions), effectiveOptions.throttleBackoff ?? [], (error) => String(error?.code) === '429');
     this.log && this.log.debug('Result from chat', JSON.stringify(result, null, 2));
+
     const response = chatResponse(result);
     this.messages.push(
       newMessage,
