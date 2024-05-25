@@ -87,6 +87,9 @@ export interface ChatAboutVideoOptions {
   startPrompts?: ChatRequestMessage[];
 }
 
+export type ExtractVideoFramesOptions = Exclude<ChatAboutVideoOptions['extractVideoFrames'], undefined>;
+export type VideoRetrievalIndexOptions = Exclude<ChatAboutVideoOptions['videoRetrievalIndex'], undefined>;
+
 const DEFAULT_INITIAL_PROMPTS = [
   {
     role: 'system',
@@ -197,15 +200,16 @@ export class ChatAboutVideo {
   /**
    * Start a conversation about a video.
    * @param videoFile Path to a video file in local file system.
+   * @param options overriding options for this conversation
    * @returns The conversation.
    */
-  async startConversation(videoFile: string): Promise<Conversation> {
+  async startConversation(videoFile: string, options?: Partial<ExtractVideoFramesOptions> | Partial<VideoRetrievalIndexOptions>): Promise<Conversation> {
     const conversationId = generateRandomString(24); // equivalent to uuid
     const messages: ChatRequestMessage[] = [];
     messages.push(...(this.options.initialPrompts ?? DEFAULT_INITIAL_PROMPTS));
 
     const { messages: videoContextMessages, options: chatCompletionsOptions, cleanup } = this.options.extractVideoFrames ?
-      await this.prepareVideoFrames(conversationId, videoFile) : await this.prepareVideoRetrievalIndex(conversationId, videoFile);
+      await this.prepareVideoFrames(conversationId, videoFile, options as ExtractVideoFramesOptions) : await this.prepareVideoRetrievalIndex(conversationId, videoFile, options as VideoRetrievalIndexOptions);
     messages.push(...videoContextMessages);
 
     messages.push(...(this.options.startPrompts ?? DEFAULT_START_PROMPTS));
@@ -224,8 +228,11 @@ export class ChatAboutVideo {
     return conversation;
   }
 
-  protected async prepareVideoFrames(conversationId: string, videoFile: string): Promise<PreparationResult> {
-    const extractVideoFrames = this.options.extractVideoFrames!;
+  protected async prepareVideoFrames(conversationId: string, videoFile: string, extractVideoFramesOptions?: Partial<ExtractVideoFramesOptions>): Promise<PreparationResult> {
+    const extractVideoFrames = {
+      ...this.options.extractVideoFrames!,
+      ...extractVideoFramesOptions,
+    };
     const videoFramesDir = path.join(this.options.tmpDir, conversationId);
     const frameImageFiles = await extractVideoFrames.extractor(videoFile, videoFramesDir, extractVideoFrames.interval, undefined, extractVideoFrames.width, extractVideoFrames.height);
     this.log.debug(`Extracted ${frameImageFiles.length} frames from video`, frameImageFiles);
@@ -255,10 +262,13 @@ export class ChatAboutVideo {
     };
   }
 
-  protected async prepareVideoRetrievalIndex(conversationId: string, videoFile: string): Promise<PreparationResult> {
+  protected async prepareVideoRetrievalIndex(conversationId: string, videoFile: string, videoRetrievalIndexOptions?: Partial<VideoRetrievalIndexOptions>): Promise<PreparationResult> {
     const [videoUrl] = await this.options.fileBatchUploader(path.dirname(videoFile), [path.basename(videoFile)], this.options.storageContainerName, `${this.options.storagePathPrefix}${conversationId}/`);
 
-    const videoRetrievalIndex = this.options.videoRetrievalIndex!;
+    const videoRetrievalIndex = {
+      ...this.options.videoRetrievalIndex!,
+      ...videoRetrievalIndexOptions,
+    };
     const { endpoint, apiKey, indexName: specifiedIndexName, createIndexIfNotExists: createIndexIfNotExist, deleteDocumentWhenConversationEnds: deleteDocumentAfterConversation, deleteIndexWhenConversationEnds: deleteIndexAfterConversation } = videoRetrievalIndex;
     const indexName = specifiedIndexName ?? conversationId.toLowerCase().replace(/[^\dA-Za-z]/g, '-');
     const ingestionName = conversationId;
