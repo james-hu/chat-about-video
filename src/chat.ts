@@ -343,7 +343,7 @@ export class ChatAboutVideo {
 }
 
 function chatResponse(result: ChatCompletions): string | undefined {
-  return result.choices?.[0]?.message?.content || undefined;
+  return result?.choices?.[0]?.message?.content || undefined;
 }
 
 export class Conversation {
