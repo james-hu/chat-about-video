@@ -28,7 +28,7 @@ export const extractVideoFramesWithFfmpeg: VideoFramesExtractor = async (inputFi
     inputFile,
     '-frames:v',
     '1',
-    ...(width || height ? ['-vf', `scale=${width ?? 'iw'}:${height ?? 'ih'}`] : []),
+    ...(width || height ? ['-vf', `scale=${width ?? (height ? '-1' : 'iw')}:${height ?? (width ? '-1' : 'ih')}`] : []),
   ];
 
   const result: string[] = [];
