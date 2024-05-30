@@ -371,7 +371,10 @@ export class Conversation {
 
     const effectiveOptions = { ...this.options, ...options };
     const messagesToSend = [...this.messages, newMessage];
-    const result = await withRetry(() => this.client.getChatCompletions(this.deploymentName, messagesToSend, effectiveOptions), effectiveOptions.throttleBackoff ?? [], (error) => String(error?.code) === '429');
+    const result = await withRetry(() => this.client.getChatCompletions(this.deploymentName, messagesToSend, effectiveOptions), effectiveOptions.throttleBackoff ?? [], (error) => {
+      const code = String(error?.code);
+      return code === 'TooManyRequests' || code === '429';
+    });
     this.log && this.log.debug('Result from chat', JSON.stringify(result, null, 2));
 
     const response = chatResponse(result);
