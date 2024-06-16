@@ -45,15 +45,15 @@
     }
   },
   "optionalDependencies": {
-    "@azure/storage-blob": "^12.18.0",
+    "@azure/storage-blob": "^12.23.0",
     "@ffmpeg-installer/ffmpeg": "^1.1.0",
-    "@handy-common-utils/aws-utils": "^2.11.1"
+    "@handy-common-utils/aws-utils": ">=3.1.1"
   },
   "dependencies": {
     "@azure/openai": "^1.0.0-beta.12",
-    "@handy-common-utils/misc-utils": "^1.5.2",
-    "@handy-common-utils/promise-utils": "^1.4.1",
-    "axios": "^1.6.8"
+    "@handy-common-utils/misc-utils": ">=1.5.2",
+    "@handy-common-utils/promise-utils": ">=1.5.0",
+    "axios": "^1.7.2"
   },
   "devDependencies": {
     "@handy-common-utils/dev-dependencies-jest": "^1.2.6",
