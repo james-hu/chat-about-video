@@ -1,6 +1,6 @@
 import { CreateBucketCommand, HeadBucketCommand, S3Client } from '@aws-sdk/client-s3';
 import { generatePresignedUrlForDownloading, putS3Object } from '@handy-common-utils/aws-utils/s3';
-import { inParallel } from '@handy-common-utils/promise-utils';
+import { withConcurrency } from '@handy-common-utils/promise-utils';
 import { readFile } from 'node:fs';
 import path from 'node:path';
 import { promisify } from 'node:util';
@@ -17,7 +17,7 @@ export function createAwsS3FileBatchUploader(s3Client: S3Client, expirationSecon
     }
 
     // Upload each file to the container
-    const downloadUrls = await inParallel(parallelism, fileNames, async (fileName) => {
+    const downloadUrls = await withConcurrency(parallelism, fileNames, async (fileName) => {
       const s3ObjectKey = `${s3ObjectPathPrefix}${fileName}`;
 
       // Read the file as a buffer
@@ -27,7 +27,7 @@ export function createAwsS3FileBatchUploader(s3Client: S3Client, expirationSecon
       await putS3Object(s3Client, s3BucketName, s3ObjectKey, fileBuffer);
 
       return await generatePresignedUrlForDownloading(s3Client, s3BucketName, s3ObjectKey, expirationSeconds);
-    }, { abortOnError: true });
+    });
 
     return downloadUrls;
   };

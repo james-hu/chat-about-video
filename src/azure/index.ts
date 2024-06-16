@@ -1,5 +1,5 @@
 import { BlobSASPermissions, BlobServiceClient, BlockBlobClient } from '@azure/storage-blob';
-import { inParallel } from '@handy-common-utils/promise-utils';
+import { withConcurrency } from '@handy-common-utils/promise-utils';
 import { readFile } from 'node:fs';
 import path from 'node:path';
 import { promisify } from 'node:util';
@@ -26,7 +26,7 @@ export function createAzureBlobStorageFileBatchUploader(blobServiceClient: BlobS
     }
 
     // Upload each file to the container
-    const downloadUrls = await inParallel(parallelism, fileNames, async (fileName) => {
+    const downloadUrls = await withConcurrency(parallelism, fileNames, async (fileName) => {
       const blobName = `${blobPathPrefix}${fileName}`;
       const blockBlobClient = containerClient.getBlockBlobClient(blobName);
 
@@ -39,7 +39,7 @@ export function createAzureBlobStorageFileBatchUploader(blobServiceClient: BlobS
       });
 
       return generateDownloadUrl(blockBlobClient, expirationSeconds);
-    }, { abortOnError: true });
+    });
 
     return downloadUrls;
   };
