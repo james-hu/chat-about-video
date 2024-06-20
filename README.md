@@ -458,6 +458,22 @@ ___
 
 ##### startConversation
 
+▸ **startConversation**(`options?`): `Promise`\<[`Conversation`](#classeschatconversationmd)\>
+
+Start a conversation without a video
+
+###### Parameters
+
+| Name | Type | Description |
+| :------ | :------ | :------ |
+| `options?` | `Pick`\<[`ConversationOptions`](#conversationoptions), ``"chatCompletions"``\> | Overriding options for this conversation |
+
+###### Returns
+
+`Promise`\<[`Conversation`](#classeschatconversationmd)\>
+
+The conversation.
+
 ▸ **startConversation**(`videoFile`, `options?`): `Promise`\<[`Conversation`](#classeschatconversationmd)\>
 
 Start a conversation about a video.
@@ -467,7 +483,7 @@ Start a conversation about a video.
 | Name | Type | Description |
 | :------ | :------ | :------ |
 | `videoFile` | `string` | Path to a video file in local file system. |
-| `options?` | `Object` | overriding options for this conversation |
+| `options?` | `Object` | Overriding options for this conversation |
 | `options.chatCompletions?` | `Partial`\<[`ChatOptions`](#chatoptions)\> | - |
 | `options.extractVideoFrames?` | `Partial`\<\{ `extractor`: [`VideoFramesExtractor`](#videoframesextractor) ; `height`: `undefined` \| `number` ; `interval`: `number` ; `limit`: `number` ; `width`: `undefined` \| `number`  }\> | - |
 | `options.videoRetrievalIndex?` | `Partial`\<\{ `apiKey`: `string` ; `createIndexIfNotExists?`: `boolean` ; `deleteDocumentWhenConversationEnds?`: `boolean` ; `deleteIndexWhenConversationEnds?`: `boolean` ; `endpoint`: `string` ; `indexName?`: `string`  }\> | - |
@@ -741,7 +757,7 @@ Option settings for ChatAboutVideo
 | `Optional` **initialPrompts**: `ChatRequestMessage`[] | Initial prompts to be added to the chat history before frame images. |
 | **openAiDeploymentName**: `string` | Name/ID of the deployment |
 | `Optional` **startPrompts**: `ChatRequestMessage`[] | Prompts to be added to the chat history right after frame images. |
-| **storageContainerName**: `string` | Storage container for storing frame images of the video. |
+| `Optional` **storageContainerName**: `string` | Storage container for storing frame images of the video. |
 | **storagePathPrefix**: `string` | Path prefix to be prepended for storing frame images of the video. |
 | **tmpDir**: `string` | Temporary directory for storing temporary files.<br>If not specified, them temporary directory of the OS will be used. |
 | `Optional` **videoRetrievalIndex**: `Object` | Type declaration<br><br>| Name | Type |<br>| :------ | :------ |<br>| `apiKey` | `string` |<br>| `createIndexIfNotExists?` | `boolean` |<br>| `deleteDocumentWhenConversationEnds?` | `boolean` |<br>| `deleteIndexWhenConversationEnds?` | `boolean` |<br>| `endpoint` | `string` |<br>| `indexName?` | `string` |<br><br>## Modules |
@@ -924,13 +940,27 @@ Re-exports [VideoRetrievalApiClient](#classesazure_video_retrieval_api_clientvid
 
 ##### ChatAboutVideoConstructorOptions
 
-Ƭ **ChatAboutVideoConstructorOptions**: `Partial`\<`Omit`\<[`ChatAboutVideoOptions`](#interfaceschatchataboutvideooptionsmd), ``"videoRetrievalIndex"`` \| ``"extractVideoFrames"``\>\> & `Required`\<`Pick`\<[`ChatAboutVideoOptions`](#interfaceschatchataboutvideooptionsmd), ``"openAiDeploymentName"`` \| ``"storageContainerName"``\>\> & \{ `extractVideoFrames?`: `Partial`\<`Exclude`\<[`ChatAboutVideoOptions`](#interfaceschatchataboutvideooptionsmd)[``"extractVideoFrames"``], `undefined`\>\> ; `videoRetrievalIndex?`: `Partial`\<[`ChatAboutVideoOptions`](#interfaceschatchataboutvideooptionsmd)[``"videoRetrievalIndex"``]\> & `Pick`\<`Exclude`\<[`ChatAboutVideoOptions`](#interfaceschatchataboutvideooptionsmd)[``"videoRetrievalIndex"``], `undefined`\>, ``"endpoint"`` \| ``"apiKey"``\>  } & \{ `azureStorageConnectionString?`: `string` ; `downloadUrlExpirationSeconds?`: `number` ; `openAiApiKey`: `string` ; `openAiEndpoint?`: `string`  }
+Ƭ **ChatAboutVideoConstructorOptions**: `Partial`\<`Omit`\<[`ChatAboutVideoOptions`](#interfaceschatchataboutvideooptionsmd), ``"videoRetrievalIndex"`` \| ``"extractVideoFrames"``\>\> & `Required`\<`Pick`\<[`ChatAboutVideoOptions`](#interfaceschatchataboutvideooptionsmd), ``"openAiDeploymentName"``\>\> & \{ `extractVideoFrames?`: `Partial`\<`Exclude`\<[`ChatAboutVideoOptions`](#interfaceschatchataboutvideooptionsmd)[``"extractVideoFrames"``], `undefined`\>\> ; `videoRetrievalIndex?`: `Partial`\<[`ChatAboutVideoOptions`](#interfaceschatchataboutvideooptionsmd)[``"videoRetrievalIndex"``]\> & `Pick`\<`Exclude`\<[`ChatAboutVideoOptions`](#interfaceschatchataboutvideooptionsmd)[``"videoRetrievalIndex"``], `undefined`\>, ``"endpoint"`` \| ``"apiKey"``\>  } & \{ `azureStorageConnectionString?`: `string` ; `downloadUrlExpirationSeconds?`: `number` ; `openAiApiKey`: `string` ; `openAiEndpoint?`: `string`  }
 
 ___
 
 ##### ChatOptions
 
 Ƭ **ChatOptions**: `GetChatCompletionsOptions` & \{ `throttleBackoff?`: `number`[]  }
+
+___
+
+##### ConversationOptions
+
+Ƭ **ConversationOptions**: `Object`
+
+###### Type declaration
+
+| Name | Type |
+| :------ | :------ |
+| `chatCompletions?` | `Partial`\<[`ChatOptions`](#chatoptions)\> |
+| `extractVideoFrames?` | `Partial`\<[`ExtractVideoFramesOptions`](#extractvideoframesoptions)\> |
+| `videoRetrievalIndex?` | `Partial`\<[`VideoRetrievalIndexOptions`](#videoretrievalindexoptions)\> |
 
 ___
 
@@ -999,6 +1029,12 @@ ___
 ##### Conversation
 
 Re-exports [Conversation](#classeschatconversationmd)
+
+___
+
+##### ConversationOptions
+
+Re-exports [ConversationOptions](#conversationoptions)
 
 ___
 
