@@ -72,7 +72,7 @@ export interface ChatAboutVideoOptions {
   /**
    * Storage container for storing frame images of the video.
    */
-  storageContainerName: string;
+  storageContainerName?: string;
   /**
    * Path prefix to be prepended for storing frame images of the video.
    */
@@ -96,6 +96,11 @@ export type ChatOptions = GetChatCompletionsOptions & {
    */
   throttleBackoff?: number[];
 };
+export type ConversationOptions = {
+  chatCompletions?: Partial<ChatOptions>;
+  extractVideoFrames?: Partial<ExtractVideoFramesOptions>;
+  videoRetrievalIndex?: Partial<VideoRetrievalIndexOptions>;
+};
 
 const DEFAULT_INITIAL_PROMPTS = [
   {
@@ -115,7 +120,7 @@ const DEFAULT_START_PROMPTS = [
   } as ChatRequestUserMessage,
 ];
 
-export type ChatAboutVideoConstructorOptions = Partial<Omit<ChatAboutVideoOptions, 'videoRetrievalIndex' | 'extractVideoFrames'>> & Required<Pick<ChatAboutVideoOptions, 'openAiDeploymentName'|'storageContainerName'>> & {
+export type ChatAboutVideoConstructorOptions = Partial<Omit<ChatAboutVideoOptions, 'videoRetrievalIndex' | 'extractVideoFrames'>> & Required<Pick<ChatAboutVideoOptions, 'openAiDeploymentName'>> & {
   videoRetrievalIndex?: Partial<ChatAboutVideoOptions['videoRetrievalIndex']> & Pick<Exclude<ChatAboutVideoOptions['videoRetrievalIndex'], undefined>, 'endpoint' | 'apiKey'>;
   extractVideoFrames?: Partial<Exclude<ChatAboutVideoOptions['extractVideoFrames'], undefined>>;
 } & {
@@ -205,27 +210,45 @@ export class ChatAboutVideo {
   }
 
   /**
+   * Start a conversation without a video
+   * @param options Overriding options for this conversation
+   * @returns The conversation.
+   */
+  async startConversation(options?: Pick<ConversationOptions, 'chatCompletions'>): Promise<Conversation>
+
+  /**
    * Start a conversation about a video.
    * @param videoFile Path to a video file in local file system.
-   * @param options overriding options for this conversation
+   * @param options Overriding options for this conversation
    * @returns The conversation.
    */
   async startConversation(videoFile: string, options?: {
     chatCompletions?: Partial<ChatOptions>;
     extractVideoFrames?: Partial<ExtractVideoFramesOptions>;
     videoRetrievalIndex?: Partial<VideoRetrievalIndexOptions>;
-  }): Promise<Conversation> {
+  }): Promise<Conversation>
+
+  async startConversation(
+    videoFileOrOptions?: string | Pick<ConversationOptions, 'chatCompletions'>,
+    optionsOrUndefined?: ConversationOptions,
+  ): Promise<Conversation> {
+    const videoFile = typeof videoFileOrOptions === 'string' ? videoFileOrOptions : undefined;
+    const options: typeof optionsOrUndefined = typeof videoFileOrOptions === 'string' ? optionsOrUndefined: videoFileOrOptions;
+
     const conversationId = generateRandomString(24); // equivalent to uuid
     const messages: ChatRequestMessage[] = [];
     messages.push(...(this.options.initialPrompts ?? DEFAULT_INITIAL_PROMPTS));
 
-    const { messages: videoContextMessages, options: chatCompletionsOptions, cleanup } = this.options.extractVideoFrames ?
-      await this.prepareVideoFrames(conversationId, videoFile, options?.extractVideoFrames) : await this.prepareVideoRetrievalIndex(conversationId, videoFile, options?.videoRetrievalIndex);
-    messages.push(...videoContextMessages);
+    let preparationResult: PreparationResult|undefined;
+    if (videoFile) {
+      preparationResult = this.options.extractVideoFrames ?
+        await this.prepareVideoFrames(conversationId, videoFile, options?.extractVideoFrames) : await this.prepareVideoRetrievalIndex(conversationId, videoFile, options?.videoRetrievalIndex);
+      messages.push(...preparationResult.messages);
+    }
 
     messages.push(...(this.options.startPrompts ?? DEFAULT_START_PROMPTS));
 
-    const conversation = new Conversation(this.client, this.options.openAiDeploymentName, conversationId, messages, { ...chatCompletionsOptions, ...options?.chatCompletions }, cleanup, this.log);
+    const conversation = new Conversation(this.client, this.options.openAiDeploymentName, conversationId, messages, { ...preparationResult?.options, ...options?.chatCompletions }, preparationResult?.cleanup, this.log);
     return conversation;
   }
 
@@ -244,7 +267,7 @@ export class ChatAboutVideo {
       this.log && this.log.debug(`Truncated ${previousLength} frames to ${maxNumFrames}`);
     }
 
-    const frameImageUrls = await this.options.fileBatchUploader(videoFramesDir, frameImageFiles, this.options.storageContainerName, `${this.options.storagePathPrefix}${conversationId}/`);
+    const frameImageUrls = await this.options.fileBatchUploader(videoFramesDir, frameImageFiles, this.options.storageContainerName!, `${this.options.storagePathPrefix}${conversationId}/`);
     this.log && this.log.debug(`Uploaded ${frameImageUrls.length} frames to storage`, frameImageUrls);
 
     const messages: ChatRequestMessage[] = [];
@@ -264,7 +287,7 @@ export class ChatAboutVideo {
   }
 
   protected async prepareVideoRetrievalIndex(conversationId: string, videoFile: string, videoRetrievalIndexOptions?: Partial<VideoRetrievalIndexOptions>): Promise<PreparationResult> {
-    const [videoUrl] = await this.options.fileBatchUploader(path.dirname(videoFile), [path.basename(videoFile)], this.options.storageContainerName, `${this.options.storagePathPrefix}${conversationId}/`);
+    const [videoUrl] = await this.options.fileBatchUploader(path.dirname(videoFile), [path.basename(videoFile)], this.options.storageContainerName!, `${this.options.storagePathPrefix}${conversationId}/`);
 
     const videoRetrievalIndex = {
       ...this.options.videoRetrievalIndex!,
