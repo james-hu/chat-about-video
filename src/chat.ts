@@ -90,12 +90,12 @@ export interface ChatAboutVideoOptions {
 
 export type ExtractVideoFramesOptions = Exclude<ChatAboutVideoOptions['extractVideoFrames'], undefined>;
 export type VideoRetrievalIndexOptions = Exclude<ChatAboutVideoOptions['videoRetrievalIndex'], undefined>;
-export type ChatOptions = GetChatCompletionsOptions & {
+export type ChatOptions = {
   /**
    * Array of retry backoff periods (unit: milliseconds) for situations that the server returns 429 response
    */
   throttleBackoff?: number[];
-};
+} & GetChatCompletionsOptions;
 export type ConversationOptions = {
   chatCompletions?: Partial<ChatOptions>;
   extractVideoFrames?: Partial<ExtractVideoFramesOptions>;
@@ -120,10 +120,7 @@ const DEFAULT_START_PROMPTS = [
   } as ChatRequestUserMessage,
 ];
 
-export type ChatAboutVideoConstructorOptions = Partial<Omit<ChatAboutVideoOptions, 'videoRetrievalIndex' | 'extractVideoFrames'>> & Required<Pick<ChatAboutVideoOptions, 'openAiDeploymentName'>> & {
-  videoRetrievalIndex?: Partial<ChatAboutVideoOptions['videoRetrievalIndex']> & Pick<Exclude<ChatAboutVideoOptions['videoRetrievalIndex'], undefined>, 'endpoint' | 'apiKey'>;
-  extractVideoFrames?: Partial<Exclude<ChatAboutVideoOptions['extractVideoFrames'], undefined>>;
-} & {
+export type ChatAboutVideoConstructorOptions = {
   /**
    * Endpoint URL for accessing the deployment in Azure,
    * or undefined for non-Azure OpenAI API.
@@ -143,7 +140,10 @@ export type ChatAboutVideoConstructorOptions = Partial<Omit<ChatAboutVideoOption
    * Download URLs will be generated for the deployment to access uploaded frame images.
    */
   downloadUrlExpirationSeconds?: number;
-}
+} & {
+  videoRetrievalIndex?: Partial<ChatAboutVideoOptions['videoRetrievalIndex']> & Pick<Exclude<ChatAboutVideoOptions['videoRetrievalIndex'], undefined>, 'endpoint' | 'apiKey'>;
+  extractVideoFrames?: Partial<Exclude<ChatAboutVideoOptions['extractVideoFrames'], undefined>>;
+} & Partial<Omit<ChatAboutVideoOptions, 'videoRetrievalIndex' | 'extractVideoFrames'>> & Required<Pick<ChatAboutVideoOptions, 'openAiDeploymentName'>>
 
 interface PreparationResult {
   messages: ChatRequestMessage[],
