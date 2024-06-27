@@ -940,13 +940,13 @@ Re-exports [VideoRetrievalApiClient](#classesazure_video_retrieval_api_clientvid
 
 ##### ChatAboutVideoConstructorOptions
 
-Ƭ **ChatAboutVideoConstructorOptions**: `Partial`\<`Omit`\<[`ChatAboutVideoOptions`](#interfaceschatchataboutvideooptionsmd), ``"videoRetrievalIndex"`` \| ``"extractVideoFrames"``\>\> & `Required`\<`Pick`\<[`ChatAboutVideoOptions`](#interfaceschatchataboutvideooptionsmd), ``"openAiDeploymentName"``\>\> & \{ `extractVideoFrames?`: `Partial`\<`Exclude`\<[`ChatAboutVideoOptions`](#interfaceschatchataboutvideooptionsmd)[``"extractVideoFrames"``], `undefined`\>\> ; `videoRetrievalIndex?`: `Partial`\<[`ChatAboutVideoOptions`](#interfaceschatchataboutvideooptionsmd)[``"videoRetrievalIndex"``]\> & `Pick`\<`Exclude`\<[`ChatAboutVideoOptions`](#interfaceschatchataboutvideooptionsmd)[``"videoRetrievalIndex"``], `undefined`\>, ``"endpoint"`` \| ``"apiKey"``\>  } & \{ `azureStorageConnectionString?`: `string` ; `downloadUrlExpirationSeconds?`: `number` ; `openAiApiKey`: `string` ; `openAiEndpoint?`: `string`  }
+Ƭ **ChatAboutVideoConstructorOptions**: \{ `azureStorageConnectionString?`: `string` ; `downloadUrlExpirationSeconds?`: `number` ; `openAiApiKey`: `string` ; `openAiEndpoint?`: `string`  } & \{ `extractVideoFrames?`: `Partial`\<`Exclude`\<[`ChatAboutVideoOptions`](#interfaceschatchataboutvideooptionsmd)[``"extractVideoFrames"``], `undefined`\>\> ; `videoRetrievalIndex?`: `Partial`\<[`ChatAboutVideoOptions`](#interfaceschatchataboutvideooptionsmd)[``"videoRetrievalIndex"``]\> & `Pick`\<`Exclude`\<[`ChatAboutVideoOptions`](#interfaceschatchataboutvideooptionsmd)[``"videoRetrievalIndex"``], `undefined`\>, ``"endpoint"`` \| ``"apiKey"``\>  } & `Partial`\<`Omit`\<[`ChatAboutVideoOptions`](#interfaceschatchataboutvideooptionsmd), ``"videoRetrievalIndex"`` \| ``"extractVideoFrames"``\>\> & `Required`\<`Pick`\<[`ChatAboutVideoOptions`](#interfaceschatchataboutvideooptionsmd), ``"openAiDeploymentName"``\>\>
 
 ___
 
 ##### ChatOptions
 
-Ƭ **ChatOptions**: `GetChatCompletionsOptions` & \{ `throttleBackoff?`: `number`[]  }
+Ƭ **ChatOptions**: \{ `throttleBackoff?`: `number`[]  } & `GetChatCompletionsOptions`
 
 ___
 
