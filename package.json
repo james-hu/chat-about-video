@@ -1,7 +1,11 @@
 {
   "name": "chat-about-video",
   "version": "2.10.1",
-  "description": "Chat about a video clip using Azure OpenAI GPT-4 Turbo with Vision",
+  "description": "Chat about a video clip using ChatGPT hosted in OpenAI or Azure, or Gemini provided by Google",
+  "workspaces": [
+    "chat-gpt",
+    "gemini"
+  ],
   "scripts": {
     "format:all": "prettier --write --ignore-unknown .",
     "pretest": "eslint . --ext .ts",
@@ -45,18 +49,20 @@
     }
   },
   "optionalDependencies": {
+    "@azure/openai": "^1.0.0-beta.12",
     "@azure/storage-blob": "^12.23.0",
     "@ffmpeg-installer/ffmpeg": "^1.1.0",
+    "@google/generative-ai": "^0.14.0",
     "@handy-common-utils/aws-utils": ">=3.1.1"
   },
   "dependencies": {
-    "@azure/openai": "^1.0.0-beta.12",
     "@handy-common-utils/misc-utils": ">=1.5.2",
     "@handy-common-utils/promise-utils": "^1.6.0",
     "axios": "^1.7.2"
   },
   "devDependencies": {
     "@handy-common-utils/dev-dependencies-jest": "^1.3.0",
+    "@qiwi/semrel-toolkit": "^3.2.13",
     "chalk": "^4.1.2"
   },
   "lint-staged": {
@@ -67,6 +73,8 @@
   "keywords": [
     "ChatGPT",
     "OpenAI",
+    "Gemini",
+    "LLM",
     "GPT",
     "Video",
     "chat",
@@ -81,9 +89,5 @@
   "bugs": {
     "url": "https://github.com/james-hu/chat-about-video/issues"
   },
-  "homepage": "https://github.com/james-hu/chat-about-video#readme",
-  "workspaces": [
-    "chat-gpt",
-    "gemini"
-  ]
+  "homepage": "https://github.com/james-hu/chat-about-video#readme"
 }
