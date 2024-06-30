@@ -3,3 +3,4 @@ coverage/
 dist/
 testenv.sh
 api-docs/
+*.tgz

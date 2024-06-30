@@ -1,0 +1,14 @@
+{
+  "name": "chat-about-video-chat-gpt",
+  "version": "1.0.0",
+  "description": "Chat about a video clip using ChatGPT hosted in OpenAI or Azure",
+  "scripts": {
+    "test": "echo 'no test'"
+  },
+  "author": "James Hu",
+  "license": "Apache-2.0",
+  "dependencies": {
+    "@azure/openai": "^1.0.0-beta.12",
+    "chat-about-video": "^2.10.1"
+  }
+}
