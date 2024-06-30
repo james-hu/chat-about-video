@@ -10,7 +10,7 @@ import type {
   GetChatCompletionsOptions,
 } from '@azure/openai';
 
-import { AzureKeyCredential, OpenAIClient, OpenAIKeyCredential } from '@azure/openai';
+import { OpenAIClient } from '@azure/openai';
 import { ConsoleLineLogger, consoleWithoutColour, generateRandomString } from '@handy-common-utils/misc-utils';
 import { withRetry } from '@handy-common-utils/promise-utils';
 import os from 'node:os';
@@ -223,9 +223,9 @@ export class ChatAboutVideo {
     };
     // eslint-disable-next-line unicorn/prefer-ternary
     if (options.openAiEndpoint) {
-      this.client = new OpenAIClient(options.openAiEndpoint, new AzureKeyCredential(options.openAiApiKey));
+      this.client = new OpenAIClient(options.openAiEndpoint, { key: options.openAiApiKey });
     } else {
-      this.client = new OpenAIClient(new OpenAIKeyCredential(options.openAiApiKey));
+      this.client = new OpenAIClient({ key: options.openAiApiKey });
     }
     fixClient(this.client);
   }
