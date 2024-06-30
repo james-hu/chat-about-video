@@ -1,6 +1,16 @@
 /* eslint-disable unicorn/prefer-string-replace-all */
 /* eslint-disable unicorn/no-array-push-push */
-import { AzureKeyCredential, ChatCompletions, ChatMessageContentItem, ChatRequestAssistantMessage, ChatRequestMessage, ChatRequestSystemMessage, ChatRequestUserMessage, GetChatCompletionsOptions, OpenAIClient, OpenAIKeyCredential } from '@azure/openai';
+import type {
+  ChatCompletions,
+  ChatMessageContentItem,
+  ChatRequestAssistantMessage,
+  ChatRequestMessage,
+  ChatRequestSystemMessage,
+  ChatRequestUserMessage,
+  GetChatCompletionsOptions,
+} from '@azure/openai';
+
+import { AzureKeyCredential, OpenAIClient, OpenAIKeyCredential } from '@azure/openai';
 import { ConsoleLineLogger, consoleWithoutColour, generateRandomString } from '@handy-common-utils/misc-utils';
 import { withRetry } from '@handy-common-utils/promise-utils';
 import os from 'node:os';
@@ -9,7 +19,6 @@ import path from 'node:path';
 import { fixClient } from './client-hack';
 import { FileBatchUploader, lazyCreatedFileBatchUploader } from './storage';
 import { VideoFramesExtractor, extractVideoFramesWithFfmpeg } from './video';
-
 
 /**
  * Option settings for ChatAboutVideo
@@ -63,7 +72,7 @@ export interface ChatAboutVideoOptions {
      * then the frames will not be resized/scaled.
      */
     height: number | undefined;
-  }
+  };
 
   /**
    * Function for uploading files
@@ -105,7 +114,8 @@ export type ConversationOptions = {
 const DEFAULT_INITIAL_PROMPTS = [
   {
     role: 'system',
-    content: 'You are an AI specialized in analyzing video content. The user will provide frames from a video and ask questions about the content. Your task is to provide objective, concise, and accurate answers based solely on the provided frames. Do not acknowledge or repeat the user\'s questions, and avoid any explanations. Provide only the necessary information and answer the questions directly.',
+    content:
+      "You are an AI specialized in analyzing video content. The user will provide frames from a video and ask questions about the content. Your task is to provide objective, concise, and accurate answers based solely on the provided frames. Do not acknowledge or repeat the user's questions, and avoid any explanations. Provide only the necessary information and answer the questions directly.",
   } as ChatRequestSystemMessage,
   {
     role: 'user',
@@ -141,13 +151,15 @@ export type ChatAboutVideoConstructorOptions = {
    */
   downloadUrlExpirationSeconds?: number;
 } & {
-  videoRetrievalIndex?: Partial<ChatAboutVideoOptions['videoRetrievalIndex']> & Pick<Exclude<ChatAboutVideoOptions['videoRetrievalIndex'], undefined>, 'endpoint' | 'apiKey'>;
+  videoRetrievalIndex?: Partial<ChatAboutVideoOptions['videoRetrievalIndex']> &
+    Pick<Exclude<ChatAboutVideoOptions['videoRetrievalIndex'], undefined>, 'endpoint' | 'apiKey'>;
   extractVideoFrames?: Partial<Exclude<ChatAboutVideoOptions['extractVideoFrames'], undefined>>;
-} & Partial<Omit<ChatAboutVideoOptions, 'videoRetrievalIndex' | 'extractVideoFrames'>> & Required<Pick<ChatAboutVideoOptions, 'openAiDeploymentName'>>
+} & Partial<Omit<ChatAboutVideoOptions, 'videoRetrievalIndex' | 'extractVideoFrames'>> &
+  Required<Pick<ChatAboutVideoOptions, 'openAiDeploymentName'>>;
 
 interface PreparationResult {
-  messages: ChatRequestMessage[],
-  options?: ChatOptions,
+  messages: ChatRequestMessage[];
+  options?: ChatOptions;
   cleanup?: () => Promise<void>;
 }
 
@@ -167,16 +179,20 @@ export class ChatAboutVideo {
       if (options.azureStorageConnectionString) {
         // use Azure
         fileBatchUploader = lazyCreatedFileBatchUploader(
-          Promise.all([import('./azure'), import('@azure/storage-blob')])
-            .then(([azure, storageBlob]) => azure.createAzureBlobStorageFileBatchUploader(
+          Promise.all([import('./azure'), import('@azure/storage-blob')]).then(([azure, storageBlob]) =>
+            azure.createAzureBlobStorageFileBatchUploader(
               storageBlob.BlobServiceClient.fromConnectionString(options.azureStorageConnectionString!),
               options.downloadUrlExpirationSeconds ?? 3600,
-            ))); 
+            ),
+          ),
+        );
       } else {
         // use AWS
         fileBatchUploader = lazyCreatedFileBatchUploader(
-          Promise.all([import('./aws'), import('@aws-sdk/client-s3')])
-            .then(([aws, clientS3]) => aws.createAwsS3FileBatchUploader(new clientS3.S3Client(), options.downloadUrlExpirationSeconds ?? 3600))); 
+          Promise.all([import('./aws'), import('@aws-sdk/client-s3')]).then(([aws, clientS3]) =>
+            aws.createAwsS3FileBatchUploader(new clientS3.S3Client(), options.downloadUrlExpirationSeconds ?? 3600),
+          ),
+        );
       }
     }
 
@@ -185,20 +201,25 @@ export class ChatAboutVideo {
       storagePathPrefix: '',
       tmpDir: os.tmpdir(),
       ...options,
-      extractVideoFrames: (options.extractVideoFrames || !options.videoRetrievalIndex) ? {
-        extractor: extractVideoFramesWithFfmpeg,
-        interval: 5,
-        limit: 10,
-        width: 200,
-        height: undefined,
-        ...options.extractVideoFrames,
-      } : undefined,
-      videoRetrievalIndex: options.videoRetrievalIndex ? {
-        createIndexIfNotExists: true,
-        deleteDocumentWhenConversationEnds: true,
-        deleteIndexWhenConversationEnds: false,
-        ...options.videoRetrievalIndex,
-      } : undefined,
+      extractVideoFrames:
+        options.extractVideoFrames || !options.videoRetrievalIndex
+          ? {
+              extractor: extractVideoFramesWithFfmpeg,
+              interval: 5,
+              limit: 10,
+              width: 200,
+              height: undefined,
+              ...options.extractVideoFrames,
+            }
+          : undefined,
+      videoRetrievalIndex: options.videoRetrievalIndex
+        ? {
+            createIndexIfNotExists: true,
+            deleteDocumentWhenConversationEnds: true,
+            deleteIndexWhenConversationEnds: false,
+            ...options.videoRetrievalIndex,
+          }
+        : undefined,
     };
     // eslint-disable-next-line unicorn/prefer-ternary
     if (options.openAiEndpoint) {
@@ -214,7 +235,7 @@ export class ChatAboutVideo {
    * @param options Overriding options for this conversation
    * @returns The conversation.
    */
-  async startConversation(options?: Pick<ConversationOptions, 'chatCompletions'>): Promise<Conversation>
+  async startConversation(options?: Pick<ConversationOptions, 'chatCompletions'>): Promise<Conversation>;
 
   /**
    * Start a conversation about a video.
@@ -222,43 +243,66 @@ export class ChatAboutVideo {
    * @param options Overriding options for this conversation
    * @returns The conversation.
    */
-  async startConversation(videoFile: string, options?: {
-    chatCompletions?: Partial<ChatOptions>;
-    extractVideoFrames?: Partial<ExtractVideoFramesOptions>;
-    videoRetrievalIndex?: Partial<VideoRetrievalIndexOptions>;
-  }): Promise<Conversation>
+  async startConversation(
+    videoFile: string,
+    options?: {
+      chatCompletions?: Partial<ChatOptions>;
+      extractVideoFrames?: Partial<ExtractVideoFramesOptions>;
+      videoRetrievalIndex?: Partial<VideoRetrievalIndexOptions>;
+    },
+  ): Promise<Conversation>;
 
   async startConversation(
     videoFileOrOptions?: string | Pick<ConversationOptions, 'chatCompletions'>,
     optionsOrUndefined?: ConversationOptions,
   ): Promise<Conversation> {
     const videoFile = typeof videoFileOrOptions === 'string' ? videoFileOrOptions : undefined;
-    const options: typeof optionsOrUndefined = typeof videoFileOrOptions === 'string' ? optionsOrUndefined: videoFileOrOptions;
+    const options: typeof optionsOrUndefined = typeof videoFileOrOptions === 'string' ? optionsOrUndefined : videoFileOrOptions;
 
     const conversationId = generateRandomString(24); // equivalent to uuid
     const messages: ChatRequestMessage[] = [];
     messages.push(...(this.options.initialPrompts ?? DEFAULT_INITIAL_PROMPTS));
 
-    let preparationResult: PreparationResult|undefined;
+    let preparationResult: PreparationResult | undefined;
     if (videoFile) {
-      preparationResult = this.options.extractVideoFrames ?
-        await this.prepareVideoFrames(conversationId, videoFile, options?.extractVideoFrames) : await this.prepareVideoRetrievalIndex(conversationId, videoFile, options?.videoRetrievalIndex);
+      preparationResult = this.options.extractVideoFrames
+        ? await this.prepareVideoFrames(conversationId, videoFile, options?.extractVideoFrames)
+        : await this.prepareVideoRetrievalIndex(conversationId, videoFile, options?.videoRetrievalIndex);
       messages.push(...preparationResult.messages);
     }
 
     messages.push(...(this.options.startPrompts ?? DEFAULT_START_PROMPTS));
 
-    const conversation = new Conversation(this.client, this.options.openAiDeploymentName, conversationId, messages, { ...preparationResult?.options, ...options?.chatCompletions }, preparationResult?.cleanup, this.log);
+    const conversation = new Conversation(
+      this.client,
+      this.options.openAiDeploymentName,
+      conversationId,
+      messages,
+      { ...preparationResult?.options, ...options?.chatCompletions },
+      preparationResult?.cleanup,
+      this.log,
+    );
     return conversation;
   }
 
-  protected async prepareVideoFrames(conversationId: string, videoFile: string, extractVideoFramesOptions?: Partial<ExtractVideoFramesOptions>): Promise<PreparationResult> {
+  protected async prepareVideoFrames(
+    conversationId: string,
+    videoFile: string,
+    extractVideoFramesOptions?: Partial<ExtractVideoFramesOptions>,
+  ): Promise<PreparationResult> {
     const extractVideoFrames = {
       ...this.options.extractVideoFrames!,
       ...extractVideoFramesOptions,
     };
     const videoFramesDir = path.join(this.options.tmpDir, conversationId);
-    const frameImageFiles = await extractVideoFrames.extractor(videoFile, videoFramesDir, extractVideoFrames.interval, undefined, extractVideoFrames.width, extractVideoFrames.height);
+    const frameImageFiles = await extractVideoFrames.extractor(
+      videoFile,
+      videoFramesDir,
+      extractVideoFrames.interval,
+      undefined,
+      extractVideoFrames.width,
+      extractVideoFrames.height,
+    );
     this.log && this.log.debug(`Extracted ${frameImageFiles.length} frames from video`, frameImageFiles);
     const maxNumFrames = extractVideoFrames.limit;
     if (frameImageFiles.length > maxNumFrames) {
@@ -267,45 +311,72 @@ export class ChatAboutVideo {
       this.log && this.log.debug(`Truncated ${previousLength} frames to ${maxNumFrames}`);
     }
 
-    const frameImageUrls = await this.options.fileBatchUploader(videoFramesDir, frameImageFiles, this.options.storageContainerName!, `${this.options.storagePathPrefix}${conversationId}/`);
+    const frameImageUrls = await this.options.fileBatchUploader(
+      videoFramesDir,
+      frameImageFiles,
+      this.options.storageContainerName!,
+      `${this.options.storagePathPrefix}${conversationId}/`,
+    );
     this.log && this.log.debug(`Uploaded ${frameImageUrls.length} frames to storage`, frameImageUrls);
 
     const messages: ChatRequestMessage[] = [];
-    messages.push(...frameImageUrls.map((url) => ({
-      role: 'user',
-      content: [{
-        type: 'image_url',
-        imageUrl: {
-          url,
-          detail: 'auto',
-        },
-      }],
-    } as ChatRequestUserMessage)));
+    messages.push(
+      ...frameImageUrls.map(
+        (url) =>
+          ({
+            role: 'user',
+            content: [
+              {
+                type: 'image_url',
+                imageUrl: {
+                  url,
+                  detail: 'auto',
+                },
+              },
+            ],
+          }) as ChatRequestUserMessage,
+      ),
+    );
     return {
       messages,
     };
   }
 
-  protected async prepareVideoRetrievalIndex(conversationId: string, videoFile: string, videoRetrievalIndexOptions?: Partial<VideoRetrievalIndexOptions>): Promise<PreparationResult> {
-    const [videoUrl] = await this.options.fileBatchUploader(path.dirname(videoFile), [path.basename(videoFile)], this.options.storageContainerName!, `${this.options.storagePathPrefix}${conversationId}/`);
+  protected async prepareVideoRetrievalIndex(
+    conversationId: string,
+    videoFile: string,
+    videoRetrievalIndexOptions?: Partial<VideoRetrievalIndexOptions>,
+  ): Promise<PreparationResult> {
+    const [videoUrl] = await this.options.fileBatchUploader(
+      path.dirname(videoFile),
+      [path.basename(videoFile)],
+      this.options.storageContainerName!,
+      `${this.options.storagePathPrefix}${conversationId}/`,
+    );
 
     const videoRetrievalIndex = {
       ...this.options.videoRetrievalIndex!,
       ...videoRetrievalIndexOptions,
     };
-    const { endpoint, apiKey, indexName: specifiedIndexName, createIndexIfNotExists: createIndexIfNotExist, deleteDocumentWhenConversationEnds: deleteDocumentAfterConversation, deleteIndexWhenConversationEnds: deleteIndexAfterConversation } = videoRetrievalIndex;
+    const {
+      endpoint,
+      apiKey,
+      indexName: specifiedIndexName,
+      createIndexIfNotExists: createIndexIfNotExist,
+      deleteDocumentWhenConversationEnds: deleteDocumentAfterConversation,
+      deleteIndexWhenConversationEnds: deleteIndexAfterConversation,
+    } = videoRetrievalIndex;
     const indexName = specifiedIndexName ?? conversationId.toLowerCase().replace(/[^\dA-Za-z]/g, '-');
     const ingestionName = conversationId;
     const documentId = conversationId;
     const documentUrl = videoUrl;
-  
+
     const { VideoRetrievalApiClient } = await import('./azure');
     const videoRetrievalIndexClient = new VideoRetrievalApiClient(endpoint, apiKey);
-    
+
     if (createIndexIfNotExist) {
       await videoRetrievalIndexClient.createIndexIfNotExist(indexName);
     }
-
 
     await videoRetrievalIndexClient.ingest(indexName, ingestionName, {
       moderation: false,
@@ -377,8 +448,8 @@ export class Conversation {
     protected messages: ChatRequestMessage[],
     protected options?: GetChatCompletionsOptions,
     protected cleanup?: () => Promise<void>,
-    protected log: ConsoleLineLogger|undefined = consoleWithoutColour(),
-  ) { }
+    protected log: ConsoleLineLogger | undefined = consoleWithoutColour(),
+  ) {}
 
   /**
    * Say something in the conversation, and get the response from AI
@@ -386,7 +457,7 @@ export class Conversation {
    * @param options Options for fine control.
    * @returns The response/completion
    */
-  async say(message: string, options?: ChatOptions): Promise<string|undefined> {
+  async say(message: string, options?: ChatOptions): Promise<string | undefined> {
     const newMessage: ChatRequestUserMessage = {
       role: 'user',
       content: message,
@@ -394,19 +465,21 @@ export class Conversation {
 
     const effectiveOptions = { ...this.options, ...options };
     const messagesToSend = [...this.messages, newMessage];
-    const result = await withRetry(() => this.client.getChatCompletions(this.deploymentName, messagesToSend, effectiveOptions), effectiveOptions.throttleBackoff ?? [], (error) => {
-      const code = String(error?.code);
-      return code === 'TooManyRequests' || code === '429';
-    });
+    const result = await withRetry(
+      () => this.client.getChatCompletions(this.deploymentName, messagesToSend, effectiveOptions),
+      effectiveOptions.throttleBackoff ?? [],
+      (error) => {
+        const code = String(error?.code);
+        return code === 'TooManyRequests' || code === '429';
+      },
+    );
     this.log && this.log.debug('Result from chat', JSON.stringify(result, null, 2));
 
     const response = chatResponse(result);
-    this.messages.push(
-      newMessage,
-      {
-        role: 'assistant',
-        content: response,
-      } as ChatRequestAssistantMessage);
+    this.messages.push(newMessage, {
+      role: 'assistant',
+      content: response,
+    } as ChatRequestAssistantMessage);
     this.log && this.log.debug('Updated message history', JSON.stringify(this.messages, null, 2));
     return response;
   }
