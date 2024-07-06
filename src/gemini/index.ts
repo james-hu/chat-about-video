@@ -1,24 +1,37 @@
 import type { GenerateContentRequest, GenerateContentResult, GenerativeModel, ModelParams, RequestOptions } from '@google/generative-ai';
 
 import { GoogleGenerativeAI } from '@google/generative-ai';
+import { generateRandomString } from '@handy-common-utils/misc-utils';
+import { withConcurrency } from '@handy-common-utils/promise-utils';
+import fs from 'node:fs/promises';
+import os from 'node:os';
+import path from 'node:path';
 
-import { ChatAPI, ChatApiClientOptions } from '../types';
+import type { BuildVideoPromptOutput, ChatAPI, ChatApiOptions, ExtractVideoFramesOptions } from '../types';
 
-export type GeminiClientOptions = ChatApiClientOptions<{ modelParams: ModelParams; requestOptions: RequestOptions }, string>;
+import { effectiveExtractVideoFramesOptions } from '../utils';
 
 export type GeminiPromptContent = GenerateContentRequest['contents'];
 export type GeminiPromptOptions = Omit<GenerateContentRequest, 'contents'>;
+export type GeminiClientOptions = { modelParams: ModelParams; requestOptions: RequestOptions };
+export type GeminiApiOptions = {
+  extractVideoFrames: ExtractVideoFramesOptions;
+} & ChatApiOptions<GeminiClientOptions, GeminiPromptOptions>;
 
 export class GeminiApi implements ChatAPI<GenerativeModel, GeminiPromptOptions, GeminiPromptContent, GenerateContentResult> {
   protected client: GenerativeModel;
+  protected extractVideoFrames: ReturnType<typeof effectiveExtractVideoFramesOptions>;
+  protected tmpDir: string;
 
-  constructor(protected options: GeminiClientOptions) {
+  constructor(protected options: GeminiApiOptions) {
     if (options.endpoint != null) {
       options.clientSettings.requestOptions = options.clientSettings.requestOptions ?? {};
       options.clientSettings.requestOptions.baseUrl = options.endpoint;
     }
     const genAI = new GoogleGenerativeAI(options.credential.key);
     this.client = genAI.getGenerativeModel(options.clientSettings.modelParams, options.clientSettings.requestOptions);
+    this.extractVideoFrames = effectiveExtractVideoFramesOptions(options.extractVideoFrames);
+    this.tmpDir = options.tmpDir ?? os.tmpdir();
   }
 
   async getClient(): Promise<GenerativeModel> {
@@ -59,6 +72,40 @@ export class GeminiApi implements ChatAPI<GenerativeModel, GeminiPromptOptions, 
           ],
         },
       ],
+    };
+  }
+
+  async buildVideoPrompt(
+    videoFile: string,
+    conversationId = `tmp-${generateRandomString(24)}`,
+  ): Promise<BuildVideoPromptOutput<GeminiPromptContent, GeminiPromptOptions>> {
+    const extractVideoFrames = this.extractVideoFrames;
+    const videoFramesDir = path.join(this.tmpDir, conversationId);
+    const frameImageFiles = await extractVideoFrames.extractor(
+      videoFile,
+      videoFramesDir,
+      extractVideoFrames.interval,
+      undefined,
+      extractVideoFrames.width,
+      extractVideoFrames.height,
+      extractVideoFrames.limit,
+    );
+    const prompt = [
+      {
+        role: 'user',
+        parts: await withConcurrency(5, frameImageFiles, async (imageFile) => {
+          const imageContent = await fs.readFile(path.join(videoFramesDir, imageFile));
+          return {
+            inlineData: {
+              data: imageContent.toString('base64'),
+              mimeType: `image/${extractVideoFrames.format}`,
+            },
+          };
+        }),
+      },
+    ];
+    return {
+      prompt,
     };
   }
 }

@@ -1,48 +1,41 @@
-import type {
-  ChatCompletions,
-  ChatMessageContentItem,
-  ChatRequestMessage,
-  ChatRequestUserMessage,
-  GetChatCompletionsOptions,
-  OpenAIClientOptions,
-} from '@azure/openai';
+import type { ChatCompletions, ChatMessageContentItem, ChatRequestMessage, ChatRequestUserMessage, OpenAIClientOptions } from '@azure/openai';
 
 import { OpenAIClient } from '@azure/openai';
 import { generateRandomString } from '@handy-common-utils/misc-utils';
 import os from 'node:os';
 import path from 'node:path';
 
-import {
+import type {
   BuildVideoPromptOutput,
   ChatAPI,
-  ChatApiClientOptions,
+  ChatApiOptions,
   ExtractVideoFramesOptions,
   StorageOptions,
   VideoRetrievalIndexOptions,
 } from '../types';
+
+import { fixClient } from '../client-hack';
 import { effectiveExtractVideoFramesOptions, effectiveStorageOptions, effectiveVideoRetrievalIndexOptions } from '../utils';
 
-export type ChatGptClientOptions = ChatApiClientOptions<OpenAIClientOptions, GetChatCompletionsOptions>;
-
 export type ChatGptPromptContent = Parameters<OpenAIClient['getChatCompletions']>[1];
-export type ChatGptCompletionOptions = Parameters<OpenAIClient['getChatCompletions']>[2];
+export type ChatGptPromptOptions = Parameters<OpenAIClient['getChatCompletions']>[2];
+export type ChatGptApiOptions = {
+  videoRetrievalIndex?: VideoRetrievalIndexOptions;
+  extractVideoFrames?: ExtractVideoFramesOptions;
+  storage: StorageOptions;
+} & ChatApiOptions<OpenAIClientOptions, ChatGptPromptOptions>;
 
-export class ChatGptApi implements ChatAPI<OpenAIClient, ChatGptCompletionOptions, ChatGptPromptContent, ChatCompletions> {
+export class ChatGptApi implements ChatAPI<OpenAIClient, ChatGptPromptOptions, ChatGptPromptContent, ChatCompletions> {
   protected client: OpenAIClient;
   protected storage: ReturnType<typeof effectiveStorageOptions>;
   protected extractVideoFrames?: ReturnType<typeof effectiveExtractVideoFramesOptions>;
   protected videoRetrievalIndex?: ReturnType<typeof effectiveVideoRetrievalIndexOptions>;
   protected tmpDir: string;
 
-  constructor(
-    protected options: {
-      videoRetrievalIndex?: VideoRetrievalIndexOptions;
-      extractVideoFrames?: ExtractVideoFramesOptions;
-      storage: StorageOptions;
-    } & ChatGptClientOptions,
-  ) {
+  constructor(protected options: ChatGptApiOptions) {
     const { credential, endpoint, clientSettings } = options;
     this.client = endpoint ? new OpenAIClient(endpoint, credential, clientSettings) : new OpenAIClient(credential, clientSettings);
+    fixClient(this.client); // Hacking for supporting Video Retrieval Indexer enhancement
     this.storage = effectiveStorageOptions(options.storage);
     if (options.videoRetrievalIndex?.apiKey && options.videoRetrievalIndex?.endpoint) {
       this.videoRetrievalIndex = effectiveVideoRetrievalIndexOptions(options.videoRetrievalIndex);
@@ -56,7 +49,7 @@ export class ChatGptApi implements ChatAPI<OpenAIClient, ChatGptCompletionOption
     return this.client;
   }
 
-  async generateContent(prompt: ChatGptPromptContent, options: ChatGptCompletionOptions): Promise<ChatCompletions> {
+  async generateContent(prompt: ChatGptPromptContent, options: ChatGptPromptOptions): Promise<ChatCompletions> {
     const { deploymentName, completionOptions } = this.options;
     return this.client.getChatCompletions(deploymentName, prompt, { ...completionOptions, ...options });
   }
@@ -89,7 +82,7 @@ export class ChatGptApi implements ChatAPI<OpenAIClient, ChatGptCompletionOption
   buildVideoPrompt(
     videoFile: string,
     conversationId?: string | undefined,
-  ): Promise<BuildVideoPromptOutput<ChatGptPromptContent, ChatGptCompletionOptions>> {
+  ): Promise<BuildVideoPromptOutput<ChatGptPromptContent, ChatGptPromptOptions>> {
     if (this.extractVideoFrames) {
       return this.buildVideoPromptWithFrames(videoFile, conversationId);
     } else if (this.videoRetrievalIndex) {
@@ -102,7 +95,7 @@ export class ChatGptApi implements ChatAPI<OpenAIClient, ChatGptCompletionOption
   protected async buildVideoPromptWithFrames(
     videoFile: string,
     conversationId = `tmp-${generateRandomString(24)}`,
-  ): Promise<BuildVideoPromptOutput<ChatGptPromptContent, ChatGptCompletionOptions>> {
+  ): Promise<BuildVideoPromptOutput<ChatGptPromptContent, ChatGptPromptOptions>> {
     const extractVideoFrames = this.extractVideoFrames!;
     const videoFramesDir = path.join(this.tmpDir, conversationId);
     const frameImageFiles = await extractVideoFrames.extractor(
@@ -148,7 +141,7 @@ export class ChatGptApi implements ChatAPI<OpenAIClient, ChatGptCompletionOption
   protected async buildVideoPromptWithVideoRetrievalIndex(
     videoFile: string,
     conversationId = `tmp-${generateRandomString(24)}`,
-  ): Promise<BuildVideoPromptOutput<ChatGptPromptContent, ChatGptCompletionOptions>> {
+  ): Promise<BuildVideoPromptOutput<ChatGptPromptContent, ChatGptPromptOptions>> {
     const [videoUrl] = await this.storage.uploader(
       path.dirname(videoFile),
       [path.basename(videoFile)],

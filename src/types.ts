@@ -1,14 +1,24 @@
 import { FileBatchUploader } from './storage/types';
 import { VideoFramesExtractor } from './video/types';
 
-export interface ChatApiClientOptions<CS, CO> {
+export interface ChatApiOptions<CS, CO> {
   credential: {
     key: string;
   };
   endpoint?: string;
   deploymentName: string;
   clientSettings: CS;
-  completionOptions?: CO;
+  completionOptions?: {
+    /**
+     * System prompt text. If not provided, a default prompt will be used.
+     */
+    systemPromptText?: string;
+    /**
+     * The user prompt that will be sent before the video content.
+     * If not provided, nothing will be sent before the video content.
+     */
+    startPromptText?: string;
+  } & CO;
   /**
    * Temporary directory for storing temporary files.
    * If not specified, then the temporary directory of the OS will be used.
