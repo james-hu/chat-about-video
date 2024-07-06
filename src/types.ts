@@ -1,3 +1,6 @@
+import { FileBatchUploader } from './storage/types';
+import { VideoFramesExtractor } from './video/types';
+
 export interface ChatApiClientOptions<CS, CO> {
   credential: {
     key: string;
@@ -6,8 +9,18 @@ export interface ChatApiClientOptions<CS, CO> {
   deploymentName: string;
   clientSettings: CS;
   completionOptions?: CO;
+  /**
+   * Temporary directory for storing temporary files.
+   * If not specified, then the temporary directory of the OS will be used.
+   */
+  tmpDir?: string;
 }
 
+export interface BuildVideoPromptOutput<PROMPT, OPTIONS> {
+  prompt: PROMPT;
+  options?: OPTIONS;
+  cleanup?: () => Promise<void>;
+}
 export interface ChatAPI<CLIENT, OPTIONS, PROMPT, RESPONSE> {
   /**
    * Get the raw client.
@@ -33,19 +46,15 @@ export interface ChatAPI<CLIENT, OPTIONS, PROMPT, RESPONSE> {
   generateContent(prompt: PROMPT, options?: OPTIONS): Promise<RESPONSE>;
 
   /**
-   * Build prompt for sending video content to AI
+   * Build prompt for sending video content to AI.
+   * Sometimes, to include video in the conversation, additional options and/or clean up is needed.
+   * In such case, options to be passed to generateContent function and/or a clean up call back function
+   * will be returned in the output of this function.
    * @param videoFile Path to the video file.
    * @param conversationId Unique identifier of the conversation.
-   * @returns An object containing the prompt, optional options, and a cleanup function.
+   * @returns An object containing the prompt, optional options, and an optional cleanup function.
    */
-  buildVideoPrompt(
-    videoFile: string,
-    conversationId?: string,
-  ): Promise<{
-    prompt: PROMPT;
-    options?: OPTIONS;
-    cleanup?: () => Promise<void>;
-  }>;
+  buildVideoPrompt(videoFile: string, conversationId?: string): Promise<BuildVideoPromptOutput<PROMPT, OPTIONS>>;
 
   /**
    * Build prompt for sending text content to AI
@@ -59,4 +68,71 @@ export interface ChatAPI<CLIENT, OPTIONS, PROMPT, RESPONSE> {
   ): Promise<{
     prompt: PROMPT;
   }>;
+}
+
+export interface VideoRetrievalIndexOptions {
+  endpoint: string;
+  apiKey: string;
+  indexName?: string;
+  createIndexIfNotExists?: boolean;
+  deleteIndexWhenConversationEnds?: boolean;
+  deleteDocumentWhenConversationEnds?: boolean;
+}
+
+export interface ExtractVideoFramesOptions {
+  /**
+   * Function for extracting frames from the video.
+   * If not specified, a default function using ffmpeg will be used.
+   */
+  extractor?: VideoFramesExtractor;
+  /**
+   * Image format of the extracted frames.
+   * Default value is 'jpg'.
+   */
+  format?: string;
+  /**
+   * Intervals between frames to be extracted. The unit is second.
+   * Default value is 5.
+   */
+  interval?: number;
+  /**
+   * Maximum number of frames to be extracted.
+   * Default value is 10 which is the current per-request limitation of ChatGPT Vision.
+   */
+  limit?: number;
+  /**
+   * Video frame width, default is 200.
+   * If both videoFrameWidth and videoFrameHeight are not specified,
+   * then the frames will not be resized/scaled.
+   */
+  width?: number;
+  /**
+   * Video frame height, default is undefined which means the scaling
+   * will be determined by the videoFrameWidth option.
+   * If both videoFrameWidth and videoFrameHeight are not specified,
+   * then the frames will not be resized/scaled.
+   */
+  height?: number;
+}
+
+export interface StorageOptions {
+  /**
+   * Function for uploading files
+   */
+  uploader?: FileBatchUploader;
+  /**
+   * Storage container for storing frame images of the video.
+   */
+  storageContainerName?: string;
+  /**
+   * Path prefix to be prepended for storing frame images of the video.
+   * Default is empty.
+   */
+  storagePathPrefix?: string;
+  /**
+   * Expiration time for the download URL of the frame images in seconds. Default is 3600 seconds.
+   */
+  downloadUrlExpirationSeconds?: number;
+
+  azureStorageConnectionString?: string;
 }
