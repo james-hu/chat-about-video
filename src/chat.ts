@@ -1,233 +1,61 @@
-/* eslint-disable unicorn/prefer-string-replace-all */
-/* eslint-disable unicorn/no-array-push-push */
-import type {
-  ChatCompletions,
-  ChatMessageContentItem,
-  ChatRequestAssistantMessage,
-  ChatRequestMessage,
-  ChatRequestSystemMessage,
-  ChatRequestUserMessage,
-  GetChatCompletionsOptions,
-} from '@azure/openai';
-
-import { OpenAIClient } from '@azure/openai';
 import { ConsoleLineLogger, consoleWithoutColour, generateRandomString } from '@handy-common-utils/misc-utils';
 import { withRetry } from '@handy-common-utils/promise-utils';
-import os from 'node:os';
-import path from 'node:path';
 
-import { fixClient } from './client-hack';
-import { FileBatchUploader, lazyCreatedFileBatchUploader } from './storage';
-import { VideoFramesExtractor, extractVideoFramesWithFfmpeg } from './video';
+import type { ChatGptOptions } from './chat-gpt';
+import type { GeminiOptions } from './gemini';
 
-/**
- * Option settings for ChatAboutVideo
- */
-export interface ChatAboutVideoOptions {
-  /**
-   * Name/ID of the deployment
-   */
-  openAiDeploymentName: string;
-  /**
-   * Temporary directory for storing temporary files.
-   * If not specified, them temporary directory of the OS will be used.
-   */
-  tmpDir: string;
+import { AdditionalCompletionOptions, ChatApi } from './types';
 
-  videoRetrievalIndex?: {
-    endpoint: string;
-    apiKey: string;
-    indexName?: string;
-    createIndexIfNotExists?: boolean;
-    deleteIndexWhenConversationEnds?: boolean;
-    deleteDocumentWhenConversationEnds?: boolean;
-  };
+export type SupportedChatApiOptions = ChatGptOptions | GeminiOptions;
 
-  extractVideoFrames?: {
-    /**
-     * Function for extracting frames from the video.
-     * If not specified, a default function using ffmpeg will be used.
-     */
-    extractor: VideoFramesExtractor;
-    /**
-     * Intervals between frames to be extracted. The unit is second.
-     * Default value is 5.
-     */
-    interval: number;
-    /**
-     * Maximum number of frames to be extracted.
-     * Default value is 10 which is the current per-request limitation of ChatGPT Vision.
-     */
-    limit: number;
-    /**
-     * Video frame width, default is 200.
-     * If both videoFrameWidth and videoFrameHeight are not specified,
-     * then the frames will not be resized/scaled.
-     */
-    width: number | undefined;
-    /**
-     * Video frame height, default is undefined which means the scaling
-     * will be determined by the videoFrameWidth option.
-     * If both videoFrameWidth and videoFrameHeight are not specified,
-     * then the frames will not be resized/scaled.
-     */
-    height: number | undefined;
-  };
-
-  /**
-   * Function for uploading files
-   */
-  fileBatchUploader: FileBatchUploader;
-  /**
-   * Storage container for storing frame images of the video.
-   */
-  storageContainerName?: string;
-  /**
-   * Path prefix to be prepended for storing frame images of the video.
-   */
-  storagePathPrefix: string;
-
-  /**
-   * Initial prompts to be added to the chat history before frame images.
-   */
-  initialPrompts?: ChatRequestMessage[];
-  /**
-   * Prompts to be added to the chat history right after frame images.
-   */
-  startPrompts?: ChatRequestMessage[];
-}
-
-export type ExtractVideoFramesOptions = Exclude<ChatAboutVideoOptions['extractVideoFrames'], undefined>;
-export type VideoRetrievalIndexOptions = Exclude<ChatAboutVideoOptions['videoRetrievalIndex'], undefined>;
-export type ChatOptions = {
-  /**
-   * Array of retry backoff periods (unit: milliseconds) for situations that the server returns 429 response
-   */
-  throttleBackoff?: number[];
-} & GetChatCompletionsOptions;
-export type ConversationOptions = {
-  chatCompletions?: Partial<ChatOptions>;
-  extractVideoFrames?: Partial<ExtractVideoFramesOptions>;
-  videoRetrievalIndex?: Partial<VideoRetrievalIndexOptions>;
+const defaultCompletionOptions: AdditionalCompletionOptions = {
+  systemPromptText:
+    "You are an AI specialized in analyzing video content. The user will provide frames from a video and ask questions about that video. Your task is to provide objective, concise, and accurate answers based solely on the provided frames. Do not acknowledge or repeat the user's questions, and avoid any explanations. Provide only the necessary information and answer the questions directly.",
+  backoffOnThrottling: [1000, 2000, 3000, 5000, 10000, 10000],
 };
 
-const DEFAULT_INITIAL_PROMPTS = [
-  {
-    role: 'system',
-    content:
-      "You are an AI specialized in analyzing video content. The user will provide frames from a video and ask questions about the content. Your task is to provide objective, concise, and accurate answers based solely on the provided frames. Do not acknowledge or repeat the user's questions, and avoid any explanations. Provide only the necessary information and answer the questions directly.",
-  } as ChatRequestSystemMessage,
-  {
-    role: 'user',
-    content: 'I am going to give you frames extracted from the video, then I will let you know when I am going to give you instructions.',
-  } as ChatRequestUserMessage,
-];
-
-const DEFAULT_START_PROMPTS = [
-  {
-    role: 'user',
-    content: 'Now I have given you all the frames in the video. I am going to give you instructions.',
-  } as ChatRequestUserMessage,
-];
-
-export type ChatAboutVideoConstructorOptions = {
-  /**
-   * Endpoint URL for accessing the deployment in Azure,
-   * or undefined for non-Azure OpenAI API.
-   */
-  openAiEndpoint?: string;
-  /**
-   * API key for accessing the deployment
-   */
-  openAiApiKey: string;
-  /**
-   * Azure Storage connection string.
-   * Frame images of the video will be uploaded to blob storage using this connection string.
-   */
-  azureStorageConnectionString?: string;
-  /**
-   * Number of seconds for the generated download URL to be valid.
-   * Download URLs will be generated for the deployment to access uploaded frame images.
-   */
-  downloadUrlExpirationSeconds?: number;
-} & {
-  videoRetrievalIndex?: Partial<ChatAboutVideoOptions['videoRetrievalIndex']> &
-    Pick<Exclude<ChatAboutVideoOptions['videoRetrievalIndex'], undefined>, 'endpoint' | 'apiKey'>;
-  extractVideoFrames?: Partial<Exclude<ChatAboutVideoOptions['extractVideoFrames'], undefined>>;
-} & Partial<Omit<ChatAboutVideoOptions, 'videoRetrievalIndex' | 'extractVideoFrames'>> &
-  Required<Pick<ChatAboutVideoOptions, 'openAiDeploymentName'>>;
-
-interface PreparationResult {
-  messages: ChatRequestMessage[];
-  options?: ChatOptions;
-  cleanup?: () => Promise<void>;
+function isGeminiOptions(options: any): options is GeminiOptions {
+  const opts = options as GeminiOptions;
+  return opts?.clientSettings?.modelParams != null;
 }
 
-export class ChatAboutVideo {
-  protected options: ChatAboutVideoOptions;
-  protected client: OpenAIClient;
+function isChatGptOptions(options: any): options is ChatGptOptions {
+  const opts = options as ChatGptOptions;
+  return !isGeminiOptions(options) && opts?.storage != null;
+}
+
+export class ChatAboutVideo<CLIENT = any, OPTIONS extends AdditionalCompletionOptions = any, PROMPT = any, RESPONSE = any> {
+  protected options: SupportedChatApiOptions;
+  protected apiPromise: Promise<ChatApi<CLIENT, OPTIONS, PROMPT, RESPONSE>>;
+
   constructor(
-    options: ChatAboutVideoConstructorOptions,
+    options: SupportedChatApiOptions,
     protected log: ConsoleLineLogger | undefined = consoleWithoutColour(),
   ) {
-    let fileBatchUploader = options.fileBatchUploader;
-    if (!fileBatchUploader) {
-      if (!options.storageContainerName) {
-        throw new Error('Either fileBatchUploader or storageContainerName must be provided');
-      }
-      // eslint-disable-next-line unicorn/prefer-ternary
-      if (options.azureStorageConnectionString) {
-        // use Azure
-        fileBatchUploader = lazyCreatedFileBatchUploader(
-          Promise.all([import('./azure'), import('@azure/storage-blob')]).then(([azure, storageBlob]) =>
-            azure.createAzureBlobStorageFileBatchUploader(
-              storageBlob.BlobServiceClient.fromConnectionString(options.azureStorageConnectionString!),
-              options.downloadUrlExpirationSeconds ?? 3600,
-            ),
-          ),
-        );
-      } else {
-        // use AWS
-        fileBatchUploader = lazyCreatedFileBatchUploader(
-          Promise.all([import('./aws'), import('@aws-sdk/client-s3')]).then(([aws, clientS3]) =>
-            aws.createAwsS3FileBatchUploader(new clientS3.S3Client(), options.downloadUrlExpirationSeconds ?? 3600),
-          ),
-        );
-      }
-    }
-
-    this.options = {
-      fileBatchUploader,
-      storagePathPrefix: '',
-      tmpDir: os.tmpdir(),
+    const effectiveOptions = {
+      completionOptions: {
+        ...defaultCompletionOptions,
+        ...options.completionOptions,
+      },
       ...options,
-      extractVideoFrames:
-        options.extractVideoFrames || !options.videoRetrievalIndex
-          ? {
-              extractor: extractVideoFramesWithFfmpeg,
-              interval: 5,
-              limit: 10,
-              width: 200,
-              height: undefined,
-              ...options.extractVideoFrames,
-            }
-          : undefined,
-      videoRetrievalIndex: options.videoRetrievalIndex
-        ? {
-            createIndexIfNotExists: true,
-            deleteDocumentWhenConversationEnds: true,
-            deleteIndexWhenConversationEnds: false,
-            ...options.videoRetrievalIndex,
-          }
-        : undefined,
-    };
-    // eslint-disable-next-line unicorn/prefer-ternary
-    if (options.openAiEndpoint) {
-      this.client = new OpenAIClient(options.openAiEndpoint, { key: options.openAiApiKey });
+    } as SupportedChatApiOptions;
+    this.options = effectiveOptions;
+    if (isGeminiOptions(effectiveOptions)) {
+      this.log && this.log.debug(`Using Gemini API (model=${effectiveOptions.clientSettings.modelParams.model})`);
+      this.apiPromise = import('./gemini').then((gemini) => new gemini.GeminiApi(effectiveOptions) as any);
+    } else if (isChatGptOptions(effectiveOptions)) {
+      this.apiPromise = import('./chat-gpt').then((chatGpt) => new chatGpt.ChatGptApi(effectiveOptions) as any);
     } else {
-      this.client = new OpenAIClient({ key: options.openAiApiKey });
+      throw new Error('Unable to determine which API to use, did you miss something in the options passed to the constructor of ChatAboutVideo?');
     }
-    fixClient(this.client);
+  }
+
+  /**
+   * Get the underlying API instance.
+   * @returns The underlying API instance.
+   */
+  async getApi(): Promise<ChatApi<CLIENT, OPTIONS, PROMPT, RESPONSE>> {
+    return this.apiPromise;
   }
 
   /**
@@ -235,7 +63,7 @@ export class ChatAboutVideo {
    * @param options Overriding options for this conversation
    * @returns The conversation.
    */
-  async startConversation(options?: Pick<ConversationOptions, 'chatCompletions'>): Promise<Conversation>;
+  async startConversation(options?: OPTIONS): Promise<Conversation<CLIENT, OPTIONS, PROMPT, RESPONSE>>;
 
   /**
    * Start a conversation about a video.
@@ -243,213 +71,74 @@ export class ChatAboutVideo {
    * @param options Overriding options for this conversation
    * @returns The conversation.
    */
-  async startConversation(
-    videoFile: string,
-    options?: {
-      chatCompletions?: Partial<ChatOptions>;
-      extractVideoFrames?: Partial<ExtractVideoFramesOptions>;
-      videoRetrievalIndex?: Partial<VideoRetrievalIndexOptions>;
-    },
-  ): Promise<Conversation>;
+  async startConversation(videoFile: string, options?: OPTIONS): Promise<Conversation<CLIENT, OPTIONS, PROMPT, RESPONSE>>;
 
   async startConversation(
-    videoFileOrOptions?: string | Pick<ConversationOptions, 'chatCompletions'>,
-    optionsOrUndefined?: ConversationOptions,
-  ): Promise<Conversation> {
+    videoFileOrOptions?: string | OPTIONS,
+    optionsOrUndefined?: OPTIONS,
+  ): Promise<Conversation<CLIENT, OPTIONS, PROMPT, RESPONSE>> {
     const videoFile = typeof videoFileOrOptions === 'string' ? videoFileOrOptions : undefined;
-    const options: typeof optionsOrUndefined = typeof videoFileOrOptions === 'string' ? optionsOrUndefined : videoFileOrOptions;
+    let options = {
+      ...this.options.completionOptions,
+      ...(typeof videoFileOrOptions === 'string' ? optionsOrUndefined : videoFileOrOptions),
+    } as OPTIONS;
 
+    const cleanupFuncs: Array<() => Promise<any>> = [];
     const conversationId = generateRandomString(24); // equivalent to uuid
-    const messages: ChatRequestMessage[] = [];
-    messages.push(...(this.options.initialPrompts ?? DEFAULT_INITIAL_PROMPTS));
 
-    let preparationResult: PreparationResult | undefined;
+    const api = await this.apiPromise;
+    let initialPrompt: PROMPT | undefined = undefined;
+    if (options.startPromptText) {
+      const { prompt } = await api.buildTextPrompt(options.startPromptText);
+      initialPrompt = await api.appendToPrompt(prompt, initialPrompt);
+    }
     if (videoFile) {
-      preparationResult = this.options.extractVideoFrames
-        ? await this.prepareVideoFrames(conversationId, videoFile, options?.extractVideoFrames)
-        : await this.prepareVideoRetrievalIndex(conversationId, videoFile, options?.videoRetrievalIndex);
-      messages.push(...preparationResult.messages);
+      const { prompt, options: additionalOptions, cleanup } = await api.buildVideoPrompt(videoFile);
+      initialPrompt = await api.appendToPrompt(prompt, initialPrompt);
+      options = { ...options, ...additionalOptions };
+      if (cleanup) {
+        cleanupFuncs.push(cleanup);
+      }
     }
 
-    messages.push(...(this.options.startPrompts ?? DEFAULT_START_PROMPTS));
-
-    const conversation = new Conversation(
-      this.client,
-      this.options.openAiDeploymentName,
+    const conversation = new Conversation<CLIENT, OPTIONS, PROMPT, RESPONSE>(
       conversationId,
-      messages,
-      { ...preparationResult?.options, ...options?.chatCompletions },
-      preparationResult?.cleanup,
+      api,
+      initialPrompt,
+      options,
+      () => Promise.all(cleanupFuncs.map((cleanup) => cleanup())),
       this.log,
     );
     return conversation;
   }
-
-  protected async prepareVideoFrames(
-    conversationId: string,
-    videoFile: string,
-    extractVideoFramesOptions?: Partial<ExtractVideoFramesOptions>,
-  ): Promise<PreparationResult> {
-    const extractVideoFrames = {
-      ...this.options.extractVideoFrames!,
-      ...extractVideoFramesOptions,
-    };
-    const videoFramesDir = path.join(this.options.tmpDir, conversationId);
-    const frameImageFiles = await extractVideoFrames.extractor(
-      videoFile,
-      videoFramesDir,
-      extractVideoFrames.interval,
-      undefined,
-      extractVideoFrames.width,
-      extractVideoFrames.height,
-    );
-    this.log && this.log.debug(`Extracted ${frameImageFiles.length} frames from video`, frameImageFiles);
-    const maxNumFrames = extractVideoFrames.limit;
-    if (frameImageFiles.length > maxNumFrames) {
-      const previousLength = frameImageFiles.length;
-      frameImageFiles.splice(maxNumFrames);
-      this.log && this.log.debug(`Truncated ${previousLength} frames to ${maxNumFrames}`);
-    }
-
-    const frameImageUrls = await this.options.fileBatchUploader(
-      videoFramesDir,
-      frameImageFiles,
-      this.options.storageContainerName!,
-      `${this.options.storagePathPrefix}${conversationId}/`,
-    );
-    this.log && this.log.debug(`Uploaded ${frameImageUrls.length} frames to storage`, frameImageUrls);
-
-    const messages: ChatRequestMessage[] = [];
-    messages.push(
-      ...frameImageUrls.map(
-        (url) =>
-          ({
-            role: 'user',
-            content: [
-              {
-                type: 'image_url',
-                imageUrl: {
-                  url,
-                  detail: 'auto',
-                },
-              },
-            ],
-          }) as ChatRequestUserMessage,
-      ),
-    );
-    return {
-      messages,
-    };
-  }
-
-  protected async prepareVideoRetrievalIndex(
-    conversationId: string,
-    videoFile: string,
-    videoRetrievalIndexOptions?: Partial<VideoRetrievalIndexOptions>,
-  ): Promise<PreparationResult> {
-    const [videoUrl] = await this.options.fileBatchUploader(
-      path.dirname(videoFile),
-      [path.basename(videoFile)],
-      this.options.storageContainerName!,
-      `${this.options.storagePathPrefix}${conversationId}/`,
-    );
-
-    const videoRetrievalIndex = {
-      ...this.options.videoRetrievalIndex!,
-      ...videoRetrievalIndexOptions,
-    };
-    const {
-      endpoint,
-      apiKey,
-      indexName: specifiedIndexName,
-      createIndexIfNotExists: createIndexIfNotExist,
-      deleteDocumentWhenConversationEnds: deleteDocumentAfterConversation,
-      deleteIndexWhenConversationEnds: deleteIndexAfterConversation,
-    } = videoRetrievalIndex;
-    const indexName = specifiedIndexName ?? conversationId.toLowerCase().replace(/[^\dA-Za-z]/g, '-');
-    const ingestionName = conversationId;
-    const documentId = conversationId;
-    const documentUrl = videoUrl;
-
-    const { VideoRetrievalApiClient } = await import('./azure');
-    const videoRetrievalIndexClient = new VideoRetrievalApiClient(endpoint, apiKey);
-
-    if (createIndexIfNotExist) {
-      await videoRetrievalIndexClient.createIndexIfNotExist(indexName);
-    }
-
-    await videoRetrievalIndexClient.ingest(indexName, ingestionName, {
-      moderation: false,
-      generateInsightIntervals: true,
-      filterDefectedFrames: true,
-      includeSpeechTranscript: true,
-      videos: [
-        {
-          mode: 'add',
-          documentId,
-          documentUrl,
-        },
-      ],
-    });
-    this.log && this.log.debug(`Indexed video in index ${indexName}`);
-
-    const messages: ChatRequestMessage[] = [];
-    messages.push({
-      role: 'user',
-      content: [
-        {
-          type: 'acv_document_id',
-          acv_document_id: documentId,
-        } as unknown as ChatMessageContentItem,
-      ],
-    } as ChatRequestUserMessage);
-    return {
-      messages,
-      options: {
-        azureExtensionOptions: {
-          enhancements: {
-            video: {
-              enabled: true,
-            },
-          } as any,
-          extensions: [
-            {
-              type: 'AzureComputerVisionVideoIndex',
-              parameters: {
-                endpoint: endpoint,
-                computer_vision_api_key: apiKey,
-                index_name: indexName,
-                video_urls: [videoUrl],
-              },
-            } as any,
-          ],
-        },
-      },
-      cleanup: async () => {
-        if (deleteIndexAfterConversation) {
-          await videoRetrievalIndexClient.deleteIndex(indexName);
-        } else if (deleteDocumentAfterConversation) {
-          await videoRetrievalIndexClient.deleteDocument(indexName, documentUrl);
-        }
-      },
-    };
-  }
 }
 
-function chatResponse(result: ChatCompletions): string | undefined {
-  return result?.choices?.[0]?.message?.content || undefined;
-}
-
-export class Conversation {
+export class Conversation<CLIENT = any, OPTIONS extends AdditionalCompletionOptions = any, PROMPT = any, RESPONSE = any> {
   constructor(
-    protected client: OpenAIClient,
-    protected deploymentName: string,
     protected conversationId: string,
-    protected messages: ChatRequestMessage[],
-    protected options?: GetChatCompletionsOptions,
-    protected cleanup?: () => Promise<void>,
+    protected api: ChatApi<CLIENT, OPTIONS, PROMPT, RESPONSE>,
+    protected prompt: PROMPT | undefined,
+    protected options: OPTIONS,
+    protected cleanup?: () => Promise<any>,
     protected log: ConsoleLineLogger | undefined = consoleWithoutColour(),
   ) {}
+
+  /**
+   * Get the underlying API instance.
+   * @returns The underlying API instance.
+   */
+  getApi(): ChatApi<CLIENT, OPTIONS, PROMPT, RESPONSE> {
+    return this.api;
+  }
+
+  /**
+   * Get the prompt for the current conversation.
+   * The prompt is the accumulated messages in the conversation so far.
+   * @returns The prompt which is the accumulated messages in the conversation so far.
+   */
+  getPrompt(): PROMPT | undefined {
+    return this.prompt;
+  }
 
   /**
    * Say something in the conversation, and get the response from AI
@@ -457,36 +146,26 @@ export class Conversation {
    * @param options Options for fine control.
    * @returns The response/completion
    */
-  async say(message: string, options?: ChatOptions): Promise<string | undefined> {
-    const newMessage: ChatRequestUserMessage = {
-      role: 'user',
-      content: message,
-    };
-
+  async say(message: string, options?: OPTIONS): Promise<string | undefined> {
+    const { prompt: newPromptPart } = await this.api.buildTextPrompt(message);
+    const updatedPrompt = await this.api.appendToPrompt(newPromptPart, this.prompt);
     const effectiveOptions = { ...this.options, ...options };
-    const messagesToSend = [...this.messages, newMessage];
-    const result = await withRetry(
-      () => this.client.getChatCompletions(this.deploymentName, messagesToSend, effectiveOptions),
-      effectiveOptions.throttleBackoff ?? [],
-      (error) => {
-        const code = String(error?.code);
-        return code === 'TooManyRequests' || code === '429';
-      },
+    const response = await withRetry(
+      () => this.api.generateContent(updatedPrompt, effectiveOptions),
+      effectiveOptions.backoffOnThrottling ?? [],
+      (error) => this.api.isThrottlingError(error),
     );
-    this.log && this.log.debug('Result from chat', JSON.stringify(result, null, 2));
+    const responseText = await this.api.getResponseText(response);
+    this.prompt = await this.api.appendToPrompt(response, updatedPrompt);
 
-    const response = chatResponse(result);
-    this.messages.push(newMessage, {
-      role: 'assistant',
-      content: response,
-    } as ChatRequestAssistantMessage);
-    this.log && this.log.debug('Updated message history', JSON.stringify(this.messages, null, 2));
-    return response;
+    this.log && this.log.debug(`Conversation ${this.conversationId} response: ${responseText}`, { conversation: this.prompt });
+    return responseText;
   }
 
   async end(): Promise<void> {
     if (this.cleanup) {
       await this.cleanup();
+      this.log && this.log.debug(`Conversation ${this.conversationId} cleaned up`);
     }
   }
 }

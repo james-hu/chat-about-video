@@ -1,24 +1,29 @@
 import { FileBatchUploader } from './storage/types';
 import { VideoFramesExtractor } from './video/types';
 
+export interface AdditionalCompletionOptions {
+  /**
+   * System prompt text. If not provided, a default prompt will be used.
+   */
+  systemPromptText?: string;
+  /**
+   * The user prompt that will be sent before the video content.
+   * If not provided, nothing will be sent before the video content.
+   */
+  startPromptText?: string;
+  /**
+   * Array of retry backoff periods (unit: milliseconds) for situations that the server returns 429 response
+   */
+  backoffOnThrottling?: number[];
+}
+
 export interface ChatApiOptions<CS, CO> {
   credential: {
     key: string;
   };
   endpoint?: string;
-  deploymentName: string;
   clientSettings: CS;
-  completionOptions?: {
-    /**
-     * System prompt text. If not provided, a default prompt will be used.
-     */
-    systemPromptText?: string;
-    /**
-     * The user prompt that will be sent before the video content.
-     * If not provided, nothing will be sent before the video content.
-     */
-    startPromptText?: string;
-  } & CO;
+  completionOptions?: AdditionalCompletionOptions & CO;
   /**
    * Temporary directory for storing temporary files.
    * If not specified, then the temporary directory of the OS will be used.
@@ -26,12 +31,12 @@ export interface ChatApiOptions<CS, CO> {
   tmpDir?: string;
 }
 
-export interface BuildVideoPromptOutput<PROMPT, OPTIONS> {
+export interface BuildPromptOutput<PROMPT, OPTIONS> {
   prompt: PROMPT;
-  options?: OPTIONS;
-  cleanup?: () => Promise<void>;
+  options?: Partial<OPTIONS>;
+  cleanup?: () => Promise<any>;
 }
-export interface ChatAPI<CLIENT, OPTIONS, PROMPT, RESPONSE> {
+export interface ChatApi<CLIENT, OPTIONS extends AdditionalCompletionOptions, PROMPT, RESPONSE> {
   /**
    * Get the raw client.
    * This function could be useful for advanced use cases.
@@ -47,6 +52,7 @@ export interface ChatAPI<CLIENT, OPTIONS, PROMPT, RESPONSE> {
    * @returns The full prompt which is effectively the conversation history.
    */
   appendToPrompt(newPromptOrResponse: PROMPT | RESPONSE, prompt?: PROMPT): Promise<PROMPT>;
+
   /**
    * Generate content based on the given prompt and options.
    * @param prompt The full prompt to generate content.
@@ -54,6 +60,19 @@ export interface ChatAPI<CLIENT, OPTIONS, PROMPT, RESPONSE> {
    * @returns The generated content.
    */
   generateContent(prompt: PROMPT, options?: OPTIONS): Promise<RESPONSE>;
+
+  /**
+   * Get the text from the response object
+   * @param response the response object
+   */
+  getResponseText(response: RESPONSE): Promise<string | undefined>;
+
+  /**
+   * Check if the error is a throttling error.
+   * @param error any error object
+   * @returns true if the error is a throttling error, false otherwise.
+   */
+  isThrottlingError(error: any): boolean;
 
   /**
    * Build prompt for sending video content to AI.
@@ -64,7 +83,7 @@ export interface ChatAPI<CLIENT, OPTIONS, PROMPT, RESPONSE> {
    * @param conversationId Unique identifier of the conversation.
    * @returns An object containing the prompt, optional options, and an optional cleanup function.
    */
-  buildVideoPrompt(videoFile: string, conversationId?: string): Promise<BuildVideoPromptOutput<PROMPT, OPTIONS>>;
+  buildVideoPrompt(videoFile: string, conversationId?: string): Promise<BuildPromptOutput<PROMPT, OPTIONS>>;
 
   /**
    * Build prompt for sending text content to AI
@@ -123,6 +142,10 @@ export interface ExtractVideoFramesOptions {
    * then the frames will not be resized/scaled.
    */
   height?: number;
+  /**
+   * Whether files should be deleted when the conversation ends.
+   */
+  deleteFilesWhenConversationEnds?: boolean;
 }
 
 export interface StorageOptions {
@@ -143,6 +166,10 @@ export interface StorageOptions {
    * Expiration time for the download URL of the frame images in seconds. Default is 3600 seconds.
    */
   downloadUrlExpirationSeconds?: number;
+  /**
+   * Whether files should be deleted when the conversation ends.
+   */
+  deleteFilesWhenConversationEnds?: boolean;
 
   azureStorageConnectionString?: string;
 }

@@ -6,6 +6,9 @@
     "chat-gpt",
     "gemini"
   ],
+  "engines": {
+    "node": "12.9"
+  },
   "scripts": {
     "format:all": "prettier --write --ignore-unknown .",
     "pretest": "eslint . --ext .ts",

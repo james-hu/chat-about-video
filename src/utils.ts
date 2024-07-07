@@ -17,6 +17,7 @@ export function effectiveExtractVideoFramesOptions(
     interval: 5,
     limit: 10,
     width: 200,
+    deleteFilesWhenConversationEnds: true,
     ...options,
   };
 }
@@ -54,6 +55,7 @@ export function effectiveStorageOptions(options: StorageOptions): Required<Pick<
   return {
     uploader,
     storagePathPrefix: '',
+    deleteFilesWhenConversationEnds: true,
     ...options,
   };
 }

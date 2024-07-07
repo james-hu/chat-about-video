@@ -11,7 +11,12 @@ export function fixClient(openAIClient: any) {
                 return function (...args: any[]) {
                   const body = args[0]?.body;
                   // console.log(body);
-                  if (body && Array.isArray(body.data_sources) && body.data_sources?.[0]?.type === 'AzureComputerVisionVideoIndex' && body.enhancements?.video?.enabled !== true) {
+                  if (
+                    body &&
+                    Array.isArray(body.data_sources) &&
+                    body.data_sources?.[0]?.type === 'AzureComputerVisionVideoIndex' &&
+                    body.enhancements?.video?.enabled !== true
+                  ) {
                     body.enhancements = {
                       video: {
                         enabled: true,

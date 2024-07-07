@@ -1,6 +1,7 @@
 /* eslint-disable max-params */
+import { inParallel } from '@handy-common-utils/promise-utils';
 import { execFile } from 'node:child_process';
-import fs from 'node:fs';
+import fs from 'node:fs/promises';
 import path from 'node:path';
 import { promisify } from 'node:util';
 
@@ -37,17 +38,20 @@ export const extractVideoFramesWithFfmpeg: VideoFramesExtractor = async (
     ...(width || height ? ['-vf', `scale=${width ?? (height ? '-1' : 'iw')}:${height ?? (width ? '-1' : 'ih')}`] : []),
   ];
 
-  const result: string[] = [];
+  const relativePaths: string[] = [];
 
-  fs.mkdirSync(outputDir, { recursive: true });
-  for (let i = startSec; (endSec == null || i < endSec) && (limit == null || result.length <= limit); i += intervalSec) {
+  await fs.mkdir(outputDir, { recursive: true });
+  for (let i = startSec; (endSec == null || i < endSec) && (limit == null || relativePaths.length <= limit); i += intervalSec) {
     const fileName = `${String(i).padStart(6, '0')}.${format}`;
     const { stderr } = await execFileAsync(ffmpegPath, [...args1, `${i}`, ...args2, path.join(outputDir, fileName)]);
     if (stderr && stderr.includes('Output file is empty, nothing was encoded')) {
       break;
     }
-    result.push(fileName);
+    relativePaths.push(fileName);
   }
 
-  return result;
+  return {
+    relativePaths,
+    cleanup: () => inParallel(5, relativePaths, (relativePath) => fs.unlink(path.join(outputDir, relativePath))),
+  };
 };
