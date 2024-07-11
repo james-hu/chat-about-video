@@ -44,6 +44,8 @@ export class ChatAboutVideo<CLIENT = any, OPTIONS extends AdditionalCompletionOp
       this.log && this.log.debug(`Using Gemini API (model=${effectiveOptions.clientSettings.modelParams.model})`);
       this.apiPromise = import('./gemini').then((gemini) => new gemini.GeminiApi(effectiveOptions) as any);
     } else if (isChatGptOptions(effectiveOptions)) {
+      this.log &&
+        this.log.debug(`Using ChatGpt API (endpoint=${effectiveOptions.endpoint}, deployment=${effectiveOptions.completionOptions?.deploymentName})`);
       this.apiPromise = import('./chat-gpt').then((chatGpt) => new chatGpt.ChatGptApi(effectiveOptions) as any);
     } else {
       throw new Error('Unable to determine which API to use, did you miss something in the options passed to the constructor of ChatAboutVideo?');
@@ -158,7 +160,7 @@ export class Conversation<CLIENT = any, OPTIONS extends AdditionalCompletionOpti
     const responseText = await this.api.getResponseText(response);
     this.prompt = await this.api.appendToPrompt(response, updatedPrompt);
 
-    this.log && this.log.debug(`Conversation ${this.conversationId} response: ${responseText}`, { conversation: this.prompt });
+    this.log && this.log.debug(`Conversation ${this.conversationId} progressed`, { conversation: this.prompt });
     return responseText;
   }
 
