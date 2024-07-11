@@ -16,6 +16,7 @@ export type GeminiClientOptions = { modelParams: ModelParams; requestOptions: Re
 export type GeminiCompletionOptions = AdditionalCompletionOptions & Omit<GenerateContentRequest, 'contents'>;
 export type GeminiOptions = {
   extractVideoFrames: ExtractVideoFramesOptions;
+  clientSettings: GeminiClientOptions;
 } & ChatApiOptions<GeminiClientOptions, GeminiCompletionOptions>;
 
 export class GeminiApi implements ChatApi<GenerativeModel, GeminiCompletionOptions, GeminiPrompt, GenerateContentResult> {

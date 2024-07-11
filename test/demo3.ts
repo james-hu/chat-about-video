@@ -1,27 +1,30 @@
-// This is a demo utilising GPT-4o or Vision preview hosted in OpenAI.
-// OpenAI API allows more than 10 (maximum allowed by Azure's OpenAI API) images to be supplied.
+// This is a demo utilising GPT-4o or Vision preview hosted in Azure.
+// Up to 10 (maximum allowed by Azure's OpenAI API) frames are extracted from the input video.
 // Video frame images are uploaded to Azure Blob Storage and then made available to GPT from there.
 //
 // This script can be executed with a command line like this from the project root directory:
-// export OPENAI_API_KEY=...
+// export AZURE_OPENAI_API_ENDPOINT=..
+// export AZURE_OPENAI_API_KEY=...
 // export AZURE_STORAGE_CONNECTION_STRING=...
-// export OPENAI_MODEL_NAME=...
+// export AZURE_OPENAI_DEPLOYMENT_NAME=...
 // export AZURE_STORAGE_CONTAINER_NAME=...
-// ENABLE_DEBUG=true DEMO_VIDEO=~/Downloads/test1.mp4 npx ts-node test/demo1.ts
-//
+// ENABLE_DEBUG=true DEMO_VIDEO=~/Downloads/test1.mp4 npx ts-node test/demo3.ts
 
 import { consoleWithColour } from '@handy-common-utils/misc-utils';
 /* eslint-disable node/no-unpublished-import */
 import chalk from 'chalk';
 import readline from 'node:readline';
+// eslint-disable-next-line unicorn/prefer-module
+// const whyIsNodeRunning = require('why-is-node-running');
 
 import { ChatAboutVideo } from '../src';
 
 async function demo() {
   const chat = new ChatAboutVideo(
     {
+      endpoint: process.env.AZURE_OPENAI_API_ENDPOINT!,
       credential: {
-        key: process.env.OPENAI_API_KEY!,
+        key: process.env.AZURE_OPENAI_API_KEY!,
       },
       storage: {
         azureStorageConnectionString: process.env.AZURE_STORAGE_CONNECTION_STRING!,
@@ -29,11 +32,7 @@ async function demo() {
         storagePathPrefix: 'video-frames/',
       },
       completionOptions: {
-        deploymentName: process.env.OPENAI_MODEL_NAME || 'gpt-4o', // 'gpt-4-vision-preview', // or gpt-4o
-      },
-      extractVideoFrames: {
-        limit: 100,
-        interval: 2,
+        deploymentName: process.env.AZURE_OPENAI_DEPLOYMENT_NAME || 'gpt4vision',
       },
     },
     consoleWithColour({ debug: process.env.ENABLE_DEBUG === 'true' }, chalk),
@@ -57,6 +56,7 @@ async function demo() {
   }
   console.log('Demo finished');
   rl.close();
+  // whyIsNodeRunning();
 }
 
 // eslint-disable-next-line unicorn/prefer-top-level-await

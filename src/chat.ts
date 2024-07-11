@@ -33,11 +33,11 @@ export class ChatAboutVideo<CLIENT = any, OPTIONS extends AdditionalCompletionOp
     protected log: ConsoleLineLogger | undefined = consoleWithoutColour(),
   ) {
     const effectiveOptions = {
+      ...options,
       completionOptions: {
         ...defaultCompletionOptions,
         ...options.completionOptions,
       },
-      ...options,
     } as SupportedChatApiOptions;
     this.options = effectiveOptions;
     if (isGeminiOptions(effectiveOptions)) {
@@ -123,7 +123,9 @@ export class Conversation<CLIENT = any, OPTIONS extends AdditionalCompletionOpti
     protected options: OPTIONS,
     protected cleanup?: () => Promise<any>,
     protected log: ConsoleLineLogger | undefined = consoleWithoutColour(),
-  ) {}
+  ) {
+    this.log && this.log.debug(`Conversation ${this.conversationId} started`, { conversation: this.prompt });
+  }
 
   /**
    * Get the underlying API instance.

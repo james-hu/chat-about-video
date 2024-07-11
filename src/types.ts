@@ -22,7 +22,7 @@ export interface ChatApiOptions<CS, CO> {
     key: string;
   };
   endpoint?: string;
-  clientSettings: CS;
+  clientSettings?: CS;
   completionOptions?: AdditionalCompletionOptions & CO;
   /**
    * Temporary directory for storing temporary files.

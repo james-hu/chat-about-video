@@ -7,7 +7,7 @@ import type {
   OpenAIClientOptions,
 } from '@azure/openai';
 
-import { OpenAIClient } from '@azure/openai';
+import { OpenAIClient, OpenAIKeyCredential } from '@azure/openai';
 import { generateRandomString } from '@handy-common-utils/misc-utils';
 import os from 'node:os';
 import path from 'node:path';
@@ -45,7 +45,9 @@ export class ChatGptApi implements ChatApi<OpenAIClient, ChatGptCompletionOption
 
   constructor(protected options: ChatGptOptions) {
     const { credential, endpoint, clientSettings } = options;
-    this.client = endpoint ? new OpenAIClient(endpoint, credential, clientSettings) : new OpenAIClient(credential, clientSettings);
+    this.client = endpoint
+      ? new OpenAIClient(endpoint, credential, clientSettings)
+      : new OpenAIClient(new OpenAIKeyCredential(credential.key), clientSettings);
     fixClient(this.client); // Hacking for supporting Video Retrieval Indexer enhancement
     this.storage = effectiveStorageOptions(options.storage);
     if (options.videoRetrievalIndex?.apiKey && options.videoRetrievalIndex?.endpoint) {
@@ -80,14 +82,15 @@ export class ChatGptApi implements ChatApi<OpenAIClient, ChatGptCompletionOption
 
   async appendToPrompt(newPromptOrResponse: ChatGptPrompt | ChatCompletions, prompt?: ChatGptPrompt): Promise<ChatGptPrompt> {
     prompt =
-      prompt ?? this.options.completionOptions?.systemPromptText
+      prompt ??
+      (this.options.completionOptions?.systemPromptText
         ? [
             {
               role: 'system',
               content: this.options.completionOptions!.systemPromptText,
             } as ChatRequestSystemMessage,
           ]
-        : [];
+        : []);
     if (isChatCompletions(newPromptOrResponse)) {
       const responseText = (await this.getResponseText(newPromptOrResponse)) ?? '';
       prompt.push({
@@ -134,6 +137,8 @@ export class ChatGptApi implements ChatApi<OpenAIClient, ChatGptCompletionOption
       undefined,
       extractVideoFrames.width,
       extractVideoFrames.height,
+      undefined,
+      undefined,
       extractVideoFrames.limit,
     );
 
@@ -197,7 +202,12 @@ export class ChatGptApi implements ChatApi<OpenAIClient, ChatGptCompletionOption
       deleteDocumentWhenConversationEnds: deleteDocumentAfterConversation,
       deleteIndexWhenConversationEnds: deleteIndexAfterConversation,
     } = this.videoRetrievalIndex!;
-    const indexName = specifiedIndexName ?? conversationId.toLowerCase().replaceAll(/[^\dA-Za-z]/g, '-');
+    const indexName =
+      specifiedIndexName ??
+      conversationId
+        .toLowerCase()
+        .replaceAll(/[^\dA-Za-z]/g, '-')
+        .slice(0, 24);
     const ingestionName = conversationId;
     const documentId = conversationId;
     const documentUrl = videoUrl;

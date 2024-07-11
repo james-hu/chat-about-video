@@ -19,35 +19,49 @@ import readline from 'node:readline';
 
 import { ChatAboutVideo } from '../src';
 
-const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
-const prompt = (question: string) => new Promise<string>((resolve) => rl.question(question, resolve));
-
 async function demo() {
-  const chat = new ChatAboutVideo({
-    openAiEndpoint: process.env.AZURE_OPENAI_API_ENDPOINT!,
-    openAiApiKey: process.env.AZURE_OPENAI_API_KEY!,
-    azureStorageConnectionString: process.env.AZURE_STORAGE_CONNECTION_STRING!,
-    openAiDeploymentName: process.env.AZURE_OPENAI_DEPLOYMENT_NAME || 'gpt4vision',
-    storageContainerName: process.env.AZURE_STORAGE_CONTAINER_NAME || 'vision-experiment-input',
-    storagePathPrefix: 'video-frames/',
-    videoRetrievalIndex: {
-      endpoint: process.env.AZURE_CV_API_ENDPOINT!,
-      apiKey: process.env.AZURE_CV_API_KEY!,
-      createIndexIfNotExists: true,
-      deleteIndexWhenConversationEnds: true,
+  const chat = new ChatAboutVideo(
+    {
+      endpoint: process.env.AZURE_OPENAI_API_ENDPOINT!,
+      credential: {
+        key: process.env.AZURE_OPENAI_API_KEY!,
+      },
+      storage: {
+        azureStorageConnectionString: process.env.AZURE_STORAGE_CONNECTION_STRING!,
+        storageContainerName: process.env.AZURE_STORAGE_CONTAINER_NAME || 'vision-experiment-input',
+        storagePathPrefix: 'video-frames/',
+      },
+      completionOptions: {
+        deploymentName: process.env.AZURE_OPENAI_DEPLOYMENT_NAME || 'gpt4vision',
+      },
+      videoRetrievalIndex: {
+        endpoint: process.env.AZURE_CV_API_ENDPOINT!,
+        apiKey: process.env.AZURE_CV_API_KEY!,
+        createIndexIfNotExists: true,
+        deleteIndexWhenConversationEnds: true,
+      },
     },
-  }, consoleWithColour({ debug: process.env.ENABLE_DEBUG === 'true' }, chalk));
+    consoleWithColour({ debug: process.env.ENABLE_DEBUG === 'true' }, chalk),
+  );
 
   const conversation = await chat.startConversation(process.env.DEMO_VIDEO!);
-  
-  while(true) {
+
+  const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
+  const prompt = (question: string) => new Promise<string>((resolve) => rl.question(question, resolve));
+  while (true) {
     const question = await prompt(chalk.red('\nUser: '));
     if (!question) {
       continue;
     }
+    if (['exit', 'quit', 'q', 'end'].includes(question)) {
+      await conversation.end();
+      break;
+    }
     const answer = await conversation.say(question, { maxTokens: 2000 });
     console.log(chalk.blue('\nAI:' + answer));
   }
+  console.log('Demo finished');
+  rl.close();
 }
 
 // eslint-disable-next-line unicorn/prefer-top-level-await
