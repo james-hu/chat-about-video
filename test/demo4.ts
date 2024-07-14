@@ -1,6 +1,6 @@
-// This is a demo utilising Google Gemini through Google Vertex AI API.
+// This is a demo utilising Google Gemini through Google Generative Language API.
 // Google Gemini allows more than 10 (maximum allowed by Azure's OpenAI API) frame images to be supplied.
-// Video frame images are sent through Google Vertex AI API directly.
+// Video frame images are sent through Google Generative Language API directly.
 //
 // This script can be executed with a command line like this from the project root directory:
 // export GEMINI_API_KEY=...
