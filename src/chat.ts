@@ -91,11 +91,11 @@ export class ChatAboutVideo<CLIENT = any, OPTIONS extends AdditionalCompletionOp
     const api = await this.apiPromise;
     let initialPrompt: PROMPT | undefined = undefined;
     if (options.startPromptText) {
-      const { prompt } = await api.buildTextPrompt(options.startPromptText);
+      const { prompt } = await api.buildTextPrompt(options.startPromptText, conversationId);
       initialPrompt = await api.appendToPrompt(prompt, initialPrompt);
     }
     if (videoFile) {
-      const { prompt, options: additionalOptions, cleanup } = await api.buildVideoPrompt(videoFile);
+      const { prompt, options: additionalOptions, cleanup } = await api.buildVideoPrompt(videoFile, conversationId);
       initialPrompt = await api.appendToPrompt(prompt, initialPrompt);
       options = { ...options, ...additionalOptions };
       if (cleanup) {
@@ -124,7 +124,7 @@ export class Conversation<CLIENT = any, OPTIONS extends AdditionalCompletionOpti
     protected cleanup?: () => Promise<any>,
     protected log: ConsoleLineLogger | undefined = consoleWithoutColour(),
   ) {
-    this.log && this.log.debug(`Conversation ${this.conversationId} started`, { conversation: this.prompt });
+    this.log && this.log.debug(`Conversation ${this.conversationId} started`, { conversation: this.prompt, options });
   }
 
   /**
@@ -162,7 +162,7 @@ export class Conversation<CLIENT = any, OPTIONS extends AdditionalCompletionOpti
     const responseText = await this.api.getResponseText(response);
     this.prompt = await this.api.appendToPrompt(response, updatedPrompt);
 
-    this.log && this.log.debug(`Conversation ${this.conversationId} progressed`, { conversation: this.prompt });
+    this.log && this.log.debug(`Conversation ${this.conversationId} progressed`, { conversation: this.prompt, effectiveOptions });
     return responseText;
   }
 

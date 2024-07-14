@@ -12,7 +12,7 @@ import type { AdditionalCompletionOptions, BuildPromptOutput, ChatApi, ChatApiOp
 import { effectiveExtractVideoFramesOptions } from '../utils';
 
 export type GeminiPrompt = GenerateContentRequest['contents'];
-export type GeminiClientOptions = { modelParams: ModelParams; requestOptions: RequestOptions };
+export type GeminiClientOptions = { modelParams: ModelParams; requestOptions?: RequestOptions };
 export type GeminiCompletionOptions = AdditionalCompletionOptions & Omit<GenerateContentRequest, 'contents'>;
 export type GeminiOptions = {
   extractVideoFrames: ExtractVideoFramesOptions;
@@ -32,8 +32,8 @@ export class GeminiApi implements ChatApi<GenerativeModel, GeminiCompletionOptio
     if (!this.options.completionOptions) {
       this.options.completionOptions = {};
     }
-    if (this.options.completionOptions.startPromptText) {
-      this.options.completionOptions.systemInstruction = this.options.completionOptions.startPromptText;
+    if (this.options.completionOptions.systemPromptText) {
+      this.options.completionOptions.systemInstruction = this.options.completionOptions.systemPromptText;
     }
 
     this.extractVideoFrames = effectiveExtractVideoFramesOptions(options.extractVideoFrames);
@@ -52,6 +52,12 @@ export class GeminiApi implements ChatApi<GenerativeModel, GeminiCompletionOptio
       ...this.options.completionOptions,
       ...options,
     };
+    // Google does not allow unknown properties
+    delete effectiveOptions.systemPromptText;
+    delete effectiveOptions.startPromptText;
+    delete effectiveOptions.backoffOnThrottling;
+
+    console.log(3, this.options, { contents: prompt, ...effectiveOptions });
     return this.client.generateContent({ contents: prompt, ...effectiveOptions });
   }
 
@@ -59,8 +65,8 @@ export class GeminiApi implements ChatApi<GenerativeModel, GeminiCompletionOptio
     return result.response.text();
   }
 
-  isThrottlingError(_error: any): boolean {
-    return false;
+  isThrottlingError(error: any): boolean {
+    return error?.status === 429;
   }
 
   async appendToPrompt(newPromptOrResponse: GeminiPrompt | GenerateContentResult, prompt?: GeminiPrompt): Promise<GeminiPrompt> {
@@ -109,6 +115,8 @@ export class GeminiApi implements ChatApi<GenerativeModel, GeminiCompletionOptio
       undefined,
       extractVideoFrames.width,
       extractVideoFrames.height,
+      undefined,
+      undefined,
       extractVideoFrames.limit,
     );
     const prompt = [
