@@ -58,6 +58,24 @@ npm i chat-about-video
 
 ### Optional dependencies
 
+**ChatGPT**
+
+For using ChatGPT hosted in either OpenAI or Azure,
+
+```shell
+npm i @azure/openai
+```
+
+**Gemini**
+
+For using Gemini hosted in Google Cloud,
+
+```shell
+npm i @google/generative-ai
+```
+
+**ffmpeg**
+
 If you intend to utilize ffmpeg for extracting video frame images, ensure it is installed on your system. You can install it using either a system package manager or a helper NPM package:
 
 ```shell
@@ -66,13 +84,17 @@ sudo apt install ffmpeg
 npm i @ffmpeg-installer/ffmpeg
 ```
 
-If you plan to use Azure Blob Storage, include the following dependency:
+**Azure Blob Storage**
+
+If you plan to use Azure Blob Storage for supplying frame images to ChatGPT, include the following dependency:
 
 ```shell
 npm i @azure/storage-blob
 ```
 
-Or if you prefer AWS S3, install the following dependencies:
+**AWS S3**
+
+Or if you prefer AWS S3 for supplying frame images to ChatGPT, install the following dependencies:
 
 ```shell
 npm i @handy-common-utils/aws-utils @aws-sdk/s3-request-presigner @aws-sdk/client-s3
