@@ -404,12 +404,16 @@ demo().catch((error) => console.log(chalk.red(JSON.stringify(error, null, 2))));
 
 - [aws](#modulesawsmd)
 - [azure](#modulesazuremd)
+- [azure/client-hack](#modulesazure_client_hackmd)
 - [azure/video-retrieval-api-client](#modulesazure_video_retrieval_api_clientmd)
 - [chat](#moduleschatmd)
-- [client-hack](#modulesclient_hackmd)
+- [chat-gpt](#moduleschat_gptmd)
+- [gemini](#modulesgeminimd)
 - [index](#modulesindexmd)
 - [storage](#modulesstoragemd)
 - [storage/types](#modulesstorage_typesmd)
+- [types](#modulestypesmd)
+- [utils](#modulesutilsmd)
 - [video](#modulesvideomd)
 - [video/ffmpeg](#modulesvideo_ffmpegmd)
 - [video/types](#modulesvideo_typesmd)
@@ -601,142 +605,151 @@ demo().catch((error) => console.log(chalk.red(JSON.stringify(error, null, 2))));
 
 <a name="classeschatchataboutvideomd"></a>
 
-### Class: ChatAboutVideo
+### Class: ChatAboutVideo\<CLIENT, OPTIONS, PROMPT, RESPONSE\>
 
 [chat](#moduleschatmd).ChatAboutVideo
+
+#### Type parameters
+
+| Name       | Type                                                                                           |
+| :--------- | :--------------------------------------------------------------------------------------------- |
+| `CLIENT`   | `any`                                                                                          |
+| `OPTIONS`  | extends [`AdditionalCompletionOptions`](#interfacestypesadditionalcompletionoptionsmd) = `any` |
+| `PROMPT`   | `any`                                                                                          |
+| `RESPONSE` | `any`                                                                                          |
 
 #### Constructors
 
 ##### constructor
 
-• **new ChatAboutVideo**(`options`, `log?`)
+• **new ChatAboutVideo**\<`CLIENT`, `OPTIONS`, `PROMPT`, `RESPONSE`\>(`options`, `log?`)
+
+###### Type parameters
+
+| Name       | Type                                                                                           |
+| :--------- | :--------------------------------------------------------------------------------------------- |
+| `CLIENT`   | `any`                                                                                          |
+| `OPTIONS`  | extends [`AdditionalCompletionOptions`](#interfacestypesadditionalcompletionoptionsmd) = `any` |
+| `PROMPT`   | `any`                                                                                          |
+| `RESPONSE` | `any`                                                                                          |
 
 ###### Parameters
 
 | Name      | Type                                                                                                                                                                                                                                                                              |
 | :-------- | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `options` | [`ChatAboutVideoConstructorOptions`](#chataboutvideoconstructoroptions)                                                                                                                                                                                                           |
+| `options` | [`SupportedChatApiOptions`](#supportedchatapioptions)                                                                                                                                                                                                                             |
 | `log`     | `undefined` \| `LineLogger`\<(`message?`: `any`, ...`optionalParams`: `any`[]) => `void`, (`message?`: `any`, ...`optionalParams`: `any`[]) => `void`, (`message?`: `any`, ...`optionalParams`: `any`[]) => `void`, (`message?`: `any`, ...`optionalParams`: `any`[]) => `void`\> |
 
 #### Properties
 
 | Property                                                                                                                                                                                                                                                                                               | Description |
 | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ----------- |
-| `Protected` **client**: `OpenAIClient`                                                                                                                                                                                                                                                                 |             |
+| `Protected` **apiPromise**: `Promise`\<[`ChatApi`](#interfacestypeschatapimd)\<`CLIENT`, `OPTIONS`, `PROMPT`, `RESPONSE`\>\>                                                                                                                                                                           |             |
 | `Protected` **log**: `undefined` \| `LineLogger`\<(`message?`: `any`, ...`optionalParams`: `any`[]) => `void`, (`message?`: `any`, ...`optionalParams`: `any`[]) => `void`, (`message?`: `any`, ...`optionalParams`: `any`[]) => `void`, (`message?`: `any`, ...`optionalParams`: `any`[]) => `void`\> |             |
-| `Protected` **options**: [`ChatAboutVideoOptions`](#interfaceschatchataboutvideooptionsmd)                                                                                                                                                                                                             |             |
+| `Protected` **options**: [`SupportedChatApiOptions`](#supportedchatapioptions)                                                                                                                                                                                                                         |             |
 
 #### Methods
 
-##### prepareVideoFrames
+##### getApi
 
-▸ `Protected` **prepareVideoFrames**(`conversationId`, `videoFile`, `extractVideoFramesOptions?`): `Promise`\<`PreparationResult`\>
+▸ **getApi**(): `Promise`\<[`ChatApi`](#interfacestypeschatapimd)\<`CLIENT`, `OPTIONS`, `PROMPT`, `RESPONSE`\>\>
 
-###### Parameters
-
-| Name                         | Type                                                                                                                                                                                             |
-| :--------------------------- | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `conversationId`             | `string`                                                                                                                                                                                         |
-| `videoFile`                  | `string`                                                                                                                                                                                         |
-| `extractVideoFramesOptions?` | `Partial`\<\{ `extractor`: [`VideoFramesExtractor`](#videoframesextractor) ; `height`: `undefined` \| `number` ; `interval`: `number` ; `limit`: `number` ; `width`: `undefined` \| `number` }\> |
+Get the underlying API instance.
 
 ###### Returns
 
-`Promise`\<`PreparationResult`\>
+`Promise`\<[`ChatApi`](#interfacestypeschatapimd)\<`CLIENT`, `OPTIONS`, `PROMPT`, `RESPONSE`\>\>
 
----
-
-##### prepareVideoRetrievalIndex
-
-▸ `Protected` **prepareVideoRetrievalIndex**(`conversationId`, `videoFile`, `videoRetrievalIndexOptions?`): `Promise`\<`PreparationResult`\>
-
-###### Parameters
-
-| Name                          | Type                                                                                                                                                                                                                           |
-| :---------------------------- | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `conversationId`              | `string`                                                                                                                                                                                                                       |
-| `videoFile`                   | `string`                                                                                                                                                                                                                       |
-| `videoRetrievalIndexOptions?` | `Partial`\<\{ `apiKey`: `string` ; `createIndexIfNotExists?`: `boolean` ; `deleteDocumentWhenConversationEnds?`: `boolean` ; `deleteIndexWhenConversationEnds?`: `boolean` ; `endpoint`: `string` ; `indexName?`: `string` }\> |
-
-###### Returns
-
-`Promise`\<`PreparationResult`\>
+The underlying API instance.
 
 ---
 
 ##### startConversation
 
-▸ **startConversation**(`options?`): `Promise`\<[`Conversation`](#classeschatconversationmd)\>
+▸ **startConversation**(`options?`): `Promise`\<[`Conversation`](#classeschatconversationmd)\<`CLIENT`, `OPTIONS`, `PROMPT`, `RESPONSE`\>\>
 
 Start a conversation without a video
 
 ###### Parameters
 
-| Name       | Type                                                                         | Description                              |
-| :--------- | :--------------------------------------------------------------------------- | :--------------------------------------- |
-| `options?` | `Pick`\<[`ConversationOptions`](#conversationoptions), `"chatCompletions"`\> | Overriding options for this conversation |
+| Name       | Type      | Description                              |
+| :--------- | :-------- | :--------------------------------------- |
+| `options?` | `OPTIONS` | Overriding options for this conversation |
 
 ###### Returns
 
-`Promise`\<[`Conversation`](#classeschatconversationmd)\>
+`Promise`\<[`Conversation`](#classeschatconversationmd)\<`CLIENT`, `OPTIONS`, `PROMPT`, `RESPONSE`\>\>
 
 The conversation.
 
-▸ **startConversation**(`videoFile`, `options?`): `Promise`\<[`Conversation`](#classeschatconversationmd)\>
+▸ **startConversation**(`videoFile`, `options?`): `Promise`\<[`Conversation`](#classeschatconversationmd)\<`CLIENT`, `OPTIONS`, `PROMPT`, `RESPONSE`\>\>
 
 Start a conversation about a video.
 
 ###### Parameters
 
-| Name                           | Type                                                                                                                                                                                                                           | Description                                |
-| :----------------------------- | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :----------------------------------------- |
-| `videoFile`                    | `string`                                                                                                                                                                                                                       | Path to a video file in local file system. |
-| `options?`                     | `Object`                                                                                                                                                                                                                       | Overriding options for this conversation   |
-| `options.chatCompletions?`     | `Partial`\<[`ChatOptions`](#chatoptions)\>                                                                                                                                                                                     | -                                          |
-| `options.extractVideoFrames?`  | `Partial`\<\{ `extractor`: [`VideoFramesExtractor`](#videoframesextractor) ; `height`: `undefined` \| `number` ; `interval`: `number` ; `limit`: `number` ; `width`: `undefined` \| `number` }\>                               | -                                          |
-| `options.videoRetrievalIndex?` | `Partial`\<\{ `apiKey`: `string` ; `createIndexIfNotExists?`: `boolean` ; `deleteDocumentWhenConversationEnds?`: `boolean` ; `deleteIndexWhenConversationEnds?`: `boolean` ; `endpoint`: `string` ; `indexName?`: `string` }\> | -                                          |
+| Name        | Type      | Description                                |
+| :---------- | :-------- | :----------------------------------------- |
+| `videoFile` | `string`  | Path to a video file in local file system. |
+| `options?`  | `OPTIONS` | Overriding options for this conversation   |
 
 ###### Returns
 
-`Promise`\<[`Conversation`](#classeschatconversationmd)\>
+`Promise`\<[`Conversation`](#classeschatconversationmd)\<`CLIENT`, `OPTIONS`, `PROMPT`, `RESPONSE`\>\>
 
 The conversation.
 
 <a name="classeschatconversationmd"></a>
 
-### Class: Conversation
+### Class: Conversation\<CLIENT, OPTIONS, PROMPT, RESPONSE\>
 
 [chat](#moduleschatmd).Conversation
+
+#### Type parameters
+
+| Name       | Type                                                                                           |
+| :--------- | :--------------------------------------------------------------------------------------------- |
+| `CLIENT`   | `any`                                                                                          |
+| `OPTIONS`  | extends [`AdditionalCompletionOptions`](#interfacestypesadditionalcompletionoptionsmd) = `any` |
+| `PROMPT`   | `any`                                                                                          |
+| `RESPONSE` | `any`                                                                                          |
 
 #### Constructors
 
 ##### constructor
 
-• **new Conversation**(`client`, `deploymentName`, `conversationId`, `messages`, `options?`, `cleanup?`, `log?`)
+• **new Conversation**\<`CLIENT`, `OPTIONS`, `PROMPT`, `RESPONSE`\>(`conversationId`, `api`, `prompt`, `options`, `cleanup?`, `log?`)
+
+###### Type parameters
+
+| Name       | Type                                                                                           |
+| :--------- | :--------------------------------------------------------------------------------------------- |
+| `CLIENT`   | `any`                                                                                          |
+| `OPTIONS`  | extends [`AdditionalCompletionOptions`](#interfacestypesadditionalcompletionoptionsmd) = `any` |
+| `PROMPT`   | `any`                                                                                          |
+| `RESPONSE` | `any`                                                                                          |
 
 ###### Parameters
 
 | Name             | Type                                                                                                                                                                                                                                                                              |
 | :--------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `client`         | `OpenAIClient`                                                                                                                                                                                                                                                                    |
-| `deploymentName` | `string`                                                                                                                                                                                                                                                                          |
 | `conversationId` | `string`                                                                                                                                                                                                                                                                          |
-| `messages`       | `ChatRequestMessage`[]                                                                                                                                                                                                                                                            |
-| `options?`       | `GetChatCompletionsOptions`                                                                                                                                                                                                                                                       |
-| `cleanup?`       | () => `Promise`\<`void`\>                                                                                                                                                                                                                                                         |
+| `api`            | [`ChatApi`](#interfacestypeschatapimd)\<`CLIENT`, `OPTIONS`, `PROMPT`, `RESPONSE`\>                                                                                                                                                                                               |
+| `prompt`         | `undefined` \| `PROMPT`                                                                                                                                                                                                                                                           |
+| `options`        | `OPTIONS`                                                                                                                                                                                                                                                                         |
+| `cleanup?`       | () => `Promise`\<`any`\>                                                                                                                                                                                                                                                          |
 | `log`            | `undefined` \| `LineLogger`\<(`message?`: `any`, ...`optionalParams`: `any`[]) => `void`, (`message?`: `any`, ...`optionalParams`: `any`[]) => `void`, (`message?`: `any`, ...`optionalParams`: `any`[]) => `void`, (`message?`: `any`, ...`optionalParams`: `any`[]) => `void`\> |
 
 #### Properties
 
 | Property                                                                                                                                                                                                                                                                                               | Description |
 | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ----------- |
-| `Protected` `Optional` **cleanup**: () => `Promise`\<`void`\>                                                                                                                                                                                                                                          |             |
-| `Protected` **client**: `OpenAIClient`                                                                                                                                                                                                                                                                 |             |
+| `Protected` **api**: [`ChatApi`](#interfacestypeschatapimd)\<`CLIENT`, `OPTIONS`, `PROMPT`, `RESPONSE`\>                                                                                                                                                                                               |             |
+| `Protected` `Optional` **cleanup**: () => `Promise`\<`any`\>                                                                                                                                                                                                                                           |             |
 | `Protected` **conversationId**: `string`                                                                                                                                                                                                                                                               |             |
-| `Protected` **deploymentName**: `string`                                                                                                                                                                                                                                                               |             |
 | `Protected` **log**: `undefined` \| `LineLogger`\<(`message?`: `any`, ...`optionalParams`: `any`[]) => `void`, (`message?`: `any`, ...`optionalParams`: `any`[]) => `void`, (`message?`: `any`, ...`optionalParams`: `any`[]) => `void`, (`message?`: `any`, ...`optionalParams`: `any`[]) => `void`\> |             |
-| `Protected` **messages**: `ChatRequestMessage`[]                                                                                                                                                                                                                                                       |             |
-| `Protected` `Optional` **options**: `GetChatCompletionsOptions`                                                                                                                                                                                                                                        |             |
+| `Protected` **options**: `OPTIONS`                                                                                                                                                                                                                                                                     |             |
+| `Protected` **prompt**: `undefined` \| `PROMPT`                                                                                                                                                                                                                                                        |             |
 
 #### Methods
 
@@ -750,6 +763,35 @@ The conversation.
 
 ---
 
+##### getApi
+
+▸ **getApi**(): [`ChatApi`](#interfacestypeschatapimd)\<`CLIENT`, `OPTIONS`, `PROMPT`, `RESPONSE`\>
+
+Get the underlying API instance.
+
+###### Returns
+
+[`ChatApi`](#interfacestypeschatapimd)\<`CLIENT`, `OPTIONS`, `PROMPT`, `RESPONSE`\>
+
+The underlying API instance.
+
+---
+
+##### getPrompt
+
+▸ **getPrompt**(): `undefined` \| `PROMPT`
+
+Get the prompt for the current conversation.
+The prompt is the accumulated messages in the conversation so far.
+
+###### Returns
+
+`undefined` \| `PROMPT`
+
+The prompt which is the accumulated messages in the conversation so far.
+
+---
+
 ##### say
 
 ▸ **say**(`message`, `options?`): `Promise`\<`undefined` \| `string`\>
@@ -758,16 +800,452 @@ Say something in the conversation, and get the response from AI
 
 ###### Parameters
 
-| Name       | Type                          | Description                             |
-| :--------- | :---------------------------- | :-------------------------------------- |
-| `message`  | `string`                      | The message to say in the conversation. |
-| `options?` | [`ChatOptions`](#chatoptions) | Options for fine control.               |
+| Name       | Type                   | Description                             |
+| :--------- | :--------------------- | :-------------------------------------- |
+| `message`  | `string`               | The message to say in the conversation. |
+| `options?` | `Partial`\<`OPTIONS`\> | Options for fine control.               |
 
 ###### Returns
 
 `Promise`\<`undefined` \| `string`\>
 
 The response/completion
+
+<a name="classeschat_gptchatgptapimd"></a>
+
+### Class: ChatGptApi
+
+[chat-gpt](#moduleschat_gptmd).ChatGptApi
+
+#### Implements
+
+- [`ChatApi`](#interfacestypeschatapimd)\<[`ChatGptClient`](#chatgptclient), [`ChatGptCompletionOptions`](#chatgptcompletionoptions), `any`[], [`ChatGptResponse`](#chatgptresponse)\>
+
+#### Constructors
+
+##### constructor
+
+• **new ChatGptApi**(`options`)
+
+###### Parameters
+
+| Name      | Type                                |
+| :-------- | :---------------------------------- |
+| `options` | [`ChatGptOptions`](#chatgptoptions) |
+
+#### Properties
+
+| Property                                                                                                                                                                                                                                                                                                                                         | Description |
+| ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ----------- |
+| `Protected` **client**: `OpenAIClient`                                                                                                                                                                                                                                                                                                           |             |
+| `Protected` `Optional` **extractVideoFrames**: `Pick`\<[`ExtractVideoFramesOptions`](#interfacestypesextractvideoframesoptionsmd), `"height"`\> & `Required`\<`Omit`\<[`ExtractVideoFramesOptions`](#interfacestypesextractvideoframesoptionsmd), `"height"`\>\>                                                                                 |             |
+| `Protected` **options**: [`ChatGptOptions`](#chatgptoptions)                                                                                                                                                                                                                                                                                     |             |
+| `Protected` **storage**: `Required`\<`Pick`\<[`StorageOptions`](#interfacestypesstorageoptionsmd), `"uploader"`\>\> & [`StorageOptions`](#interfacestypesstorageoptionsmd)                                                                                                                                                                       |             |
+| `Protected` **tmpDir**: `string`                                                                                                                                                                                                                                                                                                                 |             |
+| `Protected` `Optional` **videoRetrievalIndex**: `Required`\<`Pick`\<[`VideoRetrievalIndexOptions`](#interfacestypesvideoretrievalindexoptionsmd), `"createIndexIfNotExists"` \| `"deleteDocumentWhenConversationEnds"` \| `"deleteIndexWhenConversationEnds"`\>\> & [`VideoRetrievalIndexOptions`](#interfacestypesvideoretrievalindexoptionsmd) |             |
+
+#### Methods
+
+##### appendToPrompt
+
+▸ **appendToPrompt**(`newPromptOrResponse`, `prompt?`): `Promise`\<`ChatRequestMessageUnion`[]\>
+
+Append a new prompt or response to the form a full prompt.
+This function is useful to build a prompt that contains conversation history.
+
+###### Parameters
+
+| Name                  | Type                                             | Description                                                                                                                                                                                      |
+| :-------------------- | :----------------------------------------------- | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `newPromptOrResponse` | `ChatCompletions` \| `ChatRequestMessageUnion`[] | A new prompt to be appended, or previous response to be appended.                                                                                                                                |
+| `prompt?`             | `ChatRequestMessageUnion`[]                      | The conversation history which is a prompt containing previous prompts and responses. If it is not provided, the conversation history returned will contain only what is in newPromptOrResponse. |
+
+###### Returns
+
+`Promise`\<`ChatRequestMessageUnion`[]\>
+
+The full prompt which is effectively the conversation history.
+
+###### Implementation of
+
+[ChatApi](#interfacestypeschatapimd).[appendToPrompt](#appendtoprompt)
+
+---
+
+##### buildTextPrompt
+
+▸ **buildTextPrompt**(`text`, `_conversationId?`): `Promise`\<\{ `prompt`: `ChatRequestMessageUnion`[] }\>
+
+Build prompt for sending text content to AI
+
+###### Parameters
+
+| Name               | Type     | Description                            |
+| :----------------- | :------- | :------------------------------------- |
+| `text`             | `string` | The text content to be sent.           |
+| `_conversationId?` | `string` | Unique identifier of the conversation. |
+
+###### Returns
+
+`Promise`\<\{ `prompt`: `ChatRequestMessageUnion`[] }\>
+
+An object containing the prompt.
+
+###### Implementation of
+
+[ChatApi](#interfacestypeschatapimd).[buildTextPrompt](#buildtextprompt)
+
+---
+
+##### buildVideoPrompt
+
+▸ **buildVideoPrompt**(`videoFile`, `conversationId?`): `Promise`\<[`BuildPromptOutput`](#interfacestypesbuildpromptoutputmd)\<`ChatRequestMessageUnion`[], \{ `deploymentName`: `string` } & [`AdditionalCompletionOptions`](#interfacestypesadditionalcompletionoptionsmd) & `GetChatCompletionsOptions`\>\>
+
+Build prompt for sending video content to AI.
+Sometimes, to include video in the conversation, additional options and/or clean up is needed.
+In such case, options to be passed to generateContent function and/or a clean up call back function
+will be returned in the output of this function.
+
+###### Parameters
+
+| Name              | Type     | Description                            |
+| :---------------- | :------- | :------------------------------------- |
+| `videoFile`       | `string` | Path to the video file.                |
+| `conversationId?` | `string` | Unique identifier of the conversation. |
+
+###### Returns
+
+`Promise`\<[`BuildPromptOutput`](#interfacestypesbuildpromptoutputmd)\<`ChatRequestMessageUnion`[], \{ `deploymentName`: `string` } & [`AdditionalCompletionOptions`](#interfacestypesadditionalcompletionoptionsmd) & `GetChatCompletionsOptions`\>\>
+
+An object containing the prompt, optional options, and an optional cleanup function.
+
+###### Implementation of
+
+[ChatApi](#interfacestypeschatapimd).[buildVideoPrompt](#buildvideoprompt)
+
+---
+
+##### buildVideoPromptWithFrames
+
+▸ `Protected` **buildVideoPromptWithFrames**(`videoFile`, `conversationId?`): `Promise`\<[`BuildPromptOutput`](#interfacestypesbuildpromptoutputmd)\<`ChatRequestMessageUnion`[], \{ `deploymentName`: `string` } & [`AdditionalCompletionOptions`](#interfacestypesadditionalcompletionoptionsmd) & `GetChatCompletionsOptions`\>\>
+
+###### Parameters
+
+| Name             | Type     |
+| :--------------- | :------- |
+| `videoFile`      | `string` |
+| `conversationId` | `string` |
+
+###### Returns
+
+`Promise`\<[`BuildPromptOutput`](#interfacestypesbuildpromptoutputmd)\<`ChatRequestMessageUnion`[], \{ `deploymentName`: `string` } & [`AdditionalCompletionOptions`](#interfacestypesadditionalcompletionoptionsmd) & `GetChatCompletionsOptions`\>\>
+
+---
+
+##### buildVideoPromptWithVideoRetrievalIndex
+
+▸ `Protected` **buildVideoPromptWithVideoRetrievalIndex**(`videoFile`, `conversationId?`): `Promise`\<[`BuildPromptOutput`](#interfacestypesbuildpromptoutputmd)\<`ChatRequestMessageUnion`[], \{ `deploymentName`: `string` } & [`AdditionalCompletionOptions`](#interfacestypesadditionalcompletionoptionsmd) & `GetChatCompletionsOptions`\>\>
+
+###### Parameters
+
+| Name             | Type     |
+| :--------------- | :------- |
+| `videoFile`      | `string` |
+| `conversationId` | `string` |
+
+###### Returns
+
+`Promise`\<[`BuildPromptOutput`](#interfacestypesbuildpromptoutputmd)\<`ChatRequestMessageUnion`[], \{ `deploymentName`: `string` } & [`AdditionalCompletionOptions`](#interfacestypesadditionalcompletionoptionsmd) & `GetChatCompletionsOptions`\>\>
+
+---
+
+##### generateContent
+
+▸ **generateContent**(`prompt`, `options`): `Promise`\<`ChatCompletions`\>
+
+Generate content based on the given prompt and options.
+
+###### Parameters
+
+| Name      | Type                                                                                                                                           | Description                                         |
+| :-------- | :--------------------------------------------------------------------------------------------------------------------------------------------- | :-------------------------------------------------- |
+| `prompt`  | `ChatRequestMessageUnion`[]                                                                                                                    | The full prompt to generate content.                |
+| `options` | \{ `deploymentName`: `string` } & [`AdditionalCompletionOptions`](#interfacestypesadditionalcompletionoptionsmd) & `GetChatCompletionsOptions` | Optional options to control the content generation. |
+
+###### Returns
+
+`Promise`\<`ChatCompletions`\>
+
+The generated content.
+
+###### Implementation of
+
+[ChatApi](#interfacestypeschatapimd).[generateContent](#generatecontent)
+
+---
+
+##### getClient
+
+▸ **getClient**(): `Promise`\<`OpenAIClient`\>
+
+Get the raw client.
+This function could be useful for advanced use cases.
+
+###### Returns
+
+`Promise`\<`OpenAIClient`\>
+
+The raw client.
+
+###### Implementation of
+
+[ChatApi](#interfacestypeschatapimd).[getClient](#getclient)
+
+---
+
+##### getResponseText
+
+▸ **getResponseText**(`result`): `Promise`\<`undefined` \| `string`\>
+
+Get the text from the response object
+
+###### Parameters
+
+| Name     | Type              | Description         |
+| :------- | :---------------- | :------------------ |
+| `result` | `ChatCompletions` | the response object |
+
+###### Returns
+
+`Promise`\<`undefined` \| `string`\>
+
+###### Implementation of
+
+[ChatApi](#interfacestypeschatapimd).[getResponseText](#getresponsetext)
+
+---
+
+##### isThrottlingError
+
+▸ **isThrottlingError**(`error`): `boolean`
+
+Check if the error is a throttling error.
+
+###### Parameters
+
+| Name    | Type  | Description      |
+| :------ | :---- | :--------------- |
+| `error` | `any` | any error object |
+
+###### Returns
+
+`boolean`
+
+true if the error is a throttling error, false otherwise.
+
+###### Implementation of
+
+[ChatApi](#interfacestypeschatapimd).[isThrottlingError](#isthrottlingerror)
+
+<a name="classesgeminigeminiapimd"></a>
+
+### Class: GeminiApi
+
+[gemini](#modulesgeminimd).GeminiApi
+
+#### Implements
+
+- [`ChatApi`](#interfacestypeschatapimd)\<[`GeminiClient`](#geminiclient), [`GeminiCompletionOptions`](#geminicompletionoptions), `any`[], [`GeminiResponse`](#geminiresponse)\>
+
+#### Constructors
+
+##### constructor
+
+• **new GeminiApi**(`options`)
+
+###### Parameters
+
+| Name      | Type                              |
+| :-------- | :-------------------------------- |
+| `options` | [`GeminiOptions`](#geminioptions) |
+
+#### Properties
+
+| Property                                                                                                                                                                                                                                              | Description |
+| ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------- |
+| `Protected` **client**: `GenerativeModel`                                                                                                                                                                                                             |             |
+| `Protected` **extractVideoFrames**: `Pick`\<[`ExtractVideoFramesOptions`](#interfacestypesextractvideoframesoptionsmd), `"height"`\> & `Required`\<`Omit`\<[`ExtractVideoFramesOptions`](#interfacestypesextractvideoframesoptionsmd), `"height"`\>\> |             |
+| `Protected` **options**: [`GeminiOptions`](#geminioptions)                                                                                                                                                                                            |             |
+| `Protected` **tmpDir**: `string`                                                                                                                                                                                                                      |             |
+
+#### Methods
+
+##### appendToPrompt
+
+▸ **appendToPrompt**(`newPromptOrResponse`, `prompt?`): `Promise`\<`Content`[]\>
+
+Append a new prompt or response to the form a full prompt.
+This function is useful to build a prompt that contains conversation history.
+
+###### Parameters
+
+| Name                  | Type                                   | Description                                                                                                                                                                                      |
+| :-------------------- | :------------------------------------- | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `newPromptOrResponse` | `Content`[] \| `GenerateContentResult` | A new prompt to be appended, or previous response to be appended.                                                                                                                                |
+| `prompt?`             | `Content`[]                            | The conversation history which is a prompt containing previous prompts and responses. If it is not provided, the conversation history returned will contain only what is in newPromptOrResponse. |
+
+###### Returns
+
+`Promise`\<`Content`[]\>
+
+The full prompt which is effectively the conversation history.
+
+###### Implementation of
+
+[ChatApi](#interfacestypeschatapimd).[appendToPrompt](#appendtoprompt)
+
+---
+
+##### buildTextPrompt
+
+▸ **buildTextPrompt**(`text`, `_conversationId?`): `Promise`\<\{ `prompt`: `Content`[] }\>
+
+Build prompt for sending text content to AI
+
+###### Parameters
+
+| Name               | Type     | Description                            |
+| :----------------- | :------- | :------------------------------------- |
+| `text`             | `string` | The text content to be sent.           |
+| `_conversationId?` | `string` | Unique identifier of the conversation. |
+
+###### Returns
+
+`Promise`\<\{ `prompt`: `Content`[] }\>
+
+An object containing the prompt.
+
+###### Implementation of
+
+[ChatApi](#interfacestypeschatapimd).[buildTextPrompt](#buildtextprompt)
+
+---
+
+##### buildVideoPrompt
+
+▸ **buildVideoPrompt**(`videoFile`, `conversationId?`): `Promise`\<[`BuildPromptOutput`](#interfacestypesbuildpromptoutputmd)\<`Content`[], [`GeminiCompletionOptions`](#geminicompletionoptions)\>\>
+
+Build prompt for sending video content to AI.
+Sometimes, to include video in the conversation, additional options and/or clean up is needed.
+In such case, options to be passed to generateContent function and/or a clean up call back function
+will be returned in the output of this function.
+
+###### Parameters
+
+| Name             | Type     | Description                            |
+| :--------------- | :------- | :------------------------------------- |
+| `videoFile`      | `string` | Path to the video file.                |
+| `conversationId` | `string` | Unique identifier of the conversation. |
+
+###### Returns
+
+`Promise`\<[`BuildPromptOutput`](#interfacestypesbuildpromptoutputmd)\<`Content`[], [`GeminiCompletionOptions`](#geminicompletionoptions)\>\>
+
+An object containing the prompt, optional options, and an optional cleanup function.
+
+###### Implementation of
+
+[ChatApi](#interfacestypeschatapimd).[buildVideoPrompt](#buildvideoprompt)
+
+---
+
+##### generateContent
+
+▸ **generateContent**(`prompt`, `options`): `Promise`\<`GenerateContentResult`\>
+
+Generate content based on the given prompt and options.
+
+###### Parameters
+
+| Name      | Type                                                  | Description                                         |
+| :-------- | :---------------------------------------------------- | :-------------------------------------------------- |
+| `prompt`  | `Content`[]                                           | The full prompt to generate content.                |
+| `options` | [`GeminiCompletionOptions`](#geminicompletionoptions) | Optional options to control the content generation. |
+
+###### Returns
+
+`Promise`\<`GenerateContentResult`\>
+
+The generated content.
+
+###### Implementation of
+
+[ChatApi](#interfacestypeschatapimd).[generateContent](#generatecontent)
+
+---
+
+##### getClient
+
+▸ **getClient**(): `Promise`\<`GenerativeModel`\>
+
+Get the raw client.
+This function could be useful for advanced use cases.
+
+###### Returns
+
+`Promise`\<`GenerativeModel`\>
+
+The raw client.
+
+###### Implementation of
+
+[ChatApi](#interfacestypeschatapimd).[getClient](#getclient)
+
+---
+
+##### getResponseText
+
+▸ **getResponseText**(`result`): `Promise`\<`undefined` \| `string`\>
+
+Get the text from the response object
+
+###### Parameters
+
+| Name     | Type                    | Description         |
+| :------- | :---------------------- | :------------------ |
+| `result` | `GenerateContentResult` | the response object |
+
+###### Returns
+
+`Promise`\<`undefined` \| `string`\>
+
+###### Implementation of
+
+[ChatApi](#interfacestypeschatapimd).[getResponseText](#getresponsetext)
+
+---
+
+##### isThrottlingError
+
+▸ **isThrottlingError**(`error`): `boolean`
+
+Check if the error is a throttling error.
+
+###### Parameters
+
+| Name    | Type  | Description      |
+| :------ | :---- | :--------------- |
+| `error` | `any` | any error object |
+
+###### Returns
+
+`boolean`
+
+true if the error is a throttling error, false otherwise.
+
+###### Implementation of
+
+[ChatApi](#interfacestypeschatapimd).[isThrottlingError](#isthrottlingerror)
 
 ## Interfaces
 
@@ -925,27 +1403,276 @@ The response/completion
 | **mode**: `"update"` \| `"remove"` \| `"add"` |             |
 | `Optional` **userData**: `object`             |             |
 
-<a name="interfaceschatchataboutvideooptionsmd"></a>
+<a name="interfacestypesadditionalcompletionoptionsmd"></a>
 
-### Interface: ChatAboutVideoOptions
+### Interface: AdditionalCompletionOptions
 
-[chat](#moduleschatmd).ChatAboutVideoOptions
-
-Option settings for ChatAboutVideo
+[types](#modulestypesmd).AdditionalCompletionOptions
 
 #### Properties
 
-| Property                                                         | Description                                                                                                            |
-| ---------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------- | ---- | ---- | ----------- | ------- | ------- | ------- | -------- | -------- | ----------- | ----------------------------------------------- | -------------------------------------------------------------------------------------------------------------- | ---- | ------------------------------------- | ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ---------------------------------- | ---------- | -------- | --------------------------------------------------------------------------------- | -------- | ------- | ------------ | ---------------------------------------------------------------------------------------------------------------------------- | ------------------ | ------- | ----------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- | --- |
-| `Optional` **extractVideoFrames**: `Object`                      | Type declaration<br><br>                                                                                               | Name | Type | Description | <br>    | :------ | :------ | :------  | <br>     | `extractor` | [`VideoFramesExtractor`](#videoframesextractor) | Function for extracting frames from the video. If not specified, a default function using ffmpeg will be used. | <br> | `height`                              | `undefined` \| `number` | Video frame height, default is undefined which means the scaling will be determined by the videoFrameWidth option. If both videoFrameWidth and videoFrameHeight are not specified, then the frames will not be resized/scaled. | <br>                               | `interval` | `number` | Intervals between frames to be extracted. The unit is second. Default value is 5. | <br>     | `limit` | `number`     | Maximum number of frames to be extracted. Default value is 10 which is the current per-request limitation of ChatGPT Vision. | <br>               | `width` | `undefined` \| `number` | Video frame width, default is 200. If both videoFrameWidth and videoFrameHeight are not specified, then the frames will not be resized/scaled. |     |
-| **fileBatchUploader**: [`FileBatchUploader`](#filebatchuploader) | Function for uploading files                                                                                           |
-| `Optional` **initialPrompts**: `ChatRequestMessage`[]            | Initial prompts to be added to the chat history before frame images.                                                   |
-| **openAiDeploymentName**: `string`                               | Name/ID of the deployment                                                                                              |
-| `Optional` **startPrompts**: `ChatRequestMessage`[]              | Prompts to be added to the chat history right after frame images.                                                      |
-| `Optional` **storageContainerName**: `string`                    | Storage container for storing frame images of the video.                                                               |
-| **storagePathPrefix**: `string`                                  | Path prefix to be prepended for storing frame images of the video.                                                     |
-| **tmpDir**: `string`                                             | Temporary directory for storing temporary files.<br>If not specified, them temporary directory of the OS will be used. |
-| `Optional` **videoRetrievalIndex**: `Object`                     | Type declaration<br><br>                                                                                               | Name | Type | <br>        | :------ | :------ | <br>    | `apiKey` | `string` | <br>        | `createIndexIfNotExists?`                       | `boolean`                                                                                                      | <br> | `deleteDocumentWhenConversationEnds?` | `boolean`               | <br>                                                                                                                                                                                                                           | `deleteIndexWhenConversationEnds?` | `boolean`  | <br>     | `endpoint`                                                                        | `string` | <br>    | `indexName?` | `string`                                                                                                                     | <br><br>## Modules |
+| Property                                       | Description                                                                                                                    |
+| ---------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------ |
+| `Optional` **backoffOnThrottling**: `number`[] | Array of retry backoff periods (unit: milliseconds) for situations that the server returns 429 response                        |
+| `Optional` **startPromptText**: `string`       | The user prompt that will be sent before the video content.<br>If not provided, nothing will be sent before the video content. |
+| `Optional` **systemPromptText**: `string`      | System prompt text. If not provided, a default prompt will be used.                                                            |
+
+<a name="interfacestypesbuildpromptoutputmd"></a>
+
+### Interface: BuildPromptOutput\<PROMPT, OPTIONS\>
+
+[types](#modulestypesmd).BuildPromptOutput
+
+#### Type parameters
+
+| Name      |
+| :-------- |
+| `PROMPT`  |
+| `OPTIONS` |
+
+#### Properties
+
+| Property                                         | Description |
+| ------------------------------------------------ | ----------- |
+| `Optional` **cleanup**: () => `Promise`\<`any`\> |             |
+| `Optional` **options**: `Partial`\<`OPTIONS`\>   |             |
+| **prompt**: `PROMPT`                             |             |
+
+<a name="interfacestypeschatapimd"></a>
+
+### Interface: ChatApi\<CLIENT, OPTIONS, PROMPT, RESPONSE\>
+
+[types](#modulestypesmd).ChatApi
+
+#### Type parameters
+
+| Name       | Type                                                                                   |
+| :--------- | :------------------------------------------------------------------------------------- |
+| `CLIENT`   | `CLIENT`                                                                               |
+| `OPTIONS`  | extends [`AdditionalCompletionOptions`](#interfacestypesadditionalcompletionoptionsmd) |
+| `PROMPT`   | `PROMPT`                                                                               |
+| `RESPONSE` | `RESPONSE`                                                                             |
+
+#### Implemented by
+
+- [`ChatGptApi`](#classeschat_gptchatgptapimd)
+- [`GeminiApi`](#classesgeminigeminiapimd)
+
+#### Methods
+
+##### appendToPrompt
+
+▸ **appendToPrompt**(`newPromptOrResponse`, `prompt?`): `Promise`\<`PROMPT`\>
+
+Append a new prompt or response to the form a full prompt.
+This function is useful to build a prompt that contains conversation history.
+
+###### Parameters
+
+| Name                  | Type                   | Description                                                                                                                                                                                      |
+| :-------------------- | :--------------------- | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `newPromptOrResponse` | `PROMPT` \| `RESPONSE` | A new prompt to be appended, or previous response to be appended.                                                                                                                                |
+| `prompt?`             | `PROMPT`               | The conversation history which is a prompt containing previous prompts and responses. If it is not provided, the conversation history returned will contain only what is in newPromptOrResponse. |
+
+###### Returns
+
+`Promise`\<`PROMPT`\>
+
+The full prompt which is effectively the conversation history.
+
+---
+
+##### buildTextPrompt
+
+▸ **buildTextPrompt**(`text`, `conversationId?`): `Promise`\<\{ `prompt`: `PROMPT` }\>
+
+Build prompt for sending text content to AI
+
+###### Parameters
+
+| Name              | Type     | Description                            |
+| :---------------- | :------- | :------------------------------------- |
+| `text`            | `string` | The text content to be sent.           |
+| `conversationId?` | `string` | Unique identifier of the conversation. |
+
+###### Returns
+
+`Promise`\<\{ `prompt`: `PROMPT` }\>
+
+An object containing the prompt.
+
+---
+
+##### buildVideoPrompt
+
+▸ **buildVideoPrompt**(`videoFile`, `conversationId?`): `Promise`\<[`BuildPromptOutput`](#interfacestypesbuildpromptoutputmd)\<`PROMPT`, `OPTIONS`\>\>
+
+Build prompt for sending video content to AI.
+Sometimes, to include video in the conversation, additional options and/or clean up is needed.
+In such case, options to be passed to generateContent function and/or a clean up call back function
+will be returned in the output of this function.
+
+###### Parameters
+
+| Name              | Type     | Description                            |
+| :---------------- | :------- | :------------------------------------- |
+| `videoFile`       | `string` | Path to the video file.                |
+| `conversationId?` | `string` | Unique identifier of the conversation. |
+
+###### Returns
+
+`Promise`\<[`BuildPromptOutput`](#interfacestypesbuildpromptoutputmd)\<`PROMPT`, `OPTIONS`\>\>
+
+An object containing the prompt, optional options, and an optional cleanup function.
+
+---
+
+##### generateContent
+
+▸ **generateContent**(`prompt`, `options?`): `Promise`\<`RESPONSE`\>
+
+Generate content based on the given prompt and options.
+
+###### Parameters
+
+| Name       | Type      | Description                                         |
+| :--------- | :-------- | :-------------------------------------------------- |
+| `prompt`   | `PROMPT`  | The full prompt to generate content.                |
+| `options?` | `OPTIONS` | Optional options to control the content generation. |
+
+###### Returns
+
+`Promise`\<`RESPONSE`\>
+
+The generated content.
+
+---
+
+##### getClient
+
+▸ **getClient**(): `Promise`\<`CLIENT`\>
+
+Get the raw client.
+This function could be useful for advanced use cases.
+
+###### Returns
+
+`Promise`\<`CLIENT`\>
+
+The raw client.
+
+---
+
+##### getResponseText
+
+▸ **getResponseText**(`response`): `Promise`\<`undefined` \| `string`\>
+
+Get the text from the response object
+
+###### Parameters
+
+| Name       | Type       | Description         |
+| :--------- | :--------- | :------------------ |
+| `response` | `RESPONSE` | the response object |
+
+###### Returns
+
+`Promise`\<`undefined` \| `string`\>
+
+---
+
+##### isThrottlingError
+
+▸ **isThrottlingError**(`error`): `boolean`
+
+Check if the error is a throttling error.
+
+###### Parameters
+
+| Name    | Type  | Description      |
+| :------ | :---- | :--------------- |
+| `error` | `any` | any error object |
+
+###### Returns
+
+`boolean`
+
+true if the error is a throttling error, false otherwise.
+
+<a name="interfacestypeschatapioptionsmd"></a>
+
+### Interface: ChatApiOptions\<CS, CO\>
+
+[types](#modulestypesmd).ChatApiOptions
+
+#### Type parameters
+
+| Name |
+| :--- |
+| `CS` |
+| `CO` |
+
+#### Properties
+
+| Property                                                                                                                | Description                                                                                                                |
+| ----------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------- | ---- | ---- | ---- | ------- | ------- | ---- | ----- | -------- | --- |
+| `Optional` **clientSettings**: `CS`                                                                                     |                                                                                                                            |
+| `Optional` **completionOptions**: [`AdditionalCompletionOptions`](#interfacestypesadditionalcompletionoptionsmd) & `CO` |                                                                                                                            |
+| **credential**: `Object`                                                                                                | Type declaration<br><br>                                                                                                   | Name | Type | <br> | :------ | :------ | <br> | `key` | `string` |     |
+| `Optional` **endpoint**: `string`                                                                                       |                                                                                                                            |
+| `Optional` **tmpDir**: `string`                                                                                         | Temporary directory for storing temporary files.<br>If not specified, then the temporary directory of the OS will be used. |
+
+<a name="interfacestypesextractvideoframesoptionsmd"></a>
+
+### Interface: ExtractVideoFramesOptions
+
+[types](#modulestypesmd).ExtractVideoFramesOptions
+
+#### Properties
+
+| Property                                                                  | Description                                                                                                                                                                                                                             |
+| ------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `Optional` **deleteFilesWhenConversationEnds**: `boolean`                 | Whether files should be deleted when the conversation ends.                                                                                                                                                                             |
+| `Optional` **extractor**: [`VideoFramesExtractor`](#videoframesextractor) | Function for extracting frames from the video.<br>If not specified, a default function using ffmpeg will be used.                                                                                                                       |
+| `Optional` **format**: `string`                                           | Image format of the extracted frames.<br>Default value is 'jpg'.                                                                                                                                                                        |
+| `Optional` **height**: `number`                                           | Video frame height, default is undefined which means the scaling<br>will be determined by the videoFrameWidth option.<br>If both videoFrameWidth and videoFrameHeight are not specified,<br>then the frames will not be resized/scaled. |
+| `Optional` **interval**: `number`                                         | Intervals between frames to be extracted. The unit is second.<br>Default value is 5.                                                                                                                                                    |
+| `Optional` **limit**: `number`                                            | Maximum number of frames to be extracted.<br>Default value is 10 which is the current per-request limitation of ChatGPT Vision.                                                                                                         |
+| `Optional` **width**: `number`                                            | Video frame width, default is 200.<br>If both videoFrameWidth and videoFrameHeight are not specified,<br>then the frames will not be resized/scaled.                                                                                    |
+
+<a name="interfacestypesstorageoptionsmd"></a>
+
+### Interface: StorageOptions
+
+[types](#modulestypesmd).StorageOptions
+
+#### Properties
+
+| Property                                                           | Description                                                                                   |
+| ------------------------------------------------------------------ | --------------------------------------------------------------------------------------------- |
+| `Optional` **azureStorageConnectionString**: `string`              |                                                                                               |
+| `Optional` **deleteFilesWhenConversationEnds**: `boolean`          | Whether files should be deleted when the conversation ends.                                   |
+| `Optional` **downloadUrlExpirationSeconds**: `number`              | Expiration time for the download URL of the frame images in seconds. Default is 3600 seconds. |
+| `Optional` **storageContainerName**: `string`                      | Storage container for storing frame images of the video.                                      |
+| `Optional` **storagePathPrefix**: `string`                         | Path prefix to be prepended for storing frame images of the video.<br>Default is empty.       |
+| `Optional` **uploader**: [`FileBatchUploader`](#filebatchuploader) | Function for uploading files                                                                  |
+
+<a name="interfacestypesvideoretrievalindexoptionsmd"></a>
+
+### Interface: VideoRetrievalIndexOptions
+
+[types](#modulestypesmd).VideoRetrievalIndexOptions
+
+#### Properties
+
+| Property                                                     | Description |
+| ------------------------------------------------------------ | ----------- |
+| **apiKey**: `string`                                         |             |
+| `Optional` **createIndexIfNotExists**: `boolean`             |             |
+| `Optional` **deleteDocumentWhenConversationEnds**: `boolean` |             |
+| `Optional` **deleteIndexWhenConversationEnds**: `boolean`    |             |
+| **endpoint**: `string`                                       |             |
+| `Optional` **indexName**: `string`                           | ## Modules  |
 
 <a name="modulesawsmd"></a>
 
@@ -1063,6 +1790,26 @@ Re-exports [VideoRetrievalApiClient](#classesazure_video_retrieval_api_clientvid
 
 [`FileBatchUploader`](#filebatchuploader)
 
+<a name="modulesazure_client_hackmd"></a>
+
+### Module: azure/client-hack
+
+#### Functions
+
+##### fixClient
+
+▸ **fixClient**(`openAIClient`): `void`
+
+###### Parameters
+
+| Name           | Type  |
+| :------------- | :---- |
+| `openAIClient` | `any` |
+
+###### Returns
+
+`void`
+
 <a name="modulesazure_video_retrieval_api_clientmd"></a>
 
 ### Module: azure/video-retrieval-api-client
@@ -1112,67 +1859,124 @@ Re-exports [VideoRetrievalApiClient](#classesazure_video_retrieval_api_clientvid
 - [ChatAboutVideo](#classeschatchataboutvideomd)
 - [Conversation](#classeschatconversationmd)
 
-#### Interfaces
+#### Type Aliases
 
-- [ChatAboutVideoOptions](#interfaceschatchataboutvideooptionsmd)
+##### ChatAboutVideoWithChatGpt
+
+Ƭ **ChatAboutVideoWithChatGpt**: [`ChatAboutVideo`](#classeschatchataboutvideomd)\<[`ChatGptClient`](#chatgptclient), [`ChatGptCompletionOptions`](#chatgptcompletionoptions), `any`[], [`ChatGptResponse`](#chatgptresponse)\>
+
+---
+
+##### ChatAboutVideoWithGemini
+
+Ƭ **ChatAboutVideoWithGemini**: [`ChatAboutVideo`](#classeschatchataboutvideomd)\<[`GeminiClient`](#geminiclient), [`GeminiCompletionOptions`](#geminicompletionoptions), `any`[], [`GeminiResponse`](#geminiresponse)\>
+
+---
+
+##### ConversationWithChatGpt
+
+Ƭ **ConversationWithChatGpt**: [`Conversation`](#classeschatconversationmd)\<[`ChatGptClient`](#chatgptclient), [`ChatGptCompletionOptions`](#chatgptcompletionoptions), `any`[], [`ChatGptResponse`](#chatgptresponse)\>
+
+---
+
+##### ConversationWithGemini
+
+Ƭ **ConversationWithGemini**: [`Conversation`](#classeschatconversationmd)\<[`GeminiClient`](#geminiclient), [`GeminiCompletionOptions`](#geminicompletionoptions), `any`[], [`GeminiResponse`](#geminiresponse)\>
+
+---
+
+##### SupportedChatApiOptions
+
+Ƭ **SupportedChatApiOptions**: [`ChatGptOptions`](#chatgptoptions) \| [`GeminiOptions`](#geminioptions)
+
+<a name="moduleschat_gptmd"></a>
+
+### Module: chat-gpt
+
+#### Classes
+
+- [ChatGptApi](#classeschat_gptchatgptapimd)
 
 #### Type Aliases
 
-##### ChatAboutVideoConstructorOptions
+##### ChatGptClient
 
-Ƭ **ChatAboutVideoConstructorOptions**: \{ `azureStorageConnectionString?`: `string` ; `downloadUrlExpirationSeconds?`: `number` ; `openAiApiKey`: `string` ; `openAiEndpoint?`: `string` } & \{ `extractVideoFrames?`: `Partial`\<`Exclude`\<[`ChatAboutVideoOptions`](#interfaceschatchataboutvideooptionsmd)[``"extractVideoFrames"``], `undefined`\>\> ; `videoRetrievalIndex?`: `Partial`\<[`ChatAboutVideoOptions`](#interfaceschatchataboutvideooptionsmd)[``"videoRetrievalIndex"``]\> & `Pick`\<`Exclude`\<[`ChatAboutVideoOptions`](#interfaceschatchataboutvideooptionsmd)[``"videoRetrievalIndex"``], `undefined`\>, `"endpoint"` \| `"apiKey"`\> } & `Partial`\<`Omit`\<[`ChatAboutVideoOptions`](#interfaceschatchataboutvideooptionsmd), `"videoRetrievalIndex"` \| `"extractVideoFrames"`\>\> & `Required`\<`Pick`\<[`ChatAboutVideoOptions`](#interfaceschatchataboutvideooptionsmd), `"openAiDeploymentName"`\>\>
-
----
-
-##### ChatOptions
-
-Ƭ **ChatOptions**: \{ `throttleBackoff?`: `number`[] } & `GetChatCompletionsOptions`
+Ƭ **ChatGptClient**: `OpenAIClient`
 
 ---
 
-##### ConversationOptions
+##### ChatGptCompletionOptions
 
-Ƭ **ConversationOptions**: `Object`
+Ƭ **ChatGptCompletionOptions**: \{ `deploymentName`: `string` } & [`AdditionalCompletionOptions`](#interfacestypesadditionalcompletionoptionsmd) & `Parameters`\<`OpenAIClient`[``"getChatCompletions"``]\>[``2``]
+
+---
+
+##### ChatGptOptions
+
+Ƭ **ChatGptOptions**: \{ `extractVideoFrames?`: [`ExtractVideoFramesOptions`](#interfacestypesextractvideoframesoptionsmd) ; `storage`: [`StorageOptions`](#interfacestypesstorageoptionsmd) ; `videoRetrievalIndex?`: [`VideoRetrievalIndexOptions`](#interfacestypesvideoretrievalindexoptionsmd) } & [`ChatApiOptions`](#interfacestypeschatapioptionsmd)\<`OpenAIClientOptions`, [`ChatGptCompletionOptions`](#chatgptcompletionoptions)\>
+
+---
+
+##### ChatGptPrompt
+
+Ƭ **ChatGptPrompt**: `Parameters`\<`OpenAIClient`[``"getChatCompletions"``]\>[``1``]
+
+---
+
+##### ChatGptResponse
+
+Ƭ **ChatGptResponse**: `ChatCompletions`
+
+<a name="modulesgeminimd"></a>
+
+### Module: gemini
+
+#### Classes
+
+- [GeminiApi](#classesgeminigeminiapimd)
+
+#### Type Aliases
+
+##### GeminiClient
+
+Ƭ **GeminiClient**: `GenerativeModel`
+
+---
+
+##### GeminiClientOptions
+
+Ƭ **GeminiClientOptions**: `Object`
 
 ###### Type declaration
 
-| Name                   | Type                                                                     |
-| :--------------------- | :----------------------------------------------------------------------- |
-| `chatCompletions?`     | `Partial`\<[`ChatOptions`](#chatoptions)\>                               |
-| `extractVideoFrames?`  | `Partial`\<[`ExtractVideoFramesOptions`](#extractvideoframesoptions)\>   |
-| `videoRetrievalIndex?` | `Partial`\<[`VideoRetrievalIndexOptions`](#videoretrievalindexoptions)\> |
+| Name              | Type             |
+| :---------------- | :--------------- |
+| `modelParams`     | `ModelParams`    |
+| `requestOptions?` | `RequestOptions` |
 
 ---
 
-##### ExtractVideoFramesOptions
+##### GeminiCompletionOptions
 
-Ƭ **ExtractVideoFramesOptions**: `Exclude`\<[`ChatAboutVideoOptions`](#interfaceschatchataboutvideooptionsmd)[``"extractVideoFrames"``], `undefined`\>
+Ƭ **GeminiCompletionOptions**: [`AdditionalCompletionOptions`](#interfacestypesadditionalcompletionoptionsmd) & `Omit`\<`GenerateContentRequest`, `"contents"`\>
 
 ---
 
-##### VideoRetrievalIndexOptions
+##### GeminiOptions
 
-Ƭ **VideoRetrievalIndexOptions**: `Exclude`\<[`ChatAboutVideoOptions`](#interfaceschatchataboutvideooptionsmd)[``"videoRetrievalIndex"``], `undefined`\>
+Ƭ **GeminiOptions**: \{ `clientSettings`: [`GeminiClientOptions`](#geminiclientoptions) ; `extractVideoFrames`: [`ExtractVideoFramesOptions`](#interfacestypesextractvideoframesoptionsmd) } & [`ChatApiOptions`](#interfacestypeschatapioptionsmd)\<[`GeminiClientOptions`](#geminiclientoptions), [`GeminiCompletionOptions`](#geminicompletionoptions)\>
 
-<a name="modulesclient_hackmd"></a>
+---
 
-### Module: client-hack
+##### GeminiPrompt
 
-#### Functions
+Ƭ **GeminiPrompt**: `GenerateContentRequest`[``"contents"``]
 
-##### fixClient
+---
 
-▸ **fixClient**(`openAIClient`): `void`
+##### GeminiResponse
 
-###### Parameters
-
-| Name           | Type  |
-| :------------- | :---- |
-| `openAIClient` | `any` |
-
-###### Returns
-
-`void`
+Ƭ **GeminiResponse**: `GenerateContentResult`
 
 <a name="modulesindexmd"></a>
 
@@ -1186,21 +1990,15 @@ Re-exports [ChatAboutVideo](#classeschatchataboutvideomd)
 
 ---
 
-##### ChatAboutVideoConstructorOptions
+##### ChatAboutVideoWithChatGpt
 
-Re-exports [ChatAboutVideoConstructorOptions](#chataboutvideoconstructoroptions)
-
----
-
-##### ChatAboutVideoOptions
-
-Re-exports [ChatAboutVideoOptions](#interfaceschatchataboutvideooptionsmd)
+Re-exports [ChatAboutVideoWithChatGpt](#chataboutvideowithchatgpt)
 
 ---
 
-##### ChatOptions
+##### ChatAboutVideoWithGemini
 
-Re-exports [ChatOptions](#chatoptions)
+Re-exports [ChatAboutVideoWithGemini](#chataboutvideowithgemini)
 
 ---
 
@@ -1210,15 +2008,15 @@ Re-exports [Conversation](#classeschatconversationmd)
 
 ---
 
-##### ConversationOptions
+##### ConversationWithChatGpt
 
-Re-exports [ConversationOptions](#conversationoptions)
+Re-exports [ConversationWithChatGpt](#conversationwithchatgpt)
 
 ---
 
-##### ExtractVideoFramesOptions
+##### ConversationWithGemini
 
-Re-exports [ExtractVideoFramesOptions](#extractvideoframesoptions)
+Re-exports [ConversationWithGemini](#conversationwithgemini)
 
 ---
 
@@ -1228,15 +2026,15 @@ Re-exports [FileBatchUploader](#filebatchuploader)
 
 ---
 
-##### VideoFramesExtractor
+##### SupportedChatApiOptions
 
-Re-exports [VideoFramesExtractor](#videoframesextractor)
+Re-exports [SupportedChatApiOptions](#supportedchatapioptions)
 
 ---
 
-##### VideoRetrievalIndexOptions
+##### VideoFramesExtractor
 
-Re-exports [VideoRetrievalIndexOptions](#videoretrievalindexoptions)
+Re-exports [VideoFramesExtractor](#videoframesextractor)
 
 ---
 
@@ -1290,24 +2088,106 @@ Re-exports [FileBatchUploader](#filebatchuploader)
 
 ##### FileBatchUploader
 
-Ƭ **FileBatchUploader**: (`dir`: `string`, `fileNames`: `string`[], `containerName`: `string`, `blobPathPrefix`: `string`) => `Promise`\<`string`[]\>
+Ƭ **FileBatchUploader**: (`dir`: `string`, `relativePaths`: `string`[], `containerName`: `string`, `blobPathPrefix`: `string`) => `Promise`\<\{ `cleanup`: () => `Promise`\<`any`\> ; `downloadUrls`: `string`[] }\>
 
 ###### Type declaration
 
-▸ (`dir`, `fileNames`, `containerName`, `blobPathPrefix`): `Promise`\<`string`[]\>
+▸ (`dir`, `relativePaths`, `containerName`, `blobPathPrefix`): `Promise`\<\{ `cleanup`: () => `Promise`\<`any`\> ; `downloadUrls`: `string`[] }\>
+
+Function that uploads files to the cloud storage.
 
 ####### Parameters
 
-| Name             | Type       |
-| :--------------- | :--------- |
-| `dir`            | `string`   |
-| `fileNames`      | `string`[] |
-| `containerName`  | `string`   |
-| `blobPathPrefix` | `string`   |
+| Name             | Type       | Description                                                  |
+| :--------------- | :--------- | :----------------------------------------------------------- |
+| `dir`            | `string`   | The directory path where the files are located.              |
+| `relativePaths`  | `string`[] | An array of relative paths of the files to be uploaded.      |
+| `containerName`  | `string`   | The name of the container where the files will be uploaded.  |
+| `blobPathPrefix` | `string`   | The prefix for the blob paths (file paths) in the container. |
 
 ####### Returns
 
-`Promise`\<`string`[]\>
+`Promise`\<\{ `cleanup`: () => `Promise`\<`any`\> ; `downloadUrls`: `string`[] }\>
+
+A Promise that resolves with an object containing an array of download URLs for the uploaded files and a cleanup function to remove the uploaded files from the container.
+
+<a name="modulestypesmd"></a>
+
+### Module: types
+
+#### Interfaces
+
+- [AdditionalCompletionOptions](#interfacestypesadditionalcompletionoptionsmd)
+- [BuildPromptOutput](#interfacestypesbuildpromptoutputmd)
+- [ChatApi](#interfacestypeschatapimd)
+- [ChatApiOptions](#interfacestypeschatapioptionsmd)
+- [ExtractVideoFramesOptions](#interfacestypesextractvideoframesoptionsmd)
+- [StorageOptions](#interfacestypesstorageoptionsmd)
+- [VideoRetrievalIndexOptions](#interfacestypesvideoretrievalindexoptionsmd)
+
+<a name="modulesutilsmd"></a>
+
+### Module: utils
+
+#### Functions
+
+##### effectiveExtractVideoFramesOptions
+
+▸ **effectiveExtractVideoFramesOptions**(`options?`): `Pick`\<[`ExtractVideoFramesOptions`](#interfacestypesextractvideoframesoptionsmd), `"height"`\> & `Required`\<`Omit`\<[`ExtractVideoFramesOptions`](#interfacestypesextractvideoframesoptionsmd), `"height"`\>\>
+
+Calculate the effective values for ExtractVideoFramesOptions by combining the default values and the values provided
+
+###### Parameters
+
+| Name       | Type                                                                       | Description                                |
+| :--------- | :------------------------------------------------------------------------- | :----------------------------------------- |
+| `options?` | [`ExtractVideoFramesOptions`](#interfacestypesextractvideoframesoptionsmd) | the options containing the values provided |
+
+###### Returns
+
+`Pick`\<[`ExtractVideoFramesOptions`](#interfacestypesextractvideoframesoptionsmd), `"height"`\> & `Required`\<`Omit`\<[`ExtractVideoFramesOptions`](#interfacestypesextractvideoframesoptionsmd), `"height"`\>\>
+
+The effective values for ExtractVideoFramesOptions
+
+---
+
+##### effectiveStorageOptions
+
+▸ **effectiveStorageOptions**(`options`): `Required`\<`Pick`\<[`StorageOptions`](#interfacestypesstorageoptionsmd), `"uploader"`\>\> & [`StorageOptions`](#interfacestypesstorageoptionsmd)
+
+Calculate the effective values for StorageOptions by combining the default values and the values provided
+
+###### Parameters
+
+| Name      | Type                                                 | Description                                |
+| :-------- | :--------------------------------------------------- | :----------------------------------------- |
+| `options` | [`StorageOptions`](#interfacestypesstorageoptionsmd) | the options containing the values provided |
+
+###### Returns
+
+`Required`\<`Pick`\<[`StorageOptions`](#interfacestypesstorageoptionsmd), `"uploader"`\>\> & [`StorageOptions`](#interfacestypesstorageoptionsmd)
+
+The effective values for StorageOptions
+
+---
+
+##### effectiveVideoRetrievalIndexOptions
+
+▸ **effectiveVideoRetrievalIndexOptions**(`options`): `Required`\<`Pick`\<[`VideoRetrievalIndexOptions`](#interfacestypesvideoretrievalindexoptionsmd), `"createIndexIfNotExists"` \| `"deleteDocumentWhenConversationEnds"` \| `"deleteIndexWhenConversationEnds"`\>\> & [`VideoRetrievalIndexOptions`](#interfacestypesvideoretrievalindexoptionsmd)
+
+Calculate the effective values for VideoRetrievalIndexOptions by combining the default values and the values provided
+
+###### Parameters
+
+| Name      | Type                                                                         | Description                                |
+| :-------- | :--------------------------------------------------------------------------- | :----------------------------------------- |
+| `options` | [`VideoRetrievalIndexOptions`](#interfacestypesvideoretrievalindexoptionsmd) | the options containing the values provided |
+
+###### Returns
+
+`Required`\<`Pick`\<[`VideoRetrievalIndexOptions`](#interfacestypesvideoretrievalindexoptionsmd), `"createIndexIfNotExists"` \| `"deleteDocumentWhenConversationEnds"` \| `"deleteIndexWhenConversationEnds"`\>\> & [`VideoRetrievalIndexOptions`](#interfacestypesvideoretrievalindexoptionsmd)
+
+The effective values for VideoRetrievalIndexOptions
 
 <a name="modulesvideomd"></a>
 
@@ -1349,24 +2229,29 @@ Re-exports [extractVideoFramesWithFfmpeg](#extractvideoframeswithffmpeg)
 
 ##### extractVideoFramesWithFfmpeg
 
-▸ **extractVideoFramesWithFfmpeg**(`inputFile`, `outputDir`, `intervalSec`, `format?`, `width?`, `height?`, `startSec?`, `endSec?`): `Promise`\<`string`[]\>
+▸ **extractVideoFramesWithFfmpeg**(`inputFile`, `outputDir`, `intervalSec`, `format?`, `width?`, `height?`, `startSec?`, `endSec?`, `limit?`): `Promise`\<\{ `cleanup`: () => `Promise`\<`any`\> ; `relativePaths`: `string`[] }\>
+
+Function that extracts frame images from a video file.
 
 ###### Parameters
 
-| Name          | Type     |
-| :------------ | :------- |
-| `inputFile`   | `string` |
-| `outputDir`   | `string` |
-| `intervalSec` | `number` |
-| `format?`     | `string` |
-| `width?`      | `number` |
-| `height?`     | `number` |
-| `startSec?`   | `number` |
-| `endSec?`     | `number` |
+| Name          | Type     | Description                                                       |
+| :------------ | :------- | :---------------------------------------------------------------- |
+| `inputFile`   | `string` | Path to the input video file.                                     |
+| `outputDir`   | `string` | Path to the output directory where frame images will be saved.    |
+| `intervalSec` | `number` | Interval in seconds between each frame extraction.                |
+| `format?`     | `string` | Format of the output frame images (e.g., 'jpg', 'png').           |
+| `width?`      | `number` | Width of the output frame images in pixels.                       |
+| `height?`     | `number` | Height of the output frame images in pixels.                      |
+| `startSec?`   | `number` | Start time of the video segment to extract in seconds, inclusive. |
+| `endSec?`     | `number` | End time of the video segment to extract in seconds, exclusive.   |
+| `limit?`      | `number` | Maximum number of frames to extract.                              |
 
 ###### Returns
 
-`Promise`\<`string`[]\>
+`Promise`\<\{ `cleanup`: () => `Promise`\<`any`\> ; `relativePaths`: `string`[] }\>
+
+An object containing an array of relative paths to the extracted frame images and a cleanup function for deleting those files.
 
 <a name="modulesvideo_typesmd"></a>
 
@@ -1376,27 +2261,32 @@ Re-exports [extractVideoFramesWithFfmpeg](#extractvideoframeswithffmpeg)
 
 ##### VideoFramesExtractor
 
-Ƭ **VideoFramesExtractor**: (`inputFile`: `string`, `outputDir`: `string`, `intervalSec`: `number`, `format?`: `string`, `width?`: `number`, `height?`: `number`, `startSec?`: `number`, `endSec?`: `number`) => `Promise`\<`string`[]\>
+Ƭ **VideoFramesExtractor**: (`inputFile`: `string`, `outputDir`: `string`, `intervalSec`: `number`, `format?`: `string`, `width?`: `number`, `height?`: `number`, `startSec?`: `number`, `endSec?`: `number`, `limit?`: `number`) => `Promise`\<\{ `cleanup`: () => `Promise`\<`any`\> ; `relativePaths`: `string`[] }\>
 
 ###### Type declaration
 
-▸ (`inputFile`, `outputDir`, `intervalSec`, `format?`, `width?`, `height?`, `startSec?`, `endSec?`): `Promise`\<`string`[]\>
+▸ (`inputFile`, `outputDir`, `intervalSec`, `format?`, `width?`, `height?`, `startSec?`, `endSec?`, `limit?`): `Promise`\<\{ `cleanup`: () => `Promise`\<`any`\> ; `relativePaths`: `string`[] }\>
+
+Function that extracts frame images from a video file.
 
 ####### Parameters
 
-| Name          | Type     |
-| :------------ | :------- |
-| `inputFile`   | `string` |
-| `outputDir`   | `string` |
-| `intervalSec` | `number` |
-| `format?`     | `string` |
-| `width?`      | `number` |
-| `height?`     | `number` |
-| `startSec?`   | `number` |
-| `endSec?`     | `number` |
+| Name          | Type     | Description                                                       |
+| :------------ | :------- | :---------------------------------------------------------------- |
+| `inputFile`   | `string` | Path to the input video file.                                     |
+| `outputDir`   | `string` | Path to the output directory where frame images will be saved.    |
+| `intervalSec` | `number` | Interval in seconds between each frame extraction.                |
+| `format?`     | `string` | Format of the output frame images (e.g., 'jpg', 'png').           |
+| `width?`      | `number` | Width of the output frame images in pixels.                       |
+| `height?`     | `number` | Height of the output frame images in pixels.                      |
+| `startSec?`   | `number` | Start time of the video segment to extract in seconds, inclusive. |
+| `endSec?`     | `number` | End time of the video segment to extract in seconds, exclusive.   |
+| `limit?`      | `number` | Maximum number of frames to extract.                              |
 
 ####### Returns
 
-`Promise`\<`string`[]\>
+`Promise`\<\{ `cleanup`: () => `Promise`\<`any`\> ; `relativePaths`: `string`[] }\>
+
+An object containing an array of relative paths to the extracted frame images and a cleanup function for deleting those files.
 
 <!-- API end -->
