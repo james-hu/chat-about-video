@@ -2,12 +2,8 @@
   "name": "chat-about-video",
   "version": "2.10.1",
   "description": "Chat about a video clip using ChatGPT hosted in OpenAI or Azure, or Gemini provided by Google",
-  "workspaces": [
-    "chat-gpt",
-    "gemini"
-  ],
   "engines": {
-    "node": "12.9"
+    "node": ">=18"
   },
   "scripts": {
     "format:all": "prettier --write --ignore-unknown .",

@@ -17,43 +17,22 @@ Key features:
 - Options supported by the underlying API are exposed for customisation.
 - It can also be used in scenario that no video needs to be involved, that means it can be used for "normal" text chats.
 
-## How the video is provided to ChatGPT or Gemini
-
-### ChatGPT
-
-There are two approaches for feeding video content to ChatGPT. `chat-about-video` supports both of them.
-
-**Frame image extraction:**
-
-- Integrate ChatGPT from Microsoft Azure or OpenAI effortlessly.
-- Utilize ffmpeg integration provided by this package for frame image extraction or opt for a DIY approach.
-- Store frame images with ease, supporting Azure Blob Storage and AWS S3.
-- GPT-4o and GPT-4 Vision Preview hosted in Azure allows analysis of up to 10 frame images.
-- GPT-4o and GPT-4 Vision Preview hosted in OpenAI allows analysis of more than 10 frame images.
-
-**Video indexing with Microsoft Azure:**
-
-- Exclusively supported by GPT-4 Vision Preview from Microsoft Azure.
-- Ingest videos seamlessly into Microsoft Azure's Video Retrieval Index.
-- Automatic extraction of up to 20 frame images using Video Retrieval Indexer.
-- Default integration of speech transcription for enhanced comprehension.
-- Flexible storage options with support for Azure Blob Storage and AWS S3.
-
-### Gemini
-
-`chat-about-video` supports sending Video frames directly to Google's API without using an intermediate storage.
-
-- Utilize ffmpeg integration provided by this package for frame image extraction or opt for a DIY approach.
-- Number of frame images is only limited by Gemini API in Google Cloud.
-
 ## Usage
 
 ### Installation
 
-Add chat-about-video as a dependency to your Node.js application using the following command:
+`chat-about-video` needs to be added as a dependency to your Node.js application using the following command:
+You also need to add more dependencies according to your usage scenario.
+
+Below are some typical scenarios:
 
 ```shell
-npm i chat-about-video
+# ChatGPT in OpenAI or Azure, with Azure Blob Storage
+npm i chat-about-video @azure/openai @ffmpeg-installer/ffmpeg @azure/storage-blob
+# Gemini in Google Cloud
+npm i chat-about-video @google/generative-ai @ffmpeg-installer/ffmpeg
+# ChatGPT in OpenAI or Azure, with AWS S3
+npm i chat-about-video @azure/openai @ffmpeg-installer/ffmpeg @handy-common-utils/aws-utils @aws-sdk/s3-request-presigner @aws-sdk/client-s3
 ```
 
 ### Optional dependencies
@@ -99,6 +78,37 @@ Or if you prefer AWS S3 for supplying frame images to ChatGPT, install the follo
 ```shell
 npm i @handy-common-utils/aws-utils @aws-sdk/s3-request-presigner @aws-sdk/client-s3
 ```
+
+## How the video is provided to ChatGPT or Gemini
+
+### ChatGPT
+
+There are two approaches for feeding video content to ChatGPT. `chat-about-video` supports both of them.
+
+**Frame image extraction:**
+
+- Integrate ChatGPT from Microsoft Azure or OpenAI effortlessly.
+- Utilize ffmpeg integration provided by this package for frame image extraction or opt for a DIY approach.
+- Store frame images with ease, supporting Azure Blob Storage and AWS S3.
+- GPT-4o and GPT-4 Vision Preview hosted in Azure allows analysis of up to 10 frame images.
+- GPT-4o and GPT-4 Vision Preview hosted in OpenAI allows analysis of more than 10 frame images.
+
+**Video indexing with Microsoft Azure:**
+
+- Exclusively supported by GPT-4 Vision Preview from Microsoft Azure.
+- Ingest videos seamlessly into Microsoft Azure's Video Retrieval Index.
+- Automatic extraction of up to 20 frame images using Video Retrieval Indexer.
+- Default integration of speech transcription for enhanced comprehension.
+- Flexible storage options with support for Azure Blob Storage and AWS S3.
+
+### Gemini
+
+`chat-about-video` supports sending Video frames directly to Google's API without using an intermediate storage.
+
+- Utilize ffmpeg integration provided by this package for frame image extraction or opt for a DIY approach.
+- Number of frame images is only limited by Gemini API in Google Cloud.
+
+## Code examples
 
 ### Example 1: Using GPT-4o or GPT-4 Vision Preview hosted in OpenAI with Azure Blob Storage
 
