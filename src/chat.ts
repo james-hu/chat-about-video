@@ -1,8 +1,8 @@
 import { ConsoleLineLogger, consoleWithoutColour, generateRandomString } from '@handy-common-utils/misc-utils';
 import { withRetry } from '@handy-common-utils/promise-utils';
 
-import type { ChatGptOptions } from './chat-gpt';
-import type { GeminiOptions } from './gemini';
+import type { ChatGptClient, ChatGptCompletionOptions, ChatGptOptions, ChatGptPrompt, ChatGptResponse } from './chat-gpt';
+import type { GeminiClient, GeminiCompletionOptions, GeminiOptions, GeminiPrompt, GeminiResponse } from './gemini';
 
 import { AdditionalCompletionOptions, ChatApi } from './types';
 
@@ -23,6 +23,12 @@ function isChatGptOptions(options: any): options is ChatGptOptions {
   const opts = options as ChatGptOptions;
   return !isGeminiOptions(options) && opts?.storage != null;
 }
+
+export type ChatAboutVideoWithChatGpt = ChatAboutVideo<ChatGptClient, ChatGptCompletionOptions, ChatGptPrompt, ChatGptResponse>;
+export type ChatAboutVideoWithGemini = ChatAboutVideo<GeminiClient, GeminiCompletionOptions, GeminiPrompt, GeminiResponse>;
+
+export type ConversationWithChatGpt = Conversation<ChatGptClient, ChatGptCompletionOptions, ChatGptPrompt, ChatGptResponse>;
+export type ConversationWithGemini = Conversation<GeminiClient, GeminiCompletionOptions, GeminiPrompt, GeminiResponse>;
 
 export class ChatAboutVideo<CLIENT = any, OPTIONS extends AdditionalCompletionOptions = any, PROMPT = any, RESPONSE = any> {
   protected options: SupportedChatApiOptions;
@@ -150,7 +156,7 @@ export class Conversation<CLIENT = any, OPTIONS extends AdditionalCompletionOpti
    * @param options Options for fine control.
    * @returns The response/completion
    */
-  async say(message: string, options?: OPTIONS): Promise<string | undefined> {
+  async say(message: string, options?: Partial<OPTIONS>): Promise<string | undefined> {
     const { prompt: newPromptPart } = await this.api.buildTextPrompt(message);
     const updatedPrompt = await this.api.appendToPrompt(newPromptPart, this.prompt);
     const effectiveOptions = { ...this.options, ...options };

@@ -11,6 +11,8 @@ import type { AdditionalCompletionOptions, BuildPromptOutput, ChatApi, ChatApiOp
 
 import { effectiveExtractVideoFramesOptions } from '../utils';
 
+export type GeminiClient = GenerativeModel;
+export type GeminiResponse = GenerateContentResult;
 export type GeminiPrompt = GenerateContentRequest['contents'];
 export type GeminiClientOptions = { modelParams: ModelParams; requestOptions?: RequestOptions };
 export type GeminiCompletionOptions = AdditionalCompletionOptions & Omit<GenerateContentRequest, 'contents'>;
@@ -19,8 +21,8 @@ export type GeminiOptions = {
   clientSettings: GeminiClientOptions;
 } & ChatApiOptions<GeminiClientOptions, GeminiCompletionOptions>;
 
-export class GeminiApi implements ChatApi<GenerativeModel, GeminiCompletionOptions, GeminiPrompt, GenerateContentResult> {
-  protected client: GenerativeModel;
+export class GeminiApi implements ChatApi<GeminiClient, GeminiCompletionOptions, GeminiPrompt, GeminiResponse> {
+  protected client: GeminiClient;
   protected extractVideoFrames: ReturnType<typeof effectiveExtractVideoFramesOptions>;
   protected tmpDir: string;
 
@@ -43,11 +45,11 @@ export class GeminiApi implements ChatApi<GenerativeModel, GeminiCompletionOptio
     this.client = genAI.getGenerativeModel(options.clientSettings.modelParams, options.clientSettings.requestOptions);
   }
 
-  async getClient(): Promise<GenerativeModel> {
+  async getClient(): Promise<GeminiClient> {
     return this.client;
   }
 
-  async generateContent(prompt: GeminiPrompt, options: GeminiCompletionOptions): Promise<GenerateContentResult> {
+  async generateContent(prompt: GeminiPrompt, options: GeminiCompletionOptions): Promise<GeminiResponse> {
     const effectiveOptions = {
       ...this.options.completionOptions,
       ...options,
@@ -61,7 +63,7 @@ export class GeminiApi implements ChatApi<GenerativeModel, GeminiCompletionOptio
     return this.client.generateContent({ contents: prompt, ...effectiveOptions });
   }
 
-  async getResponseText(result: GenerateContentResult): Promise<string | undefined> {
+  async getResponseText(result: GeminiResponse): Promise<string | undefined> {
     return result.response.text();
   }
 
@@ -69,9 +71,9 @@ export class GeminiApi implements ChatApi<GenerativeModel, GeminiCompletionOptio
     return error?.status === 429;
   }
 
-  async appendToPrompt(newPromptOrResponse: GeminiPrompt | GenerateContentResult, prompt?: GeminiPrompt): Promise<GeminiPrompt> {
+  async appendToPrompt(newPromptOrResponse: GeminiPrompt | GeminiResponse, prompt?: GeminiPrompt): Promise<GeminiPrompt> {
     prompt = prompt ?? [];
-    if (isGenerateContentResult(newPromptOrResponse)) {
+    if (isGeminiResponse(newPromptOrResponse)) {
       const responseText = (await this.getResponseText(newPromptOrResponse)) ?? '';
       prompt.push({
         role: 'model',
@@ -144,6 +146,6 @@ export class GeminiApi implements ChatApi<GenerativeModel, GeminiCompletionOptio
   }
 }
 
-function isGenerateContentResult(obj: any): obj is GenerateContentResult {
+function isGeminiResponse(obj: any): obj is GeminiResponse {
   return typeof obj?.response?.text === 'function';
 }

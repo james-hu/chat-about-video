@@ -25,6 +25,8 @@ import type {
 import { fixClient } from '../azure/client-hack';
 import { effectiveExtractVideoFramesOptions, effectiveStorageOptions, effectiveVideoRetrievalIndexOptions } from '../utils';
 
+export type ChatGptClient = OpenAIClient;
+export type ChatGptResponse = ChatCompletions;
 export type ChatGptPrompt = Parameters<OpenAIClient['getChatCompletions']>[1];
 export type ChatGptCompletionOptions = {
   deploymentName: string;
@@ -36,8 +38,8 @@ export type ChatGptOptions = {
   storage: StorageOptions;
 } & ChatApiOptions<OpenAIClientOptions, ChatGptCompletionOptions>;
 
-export class ChatGptApi implements ChatApi<OpenAIClient, ChatGptCompletionOptions, ChatGptPrompt, ChatCompletions> {
-  protected client: OpenAIClient;
+export class ChatGptApi implements ChatApi<ChatGptClient, ChatGptCompletionOptions, ChatGptPrompt, ChatGptResponse> {
+  protected client: ChatGptClient;
   protected storage: ReturnType<typeof effectiveStorageOptions>;
   protected extractVideoFrames?: ReturnType<typeof effectiveExtractVideoFramesOptions>;
   protected videoRetrievalIndex?: ReturnType<typeof effectiveVideoRetrievalIndexOptions>;
@@ -58,11 +60,11 @@ export class ChatGptApi implements ChatApi<OpenAIClient, ChatGptCompletionOption
     this.tmpDir = options.tmpDir ?? os.tmpdir();
   }
 
-  async getClient(): Promise<OpenAIClient> {
+  async getClient(): Promise<ChatGptClient> {
     return this.client;
   }
 
-  async generateContent(prompt: ChatGptPrompt, options: ChatGptCompletionOptions): Promise<ChatCompletions> {
+  async generateContent(prompt: ChatGptPrompt, options: ChatGptCompletionOptions): Promise<ChatGptResponse> {
     const effectiveOptions = {
       ...this.options.completionOptions,
       ...options,
@@ -71,7 +73,7 @@ export class ChatGptApi implements ChatApi<OpenAIClient, ChatGptCompletionOption
     return this.client.getChatCompletions(deploymentName, prompt, effectiveOptions);
   }
 
-  async getResponseText(result: ChatCompletions): Promise<string | undefined> {
+  async getResponseText(result: ChatGptResponse): Promise<string | undefined> {
     return result?.choices?.[0]?.message?.content ?? undefined;
   }
 
@@ -80,7 +82,7 @@ export class ChatGptApi implements ChatApi<OpenAIClient, ChatGptCompletionOption
     return code === 'TooManyRequests' || code === '429';
   }
 
-  async appendToPrompt(newPromptOrResponse: ChatGptPrompt | ChatCompletions, prompt?: ChatGptPrompt): Promise<ChatGptPrompt> {
+  async appendToPrompt(newPromptOrResponse: ChatGptPrompt | ChatGptResponse, prompt?: ChatGptPrompt): Promise<ChatGptPrompt> {
     prompt =
       prompt ??
       (this.options.completionOptions?.systemPromptText
@@ -91,7 +93,7 @@ export class ChatGptApi implements ChatApi<OpenAIClient, ChatGptCompletionOption
             } as ChatRequestSystemMessage,
           ]
         : []);
-    if (isChatCompletions(newPromptOrResponse)) {
+    if (isChatGptResponse(newPromptOrResponse)) {
       const responseText = (await this.getResponseText(newPromptOrResponse)) ?? '';
       prompt.push({
         role: 'assistant',
@@ -279,6 +281,6 @@ export class ChatGptApi implements ChatApi<OpenAIClient, ChatGptCompletionOption
   }
 }
 
-function isChatCompletions(obj: any): obj is ChatCompletions {
+function isChatGptResponse(obj: any): obj is ChatGptResponse {
   return Array.isArray(obj.choices);
 }

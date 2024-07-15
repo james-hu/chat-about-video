@@ -108,6 +108,25 @@ There are two approaches for feeding video content to ChatGPT. `chat-about-video
 - Utilize ffmpeg integration provided by this package for frame image extraction or opt for a DIY approach.
 - Number of frame images is only limited by Gemini API in Google Cloud.
 
+## Types
+
+`ChatAboutVideo` and `Conversation` are generic classes.
+Use them without concrete generic type parameters when you want the flexibility to easily switch between ChatGPT and Gemini.
+
+Otherwise, you may want to use or cast objects to these types for convenience:
+
+- `ChatAboutVideoWithChatGpt`
+- `ChatAboutVideoWithGemini`
+- `ConversationWithChatGpt`
+- `ConversationWithGemini`
+
+If you want to access the underlying API client, use the `getClient()` function on `ChatAboutVideo`.
+
+## Cleaning up
+
+Intermediate files such like extracted frame images could be saved in local locations or somewhere in the cloud.
+To clean up those files, remember to call the `end()` function on `Conversation` when you no longer need them.
+
 ## Code examples
 
 ### Example 1: Using GPT-4o or GPT-4 Vision Preview hosted in OpenAI with Azure Blob Storage
@@ -129,7 +148,7 @@ import { consoleWithColour } from '@handy-common-utils/misc-utils';
 import chalk from 'chalk';
 import readline from 'node:readline';
 
-import { ChatAboutVideo } from '../src';
+import { ChatAboutVideo, ConversationWithChatGpt } from 'chat-about-video';
 
 async function demo() {
   const chat = new ChatAboutVideo(
@@ -153,7 +172,7 @@ async function demo() {
     consoleWithColour({ debug: process.env.ENABLE_DEBUG === 'true' }, chalk),
   );
 
-  const conversation = await chat.startConversation(process.env.DEMO_VIDEO!);
+  const conversation = (await chat.startConversation(process.env.DEMO_VIDEO!)) as ConversationWithChatGpt;
 
   const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
   const prompt = (question: string) => new Promise<string>((resolve) => rl.question(question, resolve));
@@ -197,7 +216,7 @@ import { consoleWithColour } from '@handy-common-utils/misc-utils';
 import chalk from 'chalk';
 import readline from 'node:readline';
 
-import { ChatAboutVideo } from '../src';
+import { ChatAboutVideo, ConversationWithChatGpt } from 'chat-about-video';
 
 async function demo() {
   const chat = new ChatAboutVideo(
@@ -224,7 +243,7 @@ async function demo() {
     consoleWithColour({ debug: process.env.ENABLE_DEBUG === 'true' }, chalk),
   );
 
-  const conversation = await chat.startConversation(process.env.DEMO_VIDEO!);
+  const conversation = (await chat.startConversation(process.env.DEMO_VIDEO!)) as ConversationWithChatGpt;
 
   const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
   const prompt = (question: string) => new Promise<string>((resolve) => rl.question(question, resolve));
@@ -266,7 +285,7 @@ import { consoleWithColour } from '@handy-common-utils/misc-utils';
 import chalk from 'chalk';
 import readline from 'node:readline';
 
-import { ChatAboutVideo } from '../src';
+import { ChatAboutVideo, ConversationWithChatGpt } from 'chat-about-video';
 
 async function demo() {
   const chat = new ChatAboutVideo(
@@ -287,7 +306,7 @@ async function demo() {
     consoleWithColour({ debug: process.env.ENABLE_DEBUG === 'true' }, chalk),
   );
 
-  const conversation = await chat.startConversation(process.env.DEMO_VIDEO!);
+  const conversation = (await chat.startConversation(process.env.DEMO_VIDEO!)) as ConversationWithChatGpt;
 
   const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
   const prompt = (question: string) => new Promise<string>((resolve) => rl.question(question, resolve));
@@ -327,8 +346,7 @@ import readline from 'node:readline';
 
 import { HarmBlockThreshold, HarmCategory } from '@google/generative-ai';
 
-import { ChatAboutVideo } from '../src';
-import { GeminiCompletionOptions } from '../src/gemini';
+import { ChatAboutVideo, ConversationWithGemini } from 'chat-about-video';
 
 async function demo() {
   const chat = new ChatAboutVideo(
@@ -349,7 +367,7 @@ async function demo() {
     consoleWithColour({ debug: process.env.ENABLE_DEBUG === 'true' }, chalk),
   );
 
-  const conversation = await chat.startConversation(process.env.DEMO_VIDEO!);
+  const conversation = (await chat.startConversation(process.env.DEMO_VIDEO!)) as ConversationWithGemini;
 
   const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
   const prompt = (question: string) => new Promise<string>((resolve) => rl.question(question, resolve));
@@ -364,7 +382,7 @@ async function demo() {
     }
     const answer = await conversation.say(question, {
       safetySettings: [{ category: HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT, threshold: HarmBlockThreshold.BLOCK_NONE }],
-    } as GeminiCompletionOptions);
+    });
     console.log(chalk.blue('\nAI:' + answer));
   }
   console.log('Demo finished');

@@ -15,7 +15,7 @@ import { consoleWithColour } from '@handy-common-utils/misc-utils';
 import chalk from 'chalk';
 import readline from 'node:readline';
 
-import { ChatAboutVideo } from '../src';
+import { ChatAboutVideo, ConversationWithChatGpt } from '../src';
 
 async function demo() {
   const chat = new ChatAboutVideo(
@@ -39,7 +39,7 @@ async function demo() {
     consoleWithColour({ debug: process.env.ENABLE_DEBUG === 'true' }, chalk),
   );
 
-  const conversation = await chat.startConversation(process.env.DEMO_VIDEO!);
+  const conversation = (await chat.startConversation(process.env.DEMO_VIDEO!)) as ConversationWithChatGpt;
 
   const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
   const prompt = (question: string) => new Promise<string>((resolve) => rl.question(question, resolve));

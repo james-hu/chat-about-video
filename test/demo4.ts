@@ -15,8 +15,7 @@ import readline from 'node:readline';
 
 import { HarmBlockThreshold, HarmCategory } from '@google/generative-ai';
 
-import { ChatAboutVideo } from '../src';
-import { GeminiCompletionOptions } from '../src/gemini';
+import { ChatAboutVideo, ConversationWithGemini } from '../src';
 
 async function demo() {
   const chat = new ChatAboutVideo(
@@ -37,7 +36,7 @@ async function demo() {
     consoleWithColour({ debug: process.env.ENABLE_DEBUG === 'true' }, chalk),
   );
 
-  const conversation = await chat.startConversation(process.env.DEMO_VIDEO!);
+  const conversation = (await chat.startConversation(process.env.DEMO_VIDEO!)) as ConversationWithGemini;
 
   const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
   const prompt = (question: string) => new Promise<string>((resolve) => rl.question(question, resolve));
@@ -52,7 +51,7 @@ async function demo() {
     }
     const answer = await conversation.say(question, {
       safetySettings: [{ category: HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT, threshold: HarmBlockThreshold.BLOCK_NONE }],
-    } as GeminiCompletionOptions);
+    });
     console.log(chalk.blue('\nAI:' + answer));
   }
   console.log('Demo finished');
