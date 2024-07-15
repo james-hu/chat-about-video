@@ -21,17 +21,16 @@ Key features:
 
 ### Installation
 
-`chat-about-video` needs to be added as a dependency to your Node.js application using the following command:
-You also need to add more dependencies according to your usage scenario.
-
-Below are some typical scenarios:
+To use `chat-about-video` in your Node.js application,
+add it as a dependency along with other necessary packages based on your usage scenario.
+Below are examples for typical setups:
 
 ```shell
-# ChatGPT in OpenAI or Azure, with Azure Blob Storage
+# ChatGPT on OpenAI or Azure with Azure Blob Storage
 npm i chat-about-video @azure/openai @ffmpeg-installer/ffmpeg @azure/storage-blob
 # Gemini in Google Cloud
 npm i chat-about-video @google/generative-ai @ffmpeg-installer/ffmpeg
-# ChatGPT in OpenAI or Azure, with AWS S3
+# ChatGPT on OpenAI or Azure with AWS S3
 npm i chat-about-video @azure/openai @ffmpeg-installer/ffmpeg @handy-common-utils/aws-utils @aws-sdk/s3-request-presigner @aws-sdk/client-s3
 ```
 
@@ -39,7 +38,7 @@ npm i chat-about-video @azure/openai @ffmpeg-installer/ffmpeg @handy-common-util
 
 **ChatGPT**
 
-For using ChatGPT hosted in either OpenAI or Azure,
+To use ChatGPT hosted on OpenAI or Azure:
 
 ```shell
 npm i @azure/openai
@@ -47,7 +46,7 @@ npm i @azure/openai
 
 **Gemini**
 
-For using Gemini hosted in Google Cloud,
+To use Gemini hosted on Google Cloud:
 
 ```shell
 npm i @google/generative-ai
@@ -55,7 +54,8 @@ npm i @google/generative-ai
 
 **ffmpeg**
 
-If you intend to utilize ffmpeg for extracting video frame images, ensure it is installed on your system. You can install it using either a system package manager or a helper NPM package:
+If you need ffmpeg for extracting video frame images, ensure it is installed.
+You can use a system package manager or an NPM package:
 
 ```shell
 sudo apt install ffmpeg
@@ -65,7 +65,7 @@ npm i @ffmpeg-installer/ffmpeg
 
 **Azure Blob Storage**
 
-If you plan to use Azure Blob Storage for supplying frame images to ChatGPT, include the following dependency:
+To use Azure Blob Storage for frame images (not needed for Gemini):
 
 ```shell
 npm i @azure/storage-blob
@@ -73,7 +73,7 @@ npm i @azure/storage-blob
 
 **AWS S3**
 
-Or if you prefer AWS S3 for supplying frame images to ChatGPT, install the following dependencies:
+To use AWS S3 for frame images (not needed for Gemini):
 
 ```shell
 npm i @handy-common-utils/aws-utils @aws-sdk/s3-request-presigner @aws-sdk/client-s3
@@ -103,7 +103,7 @@ There are two approaches for feeding video content to ChatGPT. `chat-about-video
 
 ### Gemini
 
-`chat-about-video` supports sending Video frames directly to Google's API without using an intermediate storage.
+`chat-about-video` supports sending Video frames directly to Google's API without a cloud storage.
 
 - Utilize ffmpeg integration provided by this package for frame image extraction or opt for a DIY approach.
 - Number of frame images is only limited by Gemini API in Google Cloud.
@@ -113,19 +113,20 @@ There are two approaches for feeding video content to ChatGPT. `chat-about-video
 `ChatAboutVideo` and `Conversation` are generic classes.
 Use them without concrete generic type parameters when you want the flexibility to easily switch between ChatGPT and Gemini.
 
-Otherwise, you may want to use or cast objects to these types for convenience:
+Otherwise, you may want to use or cast objects to the following specific types for convenience:
 
 - `ChatAboutVideoWithChatGpt`
 - `ChatAboutVideoWithGemini`
 - `ConversationWithChatGpt`
 - `ConversationWithGemini`
 
-If you want to access the underlying API client, use the `getClient()` function on `ChatAboutVideo`.
+To access the underlying API client, use the `getClient()` function on the `ChatAboutVideo` instance.
 
 ## Cleaning up
 
-Intermediate files such like extracted frame images could be saved in local locations or somewhere in the cloud.
-To clean up those files, remember to call the `end()` function on `Conversation` when you no longer need them.
+Intermediate files, such as extracted frame images, can be saved locally or in the cloud.
+To remove these files when they are no longer needed, remember to call the `end()` function
+on the `Conversation` instance when the conversion finishes.
 
 ## Code examples
 
