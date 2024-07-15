@@ -4,7 +4,6 @@ import { existsSync, rmSync } from 'node:fs';
 
 import { extractVideoFramesWithFfmpeg } from '../../src/video';
 
-
 describe('ffmpeg extractVideoFrames', () => {
   it('should work with a sample file', async () => {
     rmSync('/tmp/000000.jpg', { force: true });
@@ -19,7 +18,7 @@ describe('ffmpeg extractVideoFrames', () => {
     expect(existsSync('/tmp/000004.jpg')).toBe(false);
 
     const file = `${__dirname}/000001.mp4`;
-    const files = await extractVideoFramesWithFfmpeg(file, '/tmp', 1);
+    const { relativePaths: files } = await extractVideoFramesWithFfmpeg(file, '/tmp', 1);
 
     expect(files.length).toBe(5);
     expect(files[0]).toBe('000000.jpg');
@@ -42,7 +41,7 @@ describe('ffmpeg extractVideoFrames', () => {
     expect(existsSync('/tmp/000003.png')).toBe(false);
 
     const file = `${__dirname}/000001.mp4`;
-    const files = await extractVideoFramesWithFfmpeg(file, '/tmp', 2, 'png', 100, undefined, 1, 3);
+    const { relativePaths: files } = await extractVideoFramesWithFfmpeg(file, '/tmp', 2, 'png', 100, undefined, 1, undefined, 3);
 
     expect(files.length).toBe(2);
     expect(files[0]).toBe('000001.png');
