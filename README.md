@@ -1867,27 +1867,51 @@ Re-exports [VideoRetrievalApiClient](#classesazure_video_retrieval_api_clientvid
 
 #### Type Aliases
 
+##### ChatAboutVideoWith
+
+Ƭ **ChatAboutVideoWith**\<`T`\>: [`ChatAboutVideo`](#classeschatchataboutvideomd)\<[`ClientOfChatApi`](#clientofchatapi)\<`T`\>, [`OptionsOfChatApi`](#optionsofchatapi)\<`T`\>, [`PromptOfChatApi`](#promptofchatapi)\<`T`\>, [`ResponseOfChatApi`](#responseofchatapi)\<`T`\>\>
+
+###### Type parameters
+
+| Name |
+| :--- |
+| `T`  |
+
+---
+
 ##### ChatAboutVideoWithChatGpt
 
-Ƭ **ChatAboutVideoWithChatGpt**: [`ChatAboutVideo`](#classeschatchataboutvideomd)\<[`ChatGptClient`](#chatgptclient), [`ChatGptCompletionOptions`](#chatgptcompletionoptions), `any`[], [`ChatGptResponse`](#chatgptresponse)\>
+Ƭ **ChatAboutVideoWithChatGpt**: [`ChatAboutVideoWith`](#chataboutvideowith)\<[`ChatGptApi`](#classeschat_gptchatgptapimd)\>
 
 ---
 
 ##### ChatAboutVideoWithGemini
 
-Ƭ **ChatAboutVideoWithGemini**: [`ChatAboutVideo`](#classeschatchataboutvideomd)\<[`GeminiClient`](#geminiclient), [`GeminiCompletionOptions`](#geminicompletionoptions), `any`[], [`GeminiResponse`](#geminiresponse)\>
+Ƭ **ChatAboutVideoWithGemini**: [`ChatAboutVideoWith`](#chataboutvideowith)\<[`GeminiApi`](#classesgeminigeminiapimd)\>
+
+---
+
+##### ConversationWith
+
+Ƭ **ConversationWith**\<`T`\>: [`Conversation`](#classeschatconversationmd)\<[`ClientOfChatApi`](#clientofchatapi)\<`T`\>, [`OptionsOfChatApi`](#optionsofchatapi)\<`T`\>, [`PromptOfChatApi`](#promptofchatapi)\<`T`\>, [`ResponseOfChatApi`](#responseofchatapi)\<`T`\>\>
+
+###### Type parameters
+
+| Name |
+| :--- |
+| `T`  |
 
 ---
 
 ##### ConversationWithChatGpt
 
-Ƭ **ConversationWithChatGpt**: [`Conversation`](#classeschatconversationmd)\<[`ChatGptClient`](#chatgptclient), [`ChatGptCompletionOptions`](#chatgptcompletionoptions), `any`[], [`ChatGptResponse`](#chatgptresponse)\>
+Ƭ **ConversationWithChatGpt**: [`ConversationWith`](#conversationwith)\<[`ChatGptApi`](#classeschat_gptchatgptapimd)\>
 
 ---
 
 ##### ConversationWithGemini
 
-Ƭ **ConversationWithGemini**: [`Conversation`](#classeschatconversationmd)\<[`GeminiClient`](#geminiclient), [`GeminiCompletionOptions`](#geminicompletionoptions), `any`[], [`GeminiResponse`](#geminiresponse)\>
+Ƭ **ConversationWithGemini**: [`ConversationWith`](#conversationwith)\<[`GeminiApi`](#classesgeminigeminiapimd)\>
 
 ---
 
@@ -1996,6 +2020,12 @@ Re-exports [ChatAboutVideo](#classeschatchataboutvideomd)
 
 ---
 
+##### ChatAboutVideoWith
+
+Re-exports [ChatAboutVideoWith](#chataboutvideowith)
+
+---
+
 ##### ChatAboutVideoWithChatGpt
 
 Re-exports [ChatAboutVideoWithChatGpt](#chataboutvideowithchatgpt)
@@ -2011,6 +2041,12 @@ Re-exports [ChatAboutVideoWithGemini](#chataboutvideowithgemini)
 ##### Conversation
 
 Re-exports [Conversation](#classeschatconversationmd)
+
+---
+
+##### ConversationWith
+
+Re-exports [ConversationWith](#conversationwith)
 
 ---
 
@@ -2130,6 +2166,54 @@ A Promise that resolves with an object containing an array of download URLs for 
 - [ExtractVideoFramesOptions](#interfacestypesextractvideoframesoptionsmd)
 - [StorageOptions](#interfacestypesstorageoptionsmd)
 - [VideoRetrievalIndexOptions](#interfacestypesvideoretrievalindexoptionsmd)
+
+#### Type Aliases
+
+##### ClientOfChatApi
+
+Ƭ **ClientOfChatApi**\<`T`\>: `T` extends [`ChatApi`](#interfacestypeschatapimd)\<infer CLIENT, `any`, `any`, `any`\> ? `CLIENT` : `never`
+
+###### Type parameters
+
+| Name |
+| :--- |
+| `T`  |
+
+---
+
+##### OptionsOfChatApi
+
+Ƭ **OptionsOfChatApi**\<`T`\>: `T` extends [`ChatApi`](#interfacestypeschatapimd)\<`any`, infer OPTIONS, `any`, `any`\> ? `OPTIONS` : `never`
+
+###### Type parameters
+
+| Name |
+| :--- |
+| `T`  |
+
+---
+
+##### PromptOfChatApi
+
+Ƭ **PromptOfChatApi**\<`T`\>: `T` extends [`ChatApi`](#interfacestypeschatapimd)\<`any`, `any`, infer PROMPT, `any`\> ? `PROMPT` : `never`
+
+###### Type parameters
+
+| Name |
+| :--- |
+| `T`  |
+
+---
+
+##### ResponseOfChatApi
+
+Ƭ **ResponseOfChatApi**\<`T`\>: `T` extends [`ChatApi`](#interfacestypeschatapimd)\<`any`, `any`, `any`, infer RESPONSE\> ? `RESPONSE` : `never`
+
+###### Type parameters
+
+| Name |
+| :--- |
+| `T`  |
 
 <a name="modulesutilsmd"></a>
 
