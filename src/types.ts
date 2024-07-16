@@ -36,6 +36,12 @@ export interface BuildPromptOutput<PROMPT, OPTIONS> {
   options?: Partial<OPTIONS>;
   cleanup?: () => Promise<any>;
 }
+
+export type ClientOfChatApi<T> = T extends ChatApi<infer CLIENT, any, any, any> ? CLIENT : never;
+export type OptionsOfChatApi<T> = T extends ChatApi<any, infer OPTIONS, any, any> ? OPTIONS : never;
+export type PromptOfChatApi<T> = T extends ChatApi<any, any, infer PROMPT, any> ? PROMPT : never;
+export type ResponseOfChatApi<T> = T extends ChatApi<any, any, any, infer RESPONSE> ? RESPONSE : never;
+
 export interface ChatApi<CLIENT, OPTIONS extends AdditionalCompletionOptions, PROMPT, RESPONSE> {
   /**
    * Get the raw client.
