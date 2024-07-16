@@ -108,19 +108,24 @@ There are two approaches for feeding video content to ChatGPT. `chat-about-video
 - Utilize ffmpeg integration provided by this package for frame image extraction or opt for a DIY approach.
 - Number of frame images is only limited by Gemini API in Google Cloud.
 
-## Types
+## Concrete types and low level clients
 
 `ChatAboutVideo` and `Conversation` are generic classes.
 Use them without concrete generic type parameters when you want the flexibility to easily switch between ChatGPT and Gemini.
 
-Otherwise, you may want to use or cast objects to the following specific types for convenience:
+Otherwise, you may want to use concrete type. Below are some examples:
 
-- `ChatAboutVideoWithChatGpt`
-- `ChatAboutVideoWithGemini`
-- `ConversationWithChatGpt`
-- `ConversationWithGemini`
+```typescript
+// cast to a concrete type
+const castToChatGpt = chat as ChatAboutVideoWithChatGpt;
 
-To access the underlying API client, use the `getClient()` function on the `ChatAboutVideo` instance.
+// you can also just leave the ChatAboutVideo instance generic, but narrow down the conversation type
+const conversationWithGemini = (await chat.startConversation(...)) as ConversationWithGemini;
+const conversationWithChatGpt = await (chat as ChatAboutVideoWithChatGpt).startConversation(...);
+```
+
+To access the underlying API wrapper, use the `getApi()` function on the `ChatAboutVideo` instance.
+To get the raw API client, use the `getClient()` function on the awaited object returned from `getApi()`.
 
 ## Cleaning up
 

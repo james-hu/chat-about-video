@@ -1,12 +1,10 @@
 import { ConsoleLineLogger, consoleWithoutColour, generateRandomString } from '@handy-common-utils/misc-utils';
 import { withRetry } from '@handy-common-utils/promise-utils';
 
-import type { ChatGptClient, ChatGptCompletionOptions, ChatGptOptions, ChatGptPrompt, ChatGptResponse } from './chat-gpt';
-import type { GeminiClient, GeminiCompletionOptions, GeminiOptions, GeminiPrompt, GeminiResponse } from './gemini';
+import type { ChatGptApi, ChatGptOptions } from './chat-gpt';
+import type { GeminiApi, GeminiOptions } from './gemini';
 
-import { AdditionalCompletionOptions, ChatApi } from './types';
-
-export type SupportedChatApiOptions = ChatGptOptions | GeminiOptions;
+import { AdditionalCompletionOptions, ChatApi, ClientOfChatApi, OptionsOfChatApi, PromptOfChatApi, ResponseOfChatApi } from './types';
 
 const defaultCompletionOptions: AdditionalCompletionOptions = {
   systemPromptText:
@@ -24,11 +22,15 @@ function isChatGptOptions(options: any): options is ChatGptOptions {
   return !isGeminiOptions(options) && opts?.storage != null;
 }
 
-export type ChatAboutVideoWithChatGpt = ChatAboutVideo<ChatGptClient, ChatGptCompletionOptions, ChatGptPrompt, ChatGptResponse>;
-export type ChatAboutVideoWithGemini = ChatAboutVideo<GeminiClient, GeminiCompletionOptions, GeminiPrompt, GeminiResponse>;
+export type ChatAboutVideoWith<T> = ChatAboutVideo<ClientOfChatApi<T>, OptionsOfChatApi<T>, PromptOfChatApi<T>, ResponseOfChatApi<T>>;
+export type ChatAboutVideoWithChatGpt = ChatAboutVideoWith<ChatGptApi>;
+export type ChatAboutVideoWithGemini = ChatAboutVideoWith<GeminiApi>;
 
-export type ConversationWithChatGpt = Conversation<ChatGptClient, ChatGptCompletionOptions, ChatGptPrompt, ChatGptResponse>;
-export type ConversationWithGemini = Conversation<GeminiClient, GeminiCompletionOptions, GeminiPrompt, GeminiResponse>;
+export type ConversationWith<T> = Conversation<ClientOfChatApi<T>, OptionsOfChatApi<T>, PromptOfChatApi<T>, ResponseOfChatApi<T>>;
+export type ConversationWithChatGpt = ConversationWith<ChatGptApi>;
+export type ConversationWithGemini = ConversationWith<GeminiApi>;
+
+export type SupportedChatApiOptions = ChatGptOptions | GeminiOptions;
 
 export class ChatAboutVideo<CLIENT = any, OPTIONS extends AdditionalCompletionOptions = any, PROMPT = any, RESPONSE = any> {
   protected options: SupportedChatApiOptions;
