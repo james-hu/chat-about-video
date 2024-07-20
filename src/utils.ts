@@ -15,7 +15,7 @@ export function effectiveExtractVideoFramesOptions(
 ): Pick<ExtractVideoFramesOptions, 'height'> & Required<Omit<ExtractVideoFramesOptions, 'height'>> {
   return {
     extractor: extractVideoFramesWithFfmpeg,
-    frameDirectoryResolver: (_inputFile, tmpDir, conversationId) => path.join(tmpDir, conversationId),
+    framesDirectoryResolver: (_inputFile, tmpDir, conversationId) => path.join(tmpDir, conversationId),
     format: 'jpg',
     interval: 5,
     limit: 10,

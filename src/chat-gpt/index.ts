@@ -131,7 +131,7 @@ export class ChatGptApi implements ChatApi<ChatGptClient, ChatGptCompletionOptio
     conversationId = `tmp-${generateRandomString(24)}`,
   ): Promise<BuildPromptOutput<ChatGptPrompt, ChatGptCompletionOptions>> {
     const extractVideoFrames = this.extractVideoFrames!;
-    const videoFramesDir = extractVideoFrames.frameDirectoryResolver(videoFile, this.tmpDir, conversationId);
+    const videoFramesDir = extractVideoFrames.framesDirectoryResolver(videoFile, this.tmpDir, conversationId);
     const { relativePaths: frameImageFiles, cleanup: cleanupExtractedFrames } = await extractVideoFrames.extractor(
       videoFile,
       videoFramesDir,

@@ -109,7 +109,7 @@ export class GeminiApi implements ChatApi<GeminiClient, GeminiCompletionOptions,
     conversationId = `tmp-${generateRandomString(24)}`,
   ): Promise<BuildPromptOutput<GeminiPrompt, GeminiCompletionOptions>> {
     const extractVideoFrames = this.extractVideoFrames;
-    const videoFramesDir = extractVideoFrames.frameDirectoryResolver(videoFile, this.tmpDir, conversationId);
+    const videoFramesDir = extractVideoFrames.framesDirectoryResolver(videoFile, this.tmpDir, conversationId);
     const { relativePaths: frameImageFiles, cleanup: cleanupExtractedFrames } = await extractVideoFrames.extractor(
       videoFile,
       videoFramesDir,
