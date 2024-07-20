@@ -133,6 +133,42 @@ Intermediate files, such as extracted frame images, can be saved locally or in t
 To remove these files when they are no longer needed, remember to call the `end()` function
 on the `Conversation` instance when the conversion finishes.
 
+## Customisation
+
+### Frame extraction
+
+If you would like to customise how frame images are extracted and stored, consider these:
+
+- In the options object passed to the constructor of `ChatAboutVideo`, there's a property `extractVideoFrames`.
+  This property allows you to customise how frame images are extracted.
+  - `format`, `interval`, `limit`, `width`, `height` - These allows you to specify your expectation on the extraction.
+  - `deleteFilesWhenConversationEnds` - This flag allows you to specify whether you want extracted frame images
+    to be deleted from the local file system when the conversation ends, or not.
+  - `framesDirectoryResolver` - You can supply a function for determining where extracted frame image files
+    should be stored locally.
+  - `extractor` - You can supply a function for doing the extraction.
+- In the options object passed to the constructor of `ChatAboutVideo`, there's a property `storage`.
+  For ChatGPT, storing frame images in the cloud is recommended. You can use this property to customise
+  how frame images are stored in the cloud.
+  - `azureStorageConnectionString` - If you would like to use Azure Blob Storage, you need to put
+    the connection string in this property. If this property does not have a value, `ChatAboutVideo`
+    would assume that you'd like to use AWS S3, and default AWS identity/credential will be picked up from the OS.
+  - `storageContainerName`, `storagePathPrefix` - They allows you to specify where those images should be stored.
+  - `downloadUrlExpirationSeconds` - For images stored in the cloud, presigned download URLs with expiration
+    are generated for ChatGPT to access. This property allows you to control the expiration time.
+  - `deleteFilesWhenConversationEnds` - This flag allows you to specify whether you want extracted frame images
+    to be deleted from the cloud when the conversation ends, or not.
+  - `uploader` - You can supply a function for uploading images into the cloud.
+
+### Settings of the underlying model
+
+In the options object passed to the constructor of `ChatAboutVideo`, there's a property `clientSettings`,
+and there's another property `completionSettings`. Settings of the underlying model can be configured
+through those two properties.
+
+You can also override settings using the last parameter of `startConversation(...)` function on `ChatAboutVideo`,
+or the last parameter of `say(...)` function on `Conversation`.
+
 ## Code examples
 
 ### Example 1: Using GPT-4o or GPT-4 Vision Preview hosted in OpenAI with Azure Blob Storage
