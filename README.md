@@ -2051,6 +2051,18 @@ Re-exports [VideoRetrievalApiClient](#classesazure_video_retrieval_api_clientvid
 
 #### References
 
+##### AdditionalCompletionOptions
+
+Re-exports [AdditionalCompletionOptions](#interfacestypesadditionalcompletionoptionsmd)
+
+---
+
+##### BuildPromptOutput
+
+Re-exports [BuildPromptOutput](#interfacestypesbuildpromptoutputmd)
+
+---
+
 ##### ChatAboutVideo
 
 Re-exports [ChatAboutVideo](#classeschatchataboutvideomd)
@@ -2072,6 +2084,24 @@ Re-exports [ChatAboutVideoWithChatGpt](#chataboutvideowithchatgpt)
 ##### ChatAboutVideoWithGemini
 
 Re-exports [ChatAboutVideoWithGemini](#chataboutvideowithgemini)
+
+---
+
+##### ChatApi
+
+Re-exports [ChatApi](#interfacestypeschatapimd)
+
+---
+
+##### ChatApiOptions
+
+Re-exports [ChatApiOptions](#interfacestypeschatapioptionsmd)
+
+---
+
+##### ClientOfChatApi
+
+Re-exports [ClientOfChatApi](#clientofchatapi)
 
 ---
 
@@ -2099,9 +2129,39 @@ Re-exports [ConversationWithGemini](#conversationwithgemini)
 
 ---
 
+##### ExtractVideoFramesOptions
+
+Re-exports [ExtractVideoFramesOptions](#interfacestypesextractvideoframesoptionsmd)
+
+---
+
 ##### FileBatchUploader
 
 Re-exports [FileBatchUploader](#filebatchuploader)
+
+---
+
+##### OptionsOfChatApi
+
+Re-exports [OptionsOfChatApi](#optionsofchatapi)
+
+---
+
+##### PromptOfChatApi
+
+Re-exports [PromptOfChatApi](#promptofchatapi)
+
+---
+
+##### ResponseOfChatApi
+
+Re-exports [ResponseOfChatApi](#responseofchatapi)
+
+---
+
+##### StorageOptions
+
+Re-exports [StorageOptions](#interfacestypesstorageoptionsmd)
 
 ---
 
@@ -2114,6 +2174,12 @@ Re-exports [SupportedChatApiOptions](#supportedchatapioptions)
 ##### VideoFramesExtractor
 
 Re-exports [VideoFramesExtractor](#videoframesextractor)
+
+---
+
+##### VideoRetrievalIndexOptions
+
+Re-exports [VideoRetrievalIndexOptions](#interfacestypesvideoretrievalindexoptionsmd)
 
 ---
 
