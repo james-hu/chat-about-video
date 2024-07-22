@@ -70,7 +70,7 @@ export class GeminiApi implements ChatApi<GeminiClient, GeminiCompletionOptions,
   }
 
   async getResponseText(result: GeminiResponse): Promise<string | undefined> {
-    return result.response.text();
+    return result.response.text().replace(/.*\n$/, '').trim();
   }
 
   isThrottlingError(error: any): boolean {
