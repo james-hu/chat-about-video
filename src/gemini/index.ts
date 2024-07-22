@@ -54,13 +54,19 @@ export class GeminiApi implements ChatApi<GeminiClient, GeminiCompletionOptions,
       ...this.options.completionOptions,
       ...options,
     };
-    // Google does not allow unknown properties
-    delete effectiveOptions.systemPromptText;
-    delete effectiveOptions.startPromptText;
-    delete effectiveOptions.backoffOnThrottling;
 
-    console.log(3, this.options, { contents: prompt, ...effectiveOptions });
-    return this.client.generateContent({ contents: prompt, ...effectiveOptions });
+    // Google does not allow unknown properties
+    const request: GenerateContentRequest = {
+      contents: prompt,
+      tools: effectiveOptions.tools,
+      toolConfig: effectiveOptions.toolConfig,
+      systemInstruction: effectiveOptions.systemInstruction,
+      cachedContent: effectiveOptions.cachedContent,
+      safetySettings: effectiveOptions.safetySettings,
+      generationConfig: effectiveOptions.generationConfig,
+    };
+
+    return this.client.generateContent(request);
   }
 
   async getResponseText(result: GeminiResponse): Promise<string | undefined> {
