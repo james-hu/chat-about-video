@@ -32,6 +32,14 @@ async function demo() {
         limit: 100,
         interval: 0.5,
       },
+      completionOptions: {
+        safetySettings: [
+          {
+            category: 'HARM_CATEGORY_HATE_SPEECH' as any,
+            threshold: 'BLOCK_NONE' as any,
+          },
+        ],
+      },
     },
     consoleWithColour({ debug: process.env.ENABLE_DEBUG === 'true' }, chalk),
   );
@@ -60,4 +68,4 @@ async function demo() {
 }
 
 // eslint-disable-next-line unicorn/prefer-top-level-await
-demo().catch((error) => console.log(chalk.red(JSON.stringify(error, null, 2))));
+demo().catch((error) => console.log(chalk.red(JSON.stringify(error, null, 2)), error));
