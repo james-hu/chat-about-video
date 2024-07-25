@@ -55,6 +55,16 @@ export class GeminiApi implements ChatApi<GeminiClient, GeminiCompletionOptions,
       ...options,
     };
 
+    const safetySettings = effectiveOptions.safetySettings;
+    // Only need to prevent overwriting when both arrays exist
+    if (Array.isArray(options.safetySettings) && Array.isArray(this.options.completionOptions?.safetySettings)) {
+      for (const safetySetting of this.options.completionOptions!.safetySettings) {
+        if (!safetySettings!.some((s) => String(s.category) === String(safetySetting.category))) {
+          safetySettings!.push(safetySetting);
+        }
+      }
+    }
+
     // Google does not allow unknown properties
     const request: GenerateContentRequest = {
       contents: prompt,
@@ -62,7 +72,7 @@ export class GeminiApi implements ChatApi<GeminiClient, GeminiCompletionOptions,
       toolConfig: effectiveOptions.toolConfig,
       systemInstruction: effectiveOptions.systemInstruction,
       cachedContent: effectiveOptions.cachedContent,
-      safetySettings: effectiveOptions.safetySettings,
+      safetySettings,
       generationConfig: effectiveOptions.generationConfig,
     };
 
