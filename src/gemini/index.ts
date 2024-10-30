@@ -87,6 +87,11 @@ export class GeminiApi implements ChatApi<GeminiClient, GeminiCompletionOptions,
     return error?.status === 429;
   }
 
+  isServerError(error: any): boolean {
+    const status = error?.status;
+    return status != null && typeof status === 'number' && status >= 500 && status <= 599;
+  }
+
   async appendToPrompt(newPromptOrResponse: GeminiPrompt | GeminiResponse, prompt?: GeminiPrompt): Promise<GeminiPrompt> {
     prompt = prompt ?? [];
     if (isGeminiResponse(newPromptOrResponse)) {

@@ -15,6 +15,10 @@ export interface AdditionalCompletionOptions {
    * Array of retry backoff periods (unit: milliseconds) for situations that the server returns 429 response
    */
   backoffOnThrottling?: number[];
+  /**
+   * Array of retry backoff periods (unit: milliseconds) for situations that the server returns 5xx response
+   */
+  backoffOnServerError?: number[];
 }
 
 export interface ChatApiOptions<CS, CO> {
@@ -79,6 +83,13 @@ export interface ChatApi<CLIENT, OPTIONS extends AdditionalCompletionOptions, PR
    * @returns true if the error is a throttling error, false otherwise.
    */
   isThrottlingError(error: any): boolean;
+
+  /**
+   * Check if the error is a server error.
+   * @param error any error object
+   * @returns true if the error is a server error, false otherwise.
+   */
+  isServerError(error: any): boolean;
 
   /**
    * Build prompt for sending video content to AI.

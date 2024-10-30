@@ -82,6 +82,10 @@ export class ChatGptApi implements ChatApi<ChatGptClient, ChatGptCompletionOptio
     return code === 'TooManyRequests' || code === '429';
   }
 
+  isServerError(error: any): boolean {
+    return ['500', 'InternalServerError', '502', 'BadGateway', '503', 'ServiceUnavailable', '504', 'GatewayTimeout'].includes(String(error?.status));
+  }
+
   async appendToPrompt(newPromptOrResponse: ChatGptPrompt | ChatGptResponse, prompt?: ChatGptPrompt): Promise<ChatGptPrompt> {
     prompt =
       prompt ??

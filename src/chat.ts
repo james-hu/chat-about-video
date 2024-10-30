@@ -10,6 +10,7 @@ const defaultCompletionOptions: AdditionalCompletionOptions = {
   systemPromptText:
     "You are an AI specialized in analyzing video content. The user will provide frames from a video and ask questions about that video. Your task is to provide objective, concise, and accurate answers based solely on the provided frames. Do not acknowledge or repeat the user's questions, and avoid any explanations. Provide only the necessary information and answer the questions directly.",
   backoffOnThrottling: [1000, 2000, 3000, 5000, 10000, 10000],
+  backoffOnServerError: [2000, 5000, 10000, 20000, 30000],
 };
 
 function isGeminiOptions(options: any): options is GeminiOptions {
@@ -163,9 +164,14 @@ export class Conversation<CLIENT = any, OPTIONS extends AdditionalCompletionOpti
     const updatedPrompt = await this.api.appendToPrompt(newPromptPart, this.prompt);
     const effectiveOptions = { ...this.options, ...options };
     const response = await withRetry(
-      () => this.api.generateContent(updatedPrompt, effectiveOptions),
-      effectiveOptions.backoffOnThrottling ?? [],
-      (error) => this.api.isThrottlingError(error),
+      () =>
+        withRetry(
+          () => this.api.generateContent(updatedPrompt, effectiveOptions),
+          effectiveOptions.backoffOnThrottling ?? [],
+          (error) => this.api.isThrottlingError(error),
+        ),
+      effectiveOptions.backoffOnServerError ?? [],
+      (error) => this.api.isServerError(error),
     );
     const responseText = await this.api.getResponseText(response);
     this.prompt = await this.api.appendToPrompt(response, updatedPrompt);

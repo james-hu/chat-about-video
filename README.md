@@ -13,7 +13,7 @@ Key features:
 - ChatGPT models hosted in both Azure and OpenAI are supported.
 - Gemini models hosted in Google Cloud are supported.
 - Frame images are extracted from the input video, and uploaded for ChatGPT/Gemini to consume.
-- It can automatically retry on receiving throttling (HTTP status code 429) responses from the API.
+- It can automatically retry on receiving throttling (HTTP status code 429) and error (HTTP status code 5xx) responses from the API.
 - Options supported by the underlying API are exposed for customisation.
 - It can also be used in scenario that no video needs to be involved, that means it can be used for "normal" text chats.
 
