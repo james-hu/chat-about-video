@@ -1067,6 +1067,30 @@ Get the text from the response object
 
 ---
 
+##### isServerError
+
+▸ **isServerError**(`error`): `boolean`
+
+Check if the error is a server error.
+
+###### Parameters
+
+| Name    | Type  | Description      |
+| :------ | :---- | :--------------- |
+| `error` | `any` | any error object |
+
+###### Returns
+
+`boolean`
+
+true if the error is a server error, false otherwise.
+
+###### Implementation of
+
+[ChatApi](#interfacestypeschatapimd).[isServerError](#isservererror)
+
+---
+
 ##### isThrottlingError
 
 ▸ **isThrottlingError**(`error`): `boolean`
@@ -1267,6 +1291,30 @@ Get the text from the response object
 
 ---
 
+##### isServerError
+
+▸ **isServerError**(`error`): `boolean`
+
+Check if the error is a server error.
+
+###### Parameters
+
+| Name    | Type  | Description      |
+| :------ | :---- | :--------------- |
+| `error` | `any` | any error object |
+
+###### Returns
+
+`boolean`
+
+true if the error is a server error, false otherwise.
+
+###### Implementation of
+
+[ChatApi](#interfacestypeschatapimd).[isServerError](#isservererror)
+
+---
+
 ##### isThrottlingError
 
 ▸ **isThrottlingError**(`error`): `boolean`
@@ -1453,11 +1501,12 @@ true if the error is a throttling error, false otherwise.
 
 #### Properties
 
-| Property                                       | Description                                                                                                                    |
-| ---------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------ |
-| `Optional` **backoffOnThrottling**: `number`[] | Array of retry backoff periods (unit: milliseconds) for situations that the server returns 429 response                        |
-| `Optional` **startPromptText**: `string`       | The user prompt that will be sent before the video content.<br>If not provided, nothing will be sent before the video content. |
-| `Optional` **systemPromptText**: `string`      | System prompt text. If not provided, a default prompt will be used.                                                            |
+| Property                                        | Description                                                                                                                    |
+| ----------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------ |
+| `Optional` **backoffOnServerError**: `number`[] | Array of retry backoff periods (unit: milliseconds) for situations that the server returns 5xx response                        |
+| `Optional` **backoffOnThrottling**: `number`[]  | Array of retry backoff periods (unit: milliseconds) for situations that the server returns 429 response                        |
+| `Optional` **startPromptText**: `string`        | The user prompt that will be sent before the video content.<br>If not provided, nothing will be sent before the video content. |
+| `Optional` **systemPromptText**: `string`       | System prompt text. If not provided, a default prompt will be used.                                                            |
 
 <a name="interfacestypesbuildpromptoutputmd"></a>
 
@@ -1620,6 +1669,26 @@ Get the text from the response object
 ###### Returns
 
 `Promise`\<`undefined` \| `string`\>
+
+---
+
+##### isServerError
+
+▸ **isServerError**(`error`): `boolean`
+
+Check if the error is a server error.
+
+###### Parameters
+
+| Name    | Type  | Description      |
+| :------ | :---- | :--------------- |
+| `error` | `any` | any error object |
+
+###### Returns
+
+`boolean`
+
+true if the error is a server error, false otherwise.
 
 ---
 
