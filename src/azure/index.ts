@@ -5,8 +5,6 @@ import path from 'node:path';
 
 import { FileBatchUploader } from '../storage/types';
 
-export * from './video-retrieval-api-client';
-
 async function generateDownloadUrl(blockBlobClient: BlockBlobClient, expirationSeconds: number): Promise<string> {
   const url = await blockBlobClient.generateSasUrl({
     expiresOn: new Date(Date.now() + expirationSeconds * 1000),
