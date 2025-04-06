@@ -59,7 +59,6 @@ async function demo() {
   }
   console.log('Demo finished');
   rl.close();
-  // whyIsNodeRunning();
 }
 
 // eslint-disable-next-line unicorn/prefer-top-level-await
