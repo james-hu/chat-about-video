@@ -381,8 +381,6 @@ demo().catch((error) => console.log(chalk.red(JSON.stringify(error, null, 2)), e
 
 - [aws](#modulesawsmd)
 - [azure](#modulesazuremd)
-- [azure/client-hack](#modulesazure_client_hackmd)
-- [azure/video-retrieval-api-client](#modulesazure_video_retrieval_api_clientmd)
 - [chat](#moduleschatmd)
 - [chat-gpt](#moduleschat_gptmd)
 - [gemini](#modulesgeminimd)
@@ -396,189 +394,6 @@ demo().catch((error) => console.log(chalk.red(JSON.stringify(error, null, 2)), e
 - [video/types](#modulesvideo_typesmd)
 
 ## Classes
-
-<a name="classesazure_video_retrieval_api_clientvideoretrievalapiclientmd"></a>
-
-### Class: VideoRetrievalApiClient
-
-[azure/video-retrieval-api-client](#modulesazure_video_retrieval_api_clientmd).VideoRetrievalApiClient
-
-#### Constructors
-
-##### constructor
-
-• **new VideoRetrievalApiClient**(`endpointBaseUrl`, `apiKey`, `apiVersion?`)
-
-###### Parameters
-
-| Name              | Type     | Default value          |
-| :---------------- | :------- | :--------------------- |
-| `endpointBaseUrl` | `string` | `undefined`            |
-| `apiKey`          | `string` | `undefined`            |
-| `apiVersion`      | `string` | `'2023-05-01-preview'` |
-
-#### Methods
-
-##### createIndex
-
-▸ **createIndex**(`indexName`, `indexOptions?`): `Promise`\<`void`\>
-
-###### Parameters
-
-| Name           | Type                                                                                    |
-| :------------- | :-------------------------------------------------------------------------------------- |
-| `indexName`    | `string`                                                                                |
-| `indexOptions` | [`CreateIndexOptions`](#interfacesazure_video_retrieval_api_clientcreateindexoptionsmd) |
-
-###### Returns
-
-`Promise`\<`void`\>
-
----
-
-##### createIndexIfNotExist
-
-▸ **createIndexIfNotExist**(`indexName`, `indexOptions?`): `Promise`\<`void`\>
-
-###### Parameters
-
-| Name            | Type                                                                                    |
-| :-------------- | :-------------------------------------------------------------------------------------- |
-| `indexName`     | `string`                                                                                |
-| `indexOptions?` | [`CreateIndexOptions`](#interfacesazure_video_retrieval_api_clientcreateindexoptionsmd) |
-
-###### Returns
-
-`Promise`\<`void`\>
-
----
-
-##### createIngestion
-
-▸ **createIngestion**(`indexName`, `ingestionName`, `ingestion`): `Promise`\<`void`\>
-
-###### Parameters
-
-| Name            | Type                                                                                |
-| :-------------- | :---------------------------------------------------------------------------------- |
-| `indexName`     | `string`                                                                            |
-| `ingestionName` | `string`                                                                            |
-| `ingestion`     | [`IngestionRequest`](#interfacesazure_video_retrieval_api_clientingestionrequestmd) |
-
-###### Returns
-
-`Promise`\<`void`\>
-
----
-
-##### deleteDocument
-
-▸ **deleteDocument**(`indexName`, `documentUrl`): `Promise`\<`void`\>
-
-###### Parameters
-
-| Name          | Type     |
-| :------------ | :------- |
-| `indexName`   | `string` |
-| `documentUrl` | `string` |
-
-###### Returns
-
-`Promise`\<`void`\>
-
----
-
-##### deleteIndex
-
-▸ **deleteIndex**(`indexName`): `Promise`\<`void`\>
-
-###### Parameters
-
-| Name        | Type     |
-| :---------- | :------- |
-| `indexName` | `string` |
-
-###### Returns
-
-`Promise`\<`void`\>
-
----
-
-##### getIndex
-
-▸ **getIndex**(`indexName`): `Promise`\<`undefined` \| [`IndexSummary`](#interfacesazure_video_retrieval_api_clientindexsummarymd)\>
-
-###### Parameters
-
-| Name        | Type     |
-| :---------- | :------- |
-| `indexName` | `string` |
-
-###### Returns
-
-`Promise`\<`undefined` \| [`IndexSummary`](#interfacesazure_video_retrieval_api_clientindexsummarymd)\>
-
----
-
-##### getIngestion
-
-▸ **getIngestion**(`indexName`, `ingestionName`): `Promise`\<[`IngestionSummary`](#interfacesazure_video_retrieval_api_clientingestionsummarymd)\>
-
-###### Parameters
-
-| Name            | Type     |
-| :-------------- | :------- |
-| `indexName`     | `string` |
-| `ingestionName` | `string` |
-
-###### Returns
-
-`Promise`\<[`IngestionSummary`](#interfacesazure_video_retrieval_api_clientingestionsummarymd)\>
-
----
-
-##### ingest
-
-▸ **ingest**(`indexName`, `ingestionName`, `ingestion`, `backoff?`): `Promise`\<`void`\>
-
-###### Parameters
-
-| Name            | Type                                                                                |
-| :-------------- | :---------------------------------------------------------------------------------- |
-| `indexName`     | `string`                                                                            |
-| `ingestionName` | `string`                                                                            |
-| `ingestion`     | [`IngestionRequest`](#interfacesazure_video_retrieval_api_clientingestionrequestmd) |
-| `backoff`       | `number`[]                                                                          |
-
-###### Returns
-
-`Promise`\<`void`\>
-
----
-
-##### listDocuments
-
-▸ **listDocuments**(`indexName`): `Promise`\<[`DocumentSummary`](#interfacesazure_video_retrieval_api_clientdocumentsummarymd)[]\>
-
-###### Parameters
-
-| Name        | Type     |
-| :---------- | :------- |
-| `indexName` | `string` |
-
-###### Returns
-
-`Promise`\<[`DocumentSummary`](#interfacesazure_video_retrieval_api_clientdocumentsummarymd)[]\>
-
----
-
-##### listIndexes
-
-▸ **listIndexes**(): `Promise`\<[`IndexSummary`](#interfacesazure_video_retrieval_api_clientindexsummarymd)[]\>
-
-###### Returns
-
-`Promise`\<[`IndexSummary`](#interfacesazure_video_retrieval_api_clientindexsummarymd)[]\>
 
 <a name="classeschatchataboutvideomd"></a>
 
@@ -812,34 +627,33 @@ The response/completion
 
 #### Properties
 
-| Property                                                                                                                                                                                                                                                                                                                                         | Description |
-| ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ----------- |
-| `Protected` **client**: `OpenAIClient`                                                                                                                                                                                                                                                                                                           |             |
-| `Protected` `Optional` **extractVideoFrames**: `Pick`\<[`ExtractVideoFramesOptions`](#interfacestypesextractvideoframesoptionsmd), `"height"`\> & `Required`\<`Omit`\<[`ExtractVideoFramesOptions`](#interfacestypesextractvideoframesoptionsmd), `"height"`\>\>                                                                                 |             |
-| `Protected` **options**: [`ChatGptOptions`](#chatgptoptions)                                                                                                                                                                                                                                                                                     |             |
-| `Protected` **storage**: `Required`\<`Pick`\<[`StorageOptions`](#interfacestypesstorageoptionsmd), `"uploader"`\>\> & [`StorageOptions`](#interfacestypesstorageoptionsmd)                                                                                                                                                                       |             |
-| `Protected` **tmpDir**: `string`                                                                                                                                                                                                                                                                                                                 |             |
-| `Protected` `Optional` **videoRetrievalIndex**: `Required`\<`Pick`\<[`VideoRetrievalIndexOptions`](#interfacestypesvideoretrievalindexoptionsmd), `"createIndexIfNotExists"` \| `"deleteDocumentWhenConversationEnds"` \| `"deleteIndexWhenConversationEnds"`\>\> & [`VideoRetrievalIndexOptions`](#interfacestypesvideoretrievalindexoptionsmd) |             |
+| Property                                                                                                                                                                                                                                                         | Description |
+| ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------- |
+| `Protected` **client**: [`ChatGptClient`](#chatgptclient)                                                                                                                                                                                                        |             |
+| `Protected` `Optional` **extractVideoFrames**: `Pick`\<[`ExtractVideoFramesOptions`](#interfacestypesextractvideoframesoptionsmd), `"height"`\> & `Required`\<`Omit`\<[`ExtractVideoFramesOptions`](#interfacestypesextractvideoframesoptionsmd), `"height"`\>\> |             |
+| `Protected` **options**: [`ChatGptOptions`](#chatgptoptions)                                                                                                                                                                                                     |             |
+| `Protected` **storage**: `Required`\<`Pick`\<[`StorageOptions`](#interfacestypesstorageoptionsmd), `"uploader"`\>\> & [`StorageOptions`](#interfacestypesstorageoptionsmd)                                                                                       |             |
+| `Protected` **tmpDir**: `string`                                                                                                                                                                                                                                 |             |
 
 #### Methods
 
 ##### appendToPrompt
 
-▸ **appendToPrompt**(`newPromptOrResponse`, `prompt?`): `Promise`\<`ChatRequestMessageUnion`[]\>
+▸ **appendToPrompt**(`newPromptOrResponse`, `prompt?`): `Promise`\<`ChatCompletionMessageParam`[]\>
 
 Append a new prompt or response to the form a full prompt.
 This function is useful to build a prompt that contains conversation history.
 
 ###### Parameters
 
-| Name                  | Type                                             | Description                                                                                                                                                                                      |
-| :-------------------- | :----------------------------------------------- | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `newPromptOrResponse` | `ChatCompletions` \| `ChatRequestMessageUnion`[] | A new prompt to be appended, or previous response to be appended.                                                                                                                                |
-| `prompt?`             | `ChatRequestMessageUnion`[]                      | The conversation history which is a prompt containing previous prompts and responses. If it is not provided, the conversation history returned will contain only what is in newPromptOrResponse. |
+| Name                  | Type                                               | Description                                                                                                                                                                                      |
+| :-------------------- | :------------------------------------------------- | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `newPromptOrResponse` | `ChatCompletion` \| `ChatCompletionMessageParam`[] | A new prompt to be appended, or previous response to be appended.                                                                                                                                |
+| `prompt?`             | `ChatCompletionMessageParam`[]                     | The conversation history which is a prompt containing previous prompts and responses. If it is not provided, the conversation history returned will contain only what is in newPromptOrResponse. |
 
 ###### Returns
 
-`Promise`\<`ChatRequestMessageUnion`[]\>
+`Promise`\<`ChatCompletionMessageParam`[]\>
 
 The full prompt which is effectively the conversation history.
 
@@ -851,7 +665,7 @@ The full prompt which is effectively the conversation history.
 
 ##### buildTextPrompt
 
-▸ **buildTextPrompt**(`text`, `_conversationId?`): `Promise`\<\{ `prompt`: `ChatRequestMessageUnion`[] }\>
+▸ **buildTextPrompt**(`text`, `_conversationId?`): `Promise`\<\{ `prompt`: `ChatCompletionMessageParam`[] }\>
 
 Build prompt for sending text content to AI
 
@@ -864,7 +678,7 @@ Build prompt for sending text content to AI
 
 ###### Returns
 
-`Promise`\<\{ `prompt`: `ChatRequestMessageUnion`[] }\>
+`Promise`\<\{ `prompt`: `ChatCompletionMessageParam`[] }\>
 
 An object containing the prompt.
 
@@ -876,7 +690,7 @@ An object containing the prompt.
 
 ##### buildVideoPrompt
 
-▸ **buildVideoPrompt**(`videoFile`, `conversationId?`): `Promise`\<[`BuildPromptOutput`](#interfacestypesbuildpromptoutputmd)\<`ChatRequestMessageUnion`[], \{ `deploymentName`: `string` } & [`AdditionalCompletionOptions`](#interfacestypesadditionalcompletionoptionsmd) & `GetChatCompletionsOptions`\>\>
+▸ **buildVideoPrompt**(`videoFile`, `conversationId?`): `Promise`\<[`BuildPromptOutput`](#interfacestypesbuildpromptoutputmd)\<`ChatCompletionMessageParam`[], [`ChatGptCompletionOptions`](#chatgptcompletionoptions)\>\>
 
 Build prompt for sending video content to AI.
 Sometimes, to include video in the conversation, additional options and/or clean up is needed.
@@ -892,7 +706,7 @@ will be returned in the output of this function.
 
 ###### Returns
 
-`Promise`\<[`BuildPromptOutput`](#interfacestypesbuildpromptoutputmd)\<`ChatRequestMessageUnion`[], \{ `deploymentName`: `string` } & [`AdditionalCompletionOptions`](#interfacestypesadditionalcompletionoptionsmd) & `GetChatCompletionsOptions`\>\>
+`Promise`\<[`BuildPromptOutput`](#interfacestypesbuildpromptoutputmd)\<`ChatCompletionMessageParam`[], [`ChatGptCompletionOptions`](#chatgptcompletionoptions)\>\>
 
 An object containing the prompt, optional options, and an optional cleanup function.
 
@@ -904,7 +718,7 @@ An object containing the prompt, optional options, and an optional cleanup funct
 
 ##### buildVideoPromptWithFrames
 
-▸ `Protected` **buildVideoPromptWithFrames**(`videoFile`, `conversationId?`): `Promise`\<[`BuildPromptOutput`](#interfacestypesbuildpromptoutputmd)\<`ChatRequestMessageUnion`[], \{ `deploymentName`: `string` } & [`AdditionalCompletionOptions`](#interfacestypesadditionalcompletionoptionsmd) & `GetChatCompletionsOptions`\>\>
+▸ `Protected` **buildVideoPromptWithFrames**(`videoFile`, `conversationId?`): `Promise`\<[`BuildPromptOutput`](#interfacestypesbuildpromptoutputmd)\<`ChatCompletionMessageParam`[], [`ChatGptCompletionOptions`](#chatgptcompletionoptions)\>\>
 
 ###### Parameters
 
@@ -915,43 +729,26 @@ An object containing the prompt, optional options, and an optional cleanup funct
 
 ###### Returns
 
-`Promise`\<[`BuildPromptOutput`](#interfacestypesbuildpromptoutputmd)\<`ChatRequestMessageUnion`[], \{ `deploymentName`: `string` } & [`AdditionalCompletionOptions`](#interfacestypesadditionalcompletionoptionsmd) & `GetChatCompletionsOptions`\>\>
-
----
-
-##### buildVideoPromptWithVideoRetrievalIndex
-
-▸ `Protected` **buildVideoPromptWithVideoRetrievalIndex**(`videoFile`, `conversationId?`): `Promise`\<[`BuildPromptOutput`](#interfacestypesbuildpromptoutputmd)\<`ChatRequestMessageUnion`[], \{ `deploymentName`: `string` } & [`AdditionalCompletionOptions`](#interfacestypesadditionalcompletionoptionsmd) & `GetChatCompletionsOptions`\>\>
-
-###### Parameters
-
-| Name             | Type     |
-| :--------------- | :------- |
-| `videoFile`      | `string` |
-| `conversationId` | `string` |
-
-###### Returns
-
-`Promise`\<[`BuildPromptOutput`](#interfacestypesbuildpromptoutputmd)\<`ChatRequestMessageUnion`[], \{ `deploymentName`: `string` } & [`AdditionalCompletionOptions`](#interfacestypesadditionalcompletionoptionsmd) & `GetChatCompletionsOptions`\>\>
+`Promise`\<[`BuildPromptOutput`](#interfacestypesbuildpromptoutputmd)\<`ChatCompletionMessageParam`[], [`ChatGptCompletionOptions`](#chatgptcompletionoptions)\>\>
 
 ---
 
 ##### generateContent
 
-▸ **generateContent**(`prompt`, `options`): `Promise`\<`ChatCompletions`\>
+▸ **generateContent**(`prompt`, `options`): `Promise`\<`ChatCompletion`\>
 
 Generate content based on the given prompt and options.
 
 ###### Parameters
 
-| Name      | Type                                                                                                                                           | Description                                         |
-| :-------- | :--------------------------------------------------------------------------------------------------------------------------------------------- | :-------------------------------------------------- |
-| `prompt`  | `ChatRequestMessageUnion`[]                                                                                                                    | The full prompt to generate content.                |
-| `options` | \{ `deploymentName`: `string` } & [`AdditionalCompletionOptions`](#interfacestypesadditionalcompletionoptionsmd) & `GetChatCompletionsOptions` | Optional options to control the content generation. |
+| Name      | Type                                                    | Description                                         |
+| :-------- | :------------------------------------------------------ | :-------------------------------------------------- |
+| `prompt`  | `ChatCompletionMessageParam`[]                          | The full prompt to generate content.                |
+| `options` | [`ChatGptCompletionOptions`](#chatgptcompletionoptions) | Optional options to control the content generation. |
 
 ###### Returns
 
-`Promise`\<`ChatCompletions`\>
+`Promise`\<`ChatCompletion`\>
 
 The generated content.
 
@@ -963,14 +760,14 @@ The generated content.
 
 ##### getClient
 
-▸ **getClient**(): `Promise`\<`OpenAIClient`\>
+▸ **getClient**(): `Promise`\<[`ChatGptClient`](#chatgptclient)\>
 
 Get the raw client.
 This function could be useful for advanced use cases.
 
 ###### Returns
 
-`Promise`\<`OpenAIClient`\>
+`Promise`\<[`ChatGptClient`](#chatgptclient)\>
 
 The raw client.
 
@@ -988,9 +785,9 @@ Get the text from the response object
 
 ###### Parameters
 
-| Name     | Type              | Description         |
-| :------- | :---------------- | :------------------ |
-| `result` | `ChatCompletions` | the response object |
+| Name     | Type             | Description         |
+| :------- | :--------------- | :------------------ |
+| `result` | `ChatCompletion` | the response object |
 
 ###### Returns
 
@@ -1274,160 +1071,6 @@ true if the error is a throttling error, false otherwise.
 
 ## Interfaces
 
-<a name="interfacesazure_video_retrieval_api_clientcreateindexoptionsmd"></a>
-
-### Interface: CreateIndexOptions
-
-[azure/video-retrieval-api-client](#modulesazure_video_retrieval_api_clientmd).CreateIndexOptions
-
-#### Properties
-
-| Property                                                                                                                 | Description |
-| ------------------------------------------------------------------------------------------------------------------------ | ----------- |
-| `Optional` **features**: [`IndexFeature`](#interfacesazure_video_retrieval_api_clientindexfeaturemd)[]                   |             |
-| `Optional` **metadataSchema**: [`IndexMetadataSchema`](#interfacesazure_video_retrieval_api_clientindexmetadataschemamd) |             |
-| `Optional` **userData**: `object`                                                                                        |             |
-
-<a name="interfacesazure_video_retrieval_api_clientdocumentsummarymd"></a>
-
-### Interface: DocumentSummary
-
-[azure/video-retrieval-api-client](#modulesazure_video_retrieval_api_clientmd).DocumentSummary
-
-#### Properties
-
-| Property                             | Description |
-| ------------------------------------ | ----------- |
-| **createdDateTime**: `string`        |             |
-| **documentId**: `string`             |             |
-| `Optional` **documentUrl**: `string` |             |
-| **lastModifiedDateTime**: `string`   |             |
-| `Optional` **metadata**: `object`    |             |
-| `Optional` **userData**: `object`    |             |
-
-<a name="interfacesazure_video_retrieval_api_clientindexfeaturemd"></a>
-
-### Interface: IndexFeature
-
-[azure/video-retrieval-api-client](#modulesazure_video_retrieval_api_clientmd).IndexFeature
-
-#### Properties
-
-| Property                                               | Description |
-| ------------------------------------------------------ | ----------- |
-| `Optional` **domain**: `"surveillance"` \| `"generic"` |             |
-| `Optional` **modelVersion**: `string`                  |             |
-| **name**: `"vision"` \| `"speech"`                     |             |
-
-<a name="interfacesazure_video_retrieval_api_clientindexmetadataschemamd"></a>
-
-### Interface: IndexMetadataSchema
-
-[azure/video-retrieval-api-client](#modulesazure_video_retrieval_api_clientmd).IndexMetadataSchema
-
-#### Properties
-
-| Property                                                                                                          | Description |
-| ----------------------------------------------------------------------------------------------------------------- | ----------- |
-| **fields**: [`IndexMetadataSchemaField`](#interfacesazure_video_retrieval_api_clientindexmetadataschemafieldmd)[] |             |
-| `Optional` **language**: `string`                                                                                 |             |
-
-<a name="interfacesazure_video_retrieval_api_clientindexmetadataschemafieldmd"></a>
-
-### Interface: IndexMetadataSchemaField
-
-[azure/video-retrieval-api-client](#modulesazure_video_retrieval_api_clientmd).IndexMetadataSchemaField
-
-#### Properties
-
-| Property                             | Description |
-| ------------------------------------ | ----------- |
-| **filterable**: `boolean`            |             |
-| **name**: `string`                   |             |
-| **searchable**: `boolean`            |             |
-| **type**: `"string"` \| `"datetime"` |             |
-
-<a name="interfacesazure_video_retrieval_api_clientindexsummarymd"></a>
-
-### Interface: IndexSummary
-
-[azure/video-retrieval-api-client](#modulesazure_video_retrieval_api_clientmd).IndexSummary
-
-#### Properties
-
-| Property                                                                                               | Description |
-| ------------------------------------------------------------------------------------------------------ | ----------- |
-| **createdDateTime**: `string`                                                                          |             |
-| **eTag**: `string`                                                                                     |             |
-| `Optional` **features**: [`IndexFeature`](#interfacesazure_video_retrieval_api_clientindexfeaturemd)[] |             |
-| **lastModifiedDateTime**: `string`                                                                     |             |
-| **name**: `string`                                                                                     |             |
-| `Optional` **userData**: `object`                                                                      |             |
-
-<a name="interfacesazure_video_retrieval_api_clientingestionrequestmd"></a>
-
-### Interface: IngestionRequest
-
-[azure/video-retrieval-api-client](#modulesazure_video_retrieval_api_clientmd).IngestionRequest
-
-#### Properties
-
-| Property                                                                                      | Description |
-| --------------------------------------------------------------------------------------------- | ----------- |
-| `Optional` **filterDefectedFrames**: `boolean`                                                |             |
-| `Optional` **generateInsightIntervals**: `boolean`                                            |             |
-| `Optional` **includeSpeechTranscript**: `boolean`                                             |             |
-| `Optional` **moderation**: `boolean`                                                          |             |
-| **videos**: [`VideoIngestion`](#interfacesazure_video_retrieval_api_clientvideoingestionmd)[] |             |
-
-<a name="interfacesazure_video_retrieval_api_clientingestionstatusdetailmd"></a>
-
-### Interface: IngestionStatusDetail
-
-[azure/video-retrieval-api-client](#modulesazure_video_retrieval_api_clientmd).IngestionStatusDetail
-
-#### Properties
-
-| Property                      | Description |
-| ----------------------------- | ----------- |
-| **documentId**: `string`      |             |
-| **documentUrl**: `string`     |             |
-| **lastUpdatedTime**: `string` |             |
-| **succeeded**: `boolean`      |             |
-
-<a name="interfacesazure_video_retrieval_api_clientingestionsummarymd"></a>
-
-### Interface: IngestionSummary
-
-[azure/video-retrieval-api-client](#modulesazure_video_retrieval_api_clientmd).IngestionSummary
-
-#### Properties
-
-| Property                                                                                                                          | Description |
-| --------------------------------------------------------------------------------------------------------------------------------- | ----------- |
-| `Optional` **batchName**: `string`                                                                                                |             |
-| **createdDateTime**: `string`                                                                                                     |             |
-| `Optional` **fileStatusDetails**: [`IngestionStatusDetail`](#interfacesazure_video_retrieval_api_clientingestionstatusdetailmd)[] |             |
-| **lastModifiedDateTime**: `string`                                                                                                |             |
-| **name**: `string`                                                                                                                |             |
-| **state**: `"NotStarted"` \| `"Running"` \| `"Completed"` \| `"Failed"` \| `"PartiallySucceeded"`                                 |             |
-
-<a name="interfacesazure_video_retrieval_api_clientvideoingestionmd"></a>
-
-### Interface: VideoIngestion
-
-[azure/video-retrieval-api-client](#modulesazure_video_retrieval_api_clientmd).VideoIngestion
-
-#### Properties
-
-| Property                                      | Description |
-| --------------------------------------------- | ----------- |
-| `Optional` **documentId**: `string`           |             |
-| **documentUrl**: `string`                     |             |
-| `Optional` **metadata**: `object`             |             |
-| **mode**: `"update"` \| `"remove"` \| `"add"` |             |
-| `Optional` **userData**: `object`             |             |
-
 <a name="interfacestypesadditionalcompletionoptionsmd"></a>
 
 ### Interface: AdditionalCompletionOptions
@@ -1702,24 +1345,7 @@ true if the error is a throttling error, false otherwise.
 | `Optional` **downloadUrlExpirationSeconds**: `number`              | Expiration time for the download URL of the frame images in seconds. Default is 3600 seconds. |
 | `Optional` **storageContainerName**: `string`                      | Storage container for storing frame images of the video.                                      |
 | `Optional` **storagePathPrefix**: `string`                         | Path prefix to be prepended for storing frame images of the video.<br>Default is empty.       |
-| `Optional` **uploader**: [`FileBatchUploader`](#filebatchuploader) | Function for uploading files                                                                  |
-
-<a name="interfacestypesvideoretrievalindexoptionsmd"></a>
-
-### Interface: VideoRetrievalIndexOptions
-
-[types](#modulestypesmd).VideoRetrievalIndexOptions
-
-#### Properties
-
-| Property                                                     | Description |
-| ------------------------------------------------------------ | ----------- |
-| **apiKey**: `string`                                         |             |
-| `Optional` **createIndexIfNotExists**: `boolean`             |             |
-| `Optional` **deleteDocumentWhenConversationEnds**: `boolean` |             |
-| `Optional` **deleteIndexWhenConversationEnds**: `boolean`    |             |
-| **endpoint**: `string`                                       |             |
-| `Optional` **indexName**: `string`                           | ## Modules  |
+| `Optional` **uploader**: [`FileBatchUploader`](#filebatchuploader) | Function for uploading files<br><br>## Modules                                                |
 
 <a name="modulesawsmd"></a>
 
@@ -1747,78 +1373,6 @@ true if the error is a throttling error, false otherwise.
 
 ### Module: azure
 
-#### References
-
-##### CreateIndexOptions
-
-Re-exports [CreateIndexOptions](#interfacesazure_video_retrieval_api_clientcreateindexoptionsmd)
-
----
-
-##### DocumentSummary
-
-Re-exports [DocumentSummary](#interfacesazure_video_retrieval_api_clientdocumentsummarymd)
-
----
-
-##### IndexFeature
-
-Re-exports [IndexFeature](#interfacesazure_video_retrieval_api_clientindexfeaturemd)
-
----
-
-##### IndexMetadataSchema
-
-Re-exports [IndexMetadataSchema](#interfacesazure_video_retrieval_api_clientindexmetadataschemamd)
-
----
-
-##### IndexMetadataSchemaField
-
-Re-exports [IndexMetadataSchemaField](#interfacesazure_video_retrieval_api_clientindexmetadataschemafieldmd)
-
----
-
-##### IndexSummary
-
-Re-exports [IndexSummary](#interfacesazure_video_retrieval_api_clientindexsummarymd)
-
----
-
-##### IngestionRequest
-
-Re-exports [IngestionRequest](#interfacesazure_video_retrieval_api_clientingestionrequestmd)
-
----
-
-##### IngestionStatusDetail
-
-Re-exports [IngestionStatusDetail](#interfacesazure_video_retrieval_api_clientingestionstatusdetailmd)
-
----
-
-##### IngestionSummary
-
-Re-exports [IngestionSummary](#interfacesazure_video_retrieval_api_clientingestionsummarymd)
-
----
-
-##### PaginatedWithNextLink
-
-Re-exports [PaginatedWithNextLink](#paginatedwithnextlink)
-
----
-
-##### VideoIngestion
-
-Re-exports [VideoIngestion](#interfacesazure_video_retrieval_api_clientvideoingestionmd)
-
----
-
-##### VideoRetrievalApiClient
-
-Re-exports [VideoRetrievalApiClient](#classesazure_video_retrieval_api_clientvideoretrievalapiclientmd)
-
 #### Functions
 
 ##### createAzureBlobStorageFileBatchUploader
@@ -1836,66 +1390,6 @@ Re-exports [VideoRetrievalApiClient](#classesazure_video_retrieval_api_clientvid
 ###### Returns
 
 [`FileBatchUploader`](#filebatchuploader)
-
-<a name="modulesazure_client_hackmd"></a>
-
-### Module: azure/client-hack
-
-#### Functions
-
-##### fixClient
-
-▸ **fixClient**(`openAIClient`): `void`
-
-###### Parameters
-
-| Name           | Type  |
-| :------------- | :---- |
-| `openAIClient` | `any` |
-
-###### Returns
-
-`void`
-
-<a name="modulesazure_video_retrieval_api_clientmd"></a>
-
-### Module: azure/video-retrieval-api-client
-
-#### Classes
-
-- [VideoRetrievalApiClient](#classesazure_video_retrieval_api_clientvideoretrievalapiclientmd)
-
-#### Interfaces
-
-- [CreateIndexOptions](#interfacesazure_video_retrieval_api_clientcreateindexoptionsmd)
-- [DocumentSummary](#interfacesazure_video_retrieval_api_clientdocumentsummarymd)
-- [IndexFeature](#interfacesazure_video_retrieval_api_clientindexfeaturemd)
-- [IndexMetadataSchema](#interfacesazure_video_retrieval_api_clientindexmetadataschemamd)
-- [IndexMetadataSchemaField](#interfacesazure_video_retrieval_api_clientindexmetadataschemafieldmd)
-- [IndexSummary](#interfacesazure_video_retrieval_api_clientindexsummarymd)
-- [IngestionRequest](#interfacesazure_video_retrieval_api_clientingestionrequestmd)
-- [IngestionStatusDetail](#interfacesazure_video_retrieval_api_clientingestionstatusdetailmd)
-- [IngestionSummary](#interfacesazure_video_retrieval_api_clientingestionsummarymd)
-- [VideoIngestion](#interfacesazure_video_retrieval_api_clientvideoingestionmd)
-
-#### Type Aliases
-
-##### PaginatedWithNextLink
-
-Ƭ **PaginatedWithNextLink**\<`T`\>: `Object`
-
-###### Type parameters
-
-| Name |
-| :--- |
-| `T`  |
-
-###### Type declaration
-
-| Name        | Type     |
-| :---------- | :------- |
-| `nextLink?` | `string` |
-| `value`     | `T`[]    |
 
 <a name="moduleschatmd"></a>
 
@@ -1972,31 +1466,31 @@ Re-exports [VideoRetrievalApiClient](#classesazure_video_retrieval_api_clientvid
 
 ##### ChatGptClient
 
-Ƭ **ChatGptClient**: `OpenAIClient`
+Ƭ **ChatGptClient**: `AzureOpenAI` \| `OpenAI`
 
 ---
 
 ##### ChatGptCompletionOptions
 
-Ƭ **ChatGptCompletionOptions**: \{ `deploymentName`: `string` } & [`AdditionalCompletionOptions`](#interfacestypesadditionalcompletionoptionsmd) & `Parameters`\<`OpenAIClient`[``"getChatCompletions"``]\>[``2``]
+Ƭ **ChatGptCompletionOptions**: [`AdditionalCompletionOptions`](#interfacestypesadditionalcompletionoptionsmd) & `Omit`\<`OpenAI.ChatCompletionCreateParamsNonStreaming`, `"messages"` \| `"stream"`\>
 
 ---
 
 ##### ChatGptOptions
 
-Ƭ **ChatGptOptions**: \{ `extractVideoFrames?`: [`ExtractVideoFramesOptions`](#interfacestypesextractvideoframesoptionsmd) ; `storage`: [`StorageOptions`](#interfacestypesstorageoptionsmd) ; `videoRetrievalIndex?`: [`VideoRetrievalIndexOptions`](#interfacestypesvideoretrievalindexoptionsmd) } & [`ChatApiOptions`](#interfacestypeschatapioptionsmd)\<`OpenAIClientOptions`, [`ChatGptCompletionOptions`](#chatgptcompletionoptions)\>
+Ƭ **ChatGptOptions**: \{ `extractVideoFrames?`: [`ExtractVideoFramesOptions`](#interfacestypesextractvideoframesoptionsmd) ; `storage`: [`StorageOptions`](#interfacestypesstorageoptionsmd) } & [`ChatApiOptions`](#interfacestypeschatapioptionsmd)\<`AzureClientOptions`, [`ChatGptCompletionOptions`](#chatgptcompletionoptions)\>
 
 ---
 
 ##### ChatGptPrompt
 
-Ƭ **ChatGptPrompt**: `Parameters`\<`OpenAIClient`[``"getChatCompletions"``]\>[``1``]
+Ƭ **ChatGptPrompt**: `OpenAI.ChatCompletionCreateParamsNonStreaming`[``"messages"``]
 
 ---
 
 ##### ChatGptResponse
 
-Ƭ **ChatGptResponse**: `ChatCompletions`
+Ƭ **ChatGptResponse**: `OpenAI.ChatCompletion`
 
 <a name="modulesgeminimd"></a>
 
@@ -2181,12 +1675,6 @@ Re-exports [VideoFramesExtractor](#videoframesextractor)
 
 ---
 
-##### VideoRetrievalIndexOptions
-
-Re-exports [VideoRetrievalIndexOptions](#interfacestypesvideoretrievalindexoptionsmd)
-
----
-
 ##### extractVideoFramesWithFfmpeg
 
 Re-exports [extractVideoFramesWithFfmpeg](#extractvideoframeswithffmpeg)
@@ -2272,7 +1760,6 @@ A Promise that resolves with an object containing an array of download URLs for 
 - [ChatApiOptions](#interfacestypeschatapioptionsmd)
 - [ExtractVideoFramesOptions](#interfacestypesextractvideoframesoptionsmd)
 - [StorageOptions](#interfacestypesstorageoptionsmd)
-- [VideoRetrievalIndexOptions](#interfacestypesvideoretrievalindexoptionsmd)
 
 #### Type Aliases
 
@@ -2365,26 +1852,6 @@ Calculate the effective values for StorageOptions by combining the default value
 `Required`\<`Pick`\<[`StorageOptions`](#interfacestypesstorageoptionsmd), `"uploader"`\>\> & [`StorageOptions`](#interfacestypesstorageoptionsmd)
 
 The effective values for StorageOptions
-
----
-
-##### effectiveVideoRetrievalIndexOptions
-
-▸ **effectiveVideoRetrievalIndexOptions**(`options`): `Required`\<`Pick`\<[`VideoRetrievalIndexOptions`](#interfacestypesvideoretrievalindexoptionsmd), `"createIndexIfNotExists"` \| `"deleteDocumentWhenConversationEnds"` \| `"deleteIndexWhenConversationEnds"`\>\> & [`VideoRetrievalIndexOptions`](#interfacestypesvideoretrievalindexoptionsmd)
-
-Calculate the effective values for VideoRetrievalIndexOptions by combining the default values and the values provided
-
-###### Parameters
-
-| Name      | Type                                                                         | Description                                |
-| :-------- | :--------------------------------------------------------------------------- | :----------------------------------------- |
-| `options` | [`VideoRetrievalIndexOptions`](#interfacestypesvideoretrievalindexoptionsmd) | the options containing the values provided |
-
-###### Returns
-
-`Required`\<`Pick`\<[`VideoRetrievalIndexOptions`](#interfacestypesvideoretrievalindexoptionsmd), `"createIndexIfNotExists"` \| `"deleteDocumentWhenConversationEnds"` \| `"deleteIndexWhenConversationEnds"`\>\> & [`VideoRetrievalIndexOptions`](#interfacestypesvideoretrievalindexoptionsmd)
-
-The effective values for VideoRetrievalIndexOptions
 
 <a name="modulesvideomd"></a>
 
