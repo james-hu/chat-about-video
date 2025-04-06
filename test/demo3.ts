@@ -31,8 +31,11 @@ async function demo() {
         storageContainerName: process.env.AZURE_STORAGE_CONTAINER_NAME || 'vision-experiment-input',
         storagePathPrefix: 'video-frames/',
       },
-      completionOptions: {
-        deploymentName: process.env.AZURE_OPENAI_DEPLOYMENT_NAME || 'gpt4vision',
+      clientSettings: {
+        // deployment is required by Azure
+        deployment: process.env.AZURE_OPENAI_DEPLOYMENT_NAME || 'gpt4vision',
+        // apiVersion is required by Azure
+        apiVersion: '2024-10-21',
       },
     },
     consoleWithColour({ debug: process.env.ENABLE_DEBUG === 'true' }, chalk),
@@ -51,7 +54,7 @@ async function demo() {
       await conversation.end();
       break;
     }
-    const answer = await conversation.say(question, { maxTokens: 2000 });
+    const answer = await conversation.say(question, { max_tokens: 2000 });
     console.log(chalk.blue('\nAI:' + answer));
   }
   console.log('Demo finished');

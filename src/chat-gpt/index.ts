@@ -40,6 +40,11 @@ export class ChatGptApi implements ChatApi<ChatGptClient, ChatGptCompletionOptio
       ...this.options.completionOptions,
       ...options,
     };
+    // OpenAI does not allow unknown properties
+    delete effectiveOptions.backoffOnServerError;
+    delete effectiveOptions.backoffOnThrottling;
+    delete effectiveOptions.systemPromptText;
+
     return this.client.chat.completions.create({ ...effectiveOptions, messages: prompt, stream: false });
   }
 
