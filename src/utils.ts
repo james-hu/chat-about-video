@@ -1,6 +1,6 @@
 import path from 'node:path';
 
-import type { ExtractVideoFramesOptions, StorageOptions, VideoRetrievalIndexOptions } from './types';
+import type { ExtractVideoFramesOptions, StorageOptions } from './types';
 
 import { lazyCreatedFileBatchUploader } from './storage';
 import { extractVideoFramesWithFfmpeg } from './video';
@@ -59,23 +59,6 @@ export function effectiveStorageOptions(options: StorageOptions): Required<Pick<
     uploader,
     storagePathPrefix: '',
     deleteFilesWhenConversationEnds: true,
-    ...options,
-  };
-}
-
-/**
- * Calculate the effective values for VideoRetrievalIndexOptions by combining the default values and the values provided
- * @param options the options containing the values provided
- * @returns The effective values for VideoRetrievalIndexOptions
- */
-export function effectiveVideoRetrievalIndexOptions(
-  options: VideoRetrievalIndexOptions,
-): Required<Pick<VideoRetrievalIndexOptions, 'createIndexIfNotExists' | 'deleteDocumentWhenConversationEnds' | 'deleteIndexWhenConversationEnds'>> &
-  VideoRetrievalIndexOptions {
-  return {
-    createIndexIfNotExists: true,
-    deleteIndexWhenConversationEnds: true,
-    deleteDocumentWhenConversationEnds: true,
     ...options,
   };
 }

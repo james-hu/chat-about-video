@@ -19,7 +19,7 @@ Key features:
 
 ## Usage
 
-### Installation
+### Installation (quick start)
 
 To use `chat-about-video` in your Node.js application,
 add it as a dependency along with other necessary packages based on your usage scenario.
@@ -27,12 +27,14 @@ Below are examples for typical setups:
 
 ```shell
 # ChatGPT on OpenAI or Azure with Azure Blob Storage
-npm i chat-about-video @azure/openai @ffmpeg-installer/ffmpeg @azure/storage-blob
+npm i chat-about-video openai @azure/openai @ffmpeg-installer/ffmpeg @azure/storage-blob
 # Gemini in Google Cloud
 npm i chat-about-video @google/generative-ai @ffmpeg-installer/ffmpeg
 # ChatGPT on OpenAI or Azure with AWS S3
-npm i chat-about-video @azure/openai @ffmpeg-installer/ffmpeg @handy-common-utils/aws-utils @aws-sdk/s3-request-presigner @aws-sdk/client-s3
+npm i chat-about-video openai @azure/openai @ffmpeg-installer/ffmpeg @handy-common-utils/aws-utils @aws-sdk/s3-request-presigner @aws-sdk/client-s3
 ```
+
+If `ffmpeg` binary is already available, you don't need to add dependency `@ffmpeg-installer/ffmpeg`.
 
 ### Optional dependencies
 
@@ -41,7 +43,7 @@ npm i chat-about-video @azure/openai @ffmpeg-installer/ffmpeg @handy-common-util
 To use ChatGPT hosted on OpenAI or Azure:
 
 ```shell
-npm i @azure/openai
+npm i openai @azure/openai
 ```
 
 **Gemini**
@@ -83,9 +85,7 @@ npm i @handy-common-utils/aws-utils @aws-sdk/s3-request-presigner @aws-sdk/clien
 
 ### ChatGPT
 
-There are two approaches for feeding video content to ChatGPT. `chat-about-video` supports both of them.
-
-**Frame image extraction:**
+`chat-about-video` supports uploading video frames into cloud storage and making them available to ChatGPT.
 
 - Integrate ChatGPT from Microsoft Azure or OpenAI effortlessly.
 - Utilize ffmpeg integration provided by this package for frame image extraction or opt for a DIY approach.
@@ -93,17 +93,9 @@ There are two approaches for feeding video content to ChatGPT. `chat-about-video
 - GPT-4o and GPT-4 Vision Preview hosted in Azure allows analysis of up to 10 frame images.
 - GPT-4o and GPT-4 Vision Preview hosted in OpenAI allows analysis of more than 10 frame images.
 
-**Video indexing with Microsoft Azure:**
-
-- Exclusively supported by GPT-4 Vision Preview from Microsoft Azure.
-- Ingest videos seamlessly into Microsoft Azure's Video Retrieval Index.
-- Automatic extraction of up to 20 frame images using Video Retrieval Indexer.
-- Default integration of speech transcription for enhanced comprehension.
-- Flexible storage options with support for Azure Blob Storage and AWS S3.
-
 ### Gemini
 
-`chat-about-video` supports sending Video frames directly to Google's API without a cloud storage.
+`chat-about-video` supports sending video frames directly to Google's API without a cloud storage.
 
 - Utilize ffmpeg integration provided by this package for frame image extraction or opt for a DIY approach.
 - Number of frame images is only limited by Gemini API in Google Cloud.
@@ -190,7 +182,7 @@ import { consoleWithColour } from '@handy-common-utils/misc-utils';
 import chalk from 'chalk';
 import readline from 'node:readline';
 
-import { ChatAboutVideo, ConversationWithChatGpt } from 'chat-about-video';
+import { ChatAboutVideo, ConversationWithChatGpt } from '../src';
 
 async function demo() {
   const chat = new ChatAboutVideo(
@@ -204,7 +196,8 @@ async function demo() {
         storagePathPrefix: 'video-frames/',
       },
       completionOptions: {
-        deploymentName: process.env.OPENAI_MODEL_NAME || 'gpt-4o', // 'gpt-4-vision-preview', // or gpt-4o
+        // model is required by OpenAI
+        model: process.env.OPENAI_MODEL_NAME || 'gpt-4o', // 'gpt-4-vision-preview', // or gpt-4o
       },
       extractVideoFrames: {
         limit: 100,
@@ -227,85 +220,15 @@ async function demo() {
       await conversation.end();
       break;
     }
-    const answer = await conversation.say(question, { maxTokens: 2000 });
+    const answer = await conversation.say(question, { max_tokens: 2000 });
     console.log(chalk.blue('\nAI:' + answer));
   }
   console.log('Demo finished');
   rl.close();
 }
 
+// eslint-disable-next-line unicorn/prefer-top-level-await
 demo().catch((error) => console.log(chalk.red(JSON.stringify(error, null, 2))));
-```
-
-### Example 2: Using GPT-4 Vision Preview hosted in Azure with Azure Video Retrieval Indexer
-
-```typescript
-// This is a demo utilising GPT-4 Vision preview hosted in Azure.
-// Azure Video Retrieval Indexer is used for extracting information from the input video.
-// Information in Azure Video Retrieval Indexer is supplied to GPT.
-//
-// This script can be executed with a command line like this from the project root directory:
-// export AZURE_OPENAI_API_ENDPOINT=..
-// export AZURE_OPENAI_API_KEY=...
-// export AZURE_OPENAI_DEPLOYMENT_NAME=...
-// export AZURE_STORAGE_CONNECTION_STRING=...
-// export AZURE_STORAGE_CONTAINER_NAME=...
-// export AZURE_CV_API_KEY=...
-// ENABLE_DEBUG=true DEMO_VIDEO=~/Downloads/test1.mp4 npx ts-node test/demo2.ts
-//
-
-import { consoleWithColour } from '@handy-common-utils/misc-utils';
-import chalk from 'chalk';
-import readline from 'node:readline';
-
-import { ChatAboutVideo, ConversationWithChatGpt } from 'chat-about-video';
-
-async function demo() {
-  const chat = new ChatAboutVideo(
-    {
-      endpoint: process.env.AZURE_OPENAI_API_ENDPOINT!,
-      credential: {
-        key: process.env.AZURE_OPENAI_API_KEY!,
-      },
-      storage: {
-        azureStorageConnectionString: process.env.AZURE_STORAGE_CONNECTION_STRING!,
-        storageContainerName: process.env.AZURE_STORAGE_CONTAINER_NAME || 'vision-experiment-input',
-        storagePathPrefix: 'video-frames/',
-      },
-      completionOptions: {
-        deploymentName: process.env.AZURE_OPENAI_DEPLOYMENT_NAME || 'gpt4vision',
-      },
-      videoRetrievalIndex: {
-        endpoint: process.env.AZURE_CV_API_ENDPOINT!,
-        apiKey: process.env.AZURE_CV_API_KEY!,
-        createIndexIfNotExists: true,
-        deleteIndexWhenConversationEnds: true,
-      },
-    },
-    consoleWithColour({ debug: process.env.ENABLE_DEBUG === 'true' }, chalk),
-  );
-
-  const conversation = (await chat.startConversation(process.env.DEMO_VIDEO!)) as ConversationWithChatGpt;
-
-  const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
-  const prompt = (question: string) => new Promise<string>((resolve) => rl.question(question, resolve));
-  while (true) {
-    const question = await prompt(chalk.red('\nUser: '));
-    if (!question) {
-      continue;
-    }
-    if (['exit', 'quit', 'q', 'end'].includes(question)) {
-      await conversation.end();
-      break;
-    }
-    const answer = await conversation.say(question, { maxTokens: 2000 });
-    console.log(chalk.blue('\nAI:' + answer));
-  }
-  console.log('Demo finished');
-  rl.close();
-}
-
-demo().catch((error) => console.log(chalk.red(JSON.stringify(error, null, 2)), (error as Error).stack));
 ```
 
 ### Example 3: Using GPT-4 Vision Preview hosted in Azure with Azure Blob Storage
@@ -327,7 +250,7 @@ import { consoleWithColour } from '@handy-common-utils/misc-utils';
 import chalk from 'chalk';
 import readline from 'node:readline';
 
-import { ChatAboutVideo, ConversationWithChatGpt } from 'chat-about-video';
+import { ChatAboutVideo, ConversationWithChatGpt } from '../src';
 
 async function demo() {
   const chat = new ChatAboutVideo(
@@ -341,8 +264,11 @@ async function demo() {
         storageContainerName: process.env.AZURE_STORAGE_CONTAINER_NAME || 'vision-experiment-input',
         storagePathPrefix: 'video-frames/',
       },
-      completionOptions: {
-        deploymentName: process.env.AZURE_OPENAI_DEPLOYMENT_NAME || 'gpt4vision',
+      clientSettings: {
+        // deployment is required by Azure
+        deployment: process.env.AZURE_OPENAI_DEPLOYMENT_NAME || 'gpt4vision',
+        // apiVersion is required by Azure
+        apiVersion: '2024-10-21',
       },
     },
     consoleWithColour({ debug: process.env.ENABLE_DEBUG === 'true' }, chalk),
@@ -361,13 +287,14 @@ async function demo() {
       await conversation.end();
       break;
     }
-    const answer = await conversation.say(question, { maxTokens: 2000 });
+    const answer = await conversation.say(question, { max_tokens: 2000 });
     console.log(chalk.blue('\nAI:' + answer));
   }
   console.log('Demo finished');
   rl.close();
 }
 
+// eslint-disable-next-line unicorn/prefer-top-level-await
 demo().catch((error) => console.log(chalk.red(JSON.stringify(error, null, 2))));
 ```
 
@@ -388,7 +315,7 @@ import readline from 'node:readline';
 
 import { HarmBlockThreshold, HarmCategory } from '@google/generative-ai';
 
-import { ChatAboutVideo, ConversationWithGemini } from 'chat-about-video';
+import { ChatAboutVideo, ConversationWithGemini } from '../src';
 
 async function demo() {
   const chat = new ChatAboutVideo(
@@ -404,6 +331,14 @@ async function demo() {
       extractVideoFrames: {
         limit: 100,
         interval: 0.5,
+      },
+      completionOptions: {
+        safetySettings: [
+          {
+            category: 'HARM_CATEGORY_HATE_SPEECH' as any,
+            threshold: 'BLOCK_NONE' as any,
+          },
+        ],
       },
     },
     consoleWithColour({ debug: process.env.ENABLE_DEBUG === 'true' }, chalk),
@@ -431,7 +366,7 @@ async function demo() {
   rl.close();
 }
 
-demo().catch((error) => console.log(chalk.red(JSON.stringify(error, null, 2))));
+demo().catch((error) => console.log(chalk.red(JSON.stringify(error, null, 2)), error));
 ```
 
 # API

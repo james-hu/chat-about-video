@@ -116,15 +116,6 @@ export interface ChatApi<CLIENT, OPTIONS extends AdditionalCompletionOptions, PR
   }>;
 }
 
-export interface VideoRetrievalIndexOptions {
-  endpoint: string;
-  apiKey: string;
-  indexName?: string;
-  createIndexIfNotExists?: boolean;
-  deleteIndexWhenConversationEnds?: boolean;
-  deleteDocumentWhenConversationEnds?: boolean;
-}
-
 export interface ExtractVideoFramesOptions {
   /**
    * Function for extracting frames from the video.

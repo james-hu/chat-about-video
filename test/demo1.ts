@@ -29,7 +29,8 @@ async function demo() {
         storagePathPrefix: 'video-frames/',
       },
       completionOptions: {
-        deploymentName: process.env.OPENAI_MODEL_NAME || 'gpt-4o', // 'gpt-4-vision-preview', // or gpt-4o
+        // model is required by OpenAI
+        model: process.env.OPENAI_MODEL_NAME || 'gpt-4o', // 'gpt-4-vision-preview', // or gpt-4o
       },
       extractVideoFrames: {
         limit: 100,
@@ -52,7 +53,7 @@ async function demo() {
       await conversation.end();
       break;
     }
-    const answer = await conversation.say(question, { maxTokens: 2000 });
+    const answer = await conversation.say(question, { max_tokens: 2000 });
     console.log(chalk.blue('\nAI:' + answer));
   }
   console.log('Demo finished');
