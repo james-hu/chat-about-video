@@ -52,6 +52,7 @@ export const extractVideoFramesWithFfmpeg: VideoFramesExtractor = async (
 
   return {
     relativePaths,
+    // Try to clean up but ignore errors
     cleanup: () => inParallel(5, relativePaths, (relativePath) => fs.unlink(path.join(outputDir, relativePath))),
   };
 };

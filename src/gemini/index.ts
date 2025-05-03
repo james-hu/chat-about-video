@@ -1,14 +1,14 @@
-import type { GenerateContentRequest, GenerateContentResult, GenerativeModel, ModelParams, RequestOptions } from '@google/generative-ai';
+import type { GenerateContentRequest, GenerateContentResult, GenerativeModel, ModelParams, Part, RequestOptions } from '@google/generative-ai';
 
 import { GoogleGenerativeAI } from '@google/generative-ai';
-import { generateRandomString } from '@handy-common-utils/misc-utils';
 import { withConcurrency } from '@handy-common-utils/promise-utils';
 import fs from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 
-import type { AdditionalCompletionOptions, BuildPromptOutput, ChatApi, ChatApiOptions, ExtractVideoFramesOptions } from '../types';
+import type { AdditionalCompletionOptions, BuildPromptOutput, ChatApi, ChatApiOptions, ExtractVideoFramesOptions, ImageInput } from '../types';
 
+import { buildImagesPromptFromVideo, generateTempConversationId } from '../chat';
 import { effectiveExtractVideoFramesOptions } from '../utils';
 
 export type GeminiClient = GenerativeModel;
@@ -127,42 +127,36 @@ export class GeminiApi implements ChatApi<GeminiClient, GeminiCompletionOptions,
 
   async buildVideoPrompt(
     videoFile: string,
-    conversationId = `tmp-${generateRandomString(24)}`,
+    conversationId = generateTempConversationId(),
   ): Promise<BuildPromptOutput<GeminiPrompt, GeminiCompletionOptions>> {
-    const extractVideoFrames = this.extractVideoFrames;
-    const videoFramesDir = extractVideoFrames.framesDirectoryResolver(videoFile, this.tmpDir, conversationId);
-    const { relativePaths: frameImageFiles, cleanup: cleanupExtractedFrames } = await extractVideoFrames.extractor(
-      videoFile,
-      videoFramesDir,
-      extractVideoFrames.interval,
-      undefined,
-      extractVideoFrames.width,
-      extractVideoFrames.height,
-      undefined,
-      undefined,
-      extractVideoFrames.limit,
-    );
+    return buildImagesPromptFromVideo(this, this.extractVideoFrames!, this.tmpDir, videoFile, conversationId);
+  }
+
+  async buildImagesPrompt(imageInputs: ImageInput[], _conversationId: string): Promise<BuildPromptOutput<GeminiPrompt, GeminiCompletionOptions>> {
+    const parts2D = await withConcurrency(5, imageInputs, async (imageInput) => {
+      const parts: Part[] = [];
+      if (imageInput.promptText) {
+        parts.push({
+          text: imageInput.promptText,
+        });
+      }
+      const imageContent = await fs.readFile(imageInput.imageFile);
+      parts.push({
+        inlineData: {
+          data: imageContent.toString('base64'),
+          mimeType: fileExtToMimeType[path.extname(imageInput.imageFile).slice(1)],
+        },
+      });
+      return parts;
+    });
     const prompt = [
       {
         role: 'user',
-        parts: await withConcurrency(5, frameImageFiles, async (imageFile) => {
-          const imageContent = await fs.readFile(path.join(videoFramesDir, imageFile));
-          return {
-            inlineData: {
-              data: imageContent.toString('base64'),
-              mimeType: `image/${extractVideoFrames.format}`,
-            },
-          };
-        }),
+        parts: parts2D.flat(),
       },
     ];
     return {
       prompt,
-      cleanup: async () => {
-        if (this.extractVideoFrames.deleteFilesWhenConversationEnds) {
-          await cleanupExtractedFrames();
-        }
-      },
     };
   }
 }
@@ -170,3 +164,11 @@ export class GeminiApi implements ChatApi<GeminiClient, GeminiCompletionOptions,
 function isGeminiResponse(obj: any): obj is GeminiResponse {
   return typeof obj?.response?.text === 'function';
 }
+
+const fileExtToMimeType: Record<string, string> = {
+  jpg: 'image/jpeg',
+  jpeg: 'image/jpeg',
+  png: 'image/png',
+  webp: 'image/webp',
+  gif: 'image/gif',
+};

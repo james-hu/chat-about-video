@@ -1,16 +1,18 @@
-// This is a demo utilising ChatGPT hosted in OpenAI.
+// This is a demo utilising GPT-4o or Vision preview hosted in OpenAI.
+// OpenAI API allows more than 10 (maximum allowed by Azure's OpenAI API) images to be supplied.
 // Video frame images are uploaded to Azure Blob Storage and then made available to GPT from there.
+//
+// This demo shows how multiple videos can be used in a single conversation.
 //
 // This script can be executed with a command line like this from the project root directory:
 // export OPENAI_API_KEY=...
 // export AZURE_STORAGE_CONNECTION_STRING=...
 // export OPENAI_MODEL_NAME=...
 // export AZURE_STORAGE_CONTAINER_NAME=...
-// ENABLE_DEBUG=true DEMO_VIDEO=~/Downloads/test1.mp4 npx ts-node test/demo1.ts
+// ENABLE_DEBUG=true DEMO_VIDEO_1=~/Downloads/test1.mp4 DEMO_VIDEO_2=~/Downloads/test2.mp4 npx ts-node test/demo2.ts
 //
 
 import { consoleWithColour } from '@handy-common-utils/misc-utils';
-/* eslint-disable node/no-unpublished-import */
 import chalk from 'chalk';
 import readline from 'node:readline';
 
@@ -28,8 +30,7 @@ async function demo() {
         storagePathPrefix: 'video-frames/',
       },
       completionOptions: {
-        // model is required by OpenAI
-        model: process.env.OPENAI_MODEL_NAME || 'gpt-4o', // 'gpt-4-vision-preview', // or gpt-4o
+        model: process.env.OPENAI_MODEL_NAME || 'gpt-4o',
       },
       extractVideoFrames: {
         limit: 100,
@@ -39,7 +40,11 @@ async function demo() {
     consoleWithColour({ debug: process.env.ENABLE_DEBUG === 'true' }, chalk),
   );
 
-  const conversation = (await chat.startConversation(process.env.DEMO_VIDEO!)) as ConversationWithChatGpt;
+  const conversation = (await chat.startConversation([
+    { videoFile: process.env.DEMO_VIDEO_1!, prompt: 'This is the first video:' },
+    { videoFile: process.env.DEMO_VIDEO_2!, prompt: 'This is the second video:' },
+    { videoFile: process.env.DEMO_VIDEO_1!, prompt: 'This is the third video:' },
+  ])) as ConversationWithChatGpt;
 
   const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
   const prompt = (question: string) => new Promise<string>((resolve) => rl.question(question, resolve));

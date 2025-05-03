@@ -1,5 +1,5 @@
 // This is a demo utilising Google Gemini through Google Generative Language API.
-// Google Gemini allows more than 10 (maximum allowed by Azure's OpenAI API) frame images to be supplied.
+// Google Gemini allows many frame images to be supplied because of its huge context length.
 // Video frame images are sent through Google Generative Language API directly.
 //
 // This script can be executed with a command line like this from the project root directory:

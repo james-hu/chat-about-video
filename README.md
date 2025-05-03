@@ -1,6 +1,6 @@
 # chat-about-video
 
-Chat about a video clip (or without the video clip) using the powerful OpenAI ChatGPT (hosted in OpenAI or Microsoft Azure) or Google Gemini (hosted in Google Could).
+Chat about zero or one or more video clip(s) using the powerful OpenAI ChatGPT (hosted in OpenAI or Microsoft Azure) or Google Gemini (hosted in Google Could).
 
 [![Version](https://img.shields.io/npm/v/chat-about-video.svg)](https://npmjs.org/package/chat-about-video)
 [![Downloads/week](https://img.shields.io/npm/dw/chat-about-video.svg)](https://npmjs.org/package/chat-about-video)
@@ -12,10 +12,11 @@ Key features:
 
 - ChatGPT models hosted in both Azure and OpenAI are supported.
 - Gemini models hosted in Google Cloud are supported.
-- Frame images are extracted from the input video, and uploaded for ChatGPT/Gemini to consume.
-- It can automatically retry on receiving throttling (HTTP status code 429) and error (HTTP status code 5xx) responses from the API.
-- Options supported by the underlying API are exposed for customisation.
-- It can also be used in scenario that no video needs to be involved, that means it can be used for "normal" text chats.
+- Frame images are extracted from the input video(s) and uploaded for ChatGPT/Gemini to consume.
+- Supports multiple video files and multiple groups of extracted frame images in a single conversation.
+- Automatically retries on receiving throttling (HTTP status code 429) and error (HTTP status code 5xx) responses from the API.
+- Options supported by the underlying API are exposed for customization.
+- Can also be used in scenarios where no video is involved, making it suitable for "normal" text chats.
 
 ## Usage
 
@@ -90,15 +91,14 @@ npm i @handy-common-utils/aws-utils @aws-sdk/s3-request-presigner @aws-sdk/clien
 - Integrate ChatGPT from Microsoft Azure or OpenAI effortlessly.
 - Utilize ffmpeg integration provided by this package for frame image extraction or opt for a DIY approach.
 - Store frame images with ease, supporting Azure Blob Storage and AWS S3.
-- GPT-4o and GPT-4 Vision Preview hosted in Azure allows analysis of up to 10 frame images.
-- GPT-4o and GPT-4 Vision Preview hosted in OpenAI allows analysis of more than 10 frame images.
+- Models hosted in Azure seems to allow less number of images per request than models hosted in OpenAI.
 
 ### Gemini
 
-`chat-about-video` supports sending video frames directly to Google's API without a cloud storage.
+`chat-about-video` supports sending video frames directly to Google's API without requiring cloud storage.
 
 - Utilize ffmpeg integration provided by this package for frame image extraction or opt for a DIY approach.
-- Number of frame images is only limited by Gemini API in Google Cloud.
+- The number of frame images is only limited by the Gemini API in Google Cloud.
 
 ## Concrete types and low level clients
 
@@ -163,11 +163,12 @@ or the last parameter of `say(...)` function on `Conversation`.
 
 ## Code examples
 
-### Example 1: Using GPT-4o or GPT-4 Vision Preview hosted in OpenAI with Azure Blob Storage
+### Example 1: Using ChatGPT hosted in OpenAI with Azure Blob Storage
+
+Source: [test/demo1.ts](test/demo1.ts)
 
 ```typescript
-// This is a demo utilising GPT-4o or Vision preview hosted in OpenAI.
-// OpenAI API allows more than 10 (maximum allowed by Azure's OpenAI API) images to be supplied.
+// This is a demo utilising ChatGPT hosted in OpenAI.
 // Video frame images are uploaded to Azure Blob Storage and then made available to GPT from there.
 //
 // This script can be executed with a command line like this from the project root directory:
@@ -227,15 +228,35 @@ async function demo() {
   rl.close();
 }
 
-// eslint-disable-next-line unicorn/prefer-top-level-await
 demo().catch((error) => console.log(chalk.red(JSON.stringify(error, null, 2))));
 ```
 
-### Example 3: Using GPT-4 Vision Preview hosted in Azure with Azure Blob Storage
+### Example 2: Multiple videos using ChatGPT hosted in OpenAI with Azure Blob Storage
+
+Source: [test/demo2.ts](test/demo2.ts)
 
 ```typescript
-// This is a demo utilising GPT-4o or Vision preview hosted in Azure.
-// Up to 10 (maximum allowed by Azure's OpenAI API) frames are extracted from the input video.
+async function demo() {
+
+  ...
+
+  const conversation = (await chat.startConversation([
+    { videoFile: process.env.DEMO_VIDEO_1!, prompt: 'This is the first video:' },
+    { videoFile: process.env.DEMO_VIDEO_2!, prompt: 'This is the second video:' },
+    { videoFile: process.env.DEMO_VIDEO_1!, prompt: 'This is the third video:' },
+  ])) as ConversationWithChatGpt;
+
+  ...
+
+}
+```
+
+### Example 3: Using ChatGPT hosted in Azure with Azure Blob Storage
+
+Source: [test/demo3.ts](test/demo3.ts)
+
+```typescript
+// This is a demo utilising ChatGPT hosted in Azure.
 // Video frame images are uploaded to Azure Blob Storage and then made available to GPT from there.
 //
 // This script can be executed with a command line like this from the project root directory:
@@ -294,15 +315,16 @@ async function demo() {
   rl.close();
 }
 
-// eslint-disable-next-line unicorn/prefer-top-level-await
 demo().catch((error) => console.log(chalk.red(JSON.stringify(error, null, 2))));
 ```
 
 ### Example 4: Using Gemini hosted in Google Cloud
 
+Source: [test/demo4.ts](test/demo4.ts)
+
 ```typescript
 // This is a demo utilising Google Gemini through Google Generative Language API.
-// Google Gemini allows more than 10 (maximum allowed by Azure's OpenAI API) frame images to be supplied.
+// Google Gemini allows many frame images to be supplied because of its huge context length.
 // Video frame images are sent through Google Generative Language API directly.
 //
 // This script can be executed with a command line like this from the project root directory:
@@ -367,6 +389,57 @@ async function demo() {
 }
 
 demo().catch((error) => console.log(chalk.red(JSON.stringify(error, null, 2)), error));
+```
+
+### Example 5: Multiple groups of extracted frame images using ChatGPT hosted in Azure with Azure Blob Storage
+
+Source: [test/demo5.ts](test/demo5.ts)
+
+```typescript
+async function demo() {
+  const tmpDir = os.tmpdir();
+  const video1 = process.env.DEMO_VIDEO_1!;
+  const video2 = process.env.DEMO_VIDEO_2!;
+  const outputDir1 = path.join(tmpDir, 'video1-frames');
+  const outputDir2 = path.join(tmpDir, 'video2-frames');
+
+  console.log(chalk.green('Extracting frames from the first video...'));
+  const { relativePaths: frames1, cleanup: cleanupFrames1 } = await extractVideoFramesWithFfmpeg(video1, outputDir1, 1, 'jpg', 200);
+
+  console.log(chalk.green('Extracting frames from the second video...'));
+  const { relativePaths: frames2, cleanup: cleanupFrames2 } = await extractVideoFramesWithFfmpeg(video2, outputDir2, 3, 'jpg', 200);
+
+  const chat = new ChatAboutVideo(
+    {
+      credential: {
+        key: process.env.OPENAI_API_KEY!,
+      },
+      storage: {
+        azureStorageConnectionString: process.env.AZURE_STORAGE_CONNECTION_STRING!,
+        storageContainerName: process.env.AZURE_STORAGE_CONTAINER_NAME || 'vision-experiment-input',
+        storagePathPrefix: 'video-frames/',
+      },
+      completionOptions: {
+        model: process.env.OPENAI_MODEL_NAME || 'gpt-4o',
+      },
+    },
+    consoleWithColour({ debug: process.env.ENABLE_DEBUG === 'true' }, chalk),
+  );
+
+  const conversation = (await chat.startConversation([
+    {
+      prompt: 'Frame images from sample 1:',
+      images: frames1.map((frame, i) => ({ imageFile: path.join(outputDir1, frame), promptText: `Frame CodeRed-${i + 1}` })),
+    },
+    {
+      prompt: 'Frame images from sample 2, also known as the "good example":',
+      images: frames2.map((frame) => ({ imageFile: path.join(outputDir2, frame) })),
+    },
+  ])) as ConversationWithChatGpt;
+
+  ...
+
+}
 ```
 
 # API

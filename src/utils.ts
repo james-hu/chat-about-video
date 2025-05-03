@@ -1,6 +1,6 @@
 import path from 'node:path';
 
-import type { ExtractVideoFramesOptions, StorageOptions } from './types';
+import type { EffectiveExtractVideoFramesOptions, ExtractVideoFramesOptions, StorageOptions } from './types';
 
 import { lazyCreatedFileBatchUploader } from './storage';
 import { extractVideoFramesWithFfmpeg } from './video';
@@ -10,9 +10,7 @@ import { extractVideoFramesWithFfmpeg } from './video';
  * @param options the options containing the values provided
  * @returns The effective values for ExtractVideoFramesOptions
  */
-export function effectiveExtractVideoFramesOptions(
-  options?: ExtractVideoFramesOptions,
-): Pick<ExtractVideoFramesOptions, 'height'> & Required<Omit<ExtractVideoFramesOptions, 'height'>> {
+export function effectiveExtractVideoFramesOptions(options?: ExtractVideoFramesOptions): EffectiveExtractVideoFramesOptions {
   return {
     extractor: extractVideoFramesWithFfmpeg,
     framesDirectoryResolver: (_inputFile, tmpDir, conversationId) => path.join(tmpDir, conversationId),

@@ -1,10 +1,20 @@
 import { ConsoleLineLogger, consoleWithoutColour, generateRandomString } from '@handy-common-utils/misc-utils';
 import { withRetry } from '@handy-common-utils/promise-utils';
+import path from 'node:path';
 
 import type { ChatGptApi, ChatGptOptions } from './chat-gpt';
 import type { GeminiApi, GeminiOptions } from './gemini';
 
-import { AdditionalCompletionOptions, ChatApi, ClientOfChatApi, OptionsOfChatApi, PromptOfChatApi, ResponseOfChatApi } from './types';
+import {
+  AdditionalCompletionOptions,
+  BuildPromptOutput,
+  ChatApi,
+  ClientOfChatApi,
+  EffectiveExtractVideoFramesOptions,
+  OptionsOfChatApi,
+  PromptOfChatApi,
+  ResponseOfChatApi,
+} from './types';
 
 const defaultCompletionOptions: AdditionalCompletionOptions = {
   systemPromptText:
@@ -32,6 +42,35 @@ export type ConversationWithChatGpt = ConversationWith<ChatGptApi>;
 export type ConversationWithGemini = ConversationWith<GeminiApi>;
 
 export type SupportedChatApiOptions = ChatGptOptions | GeminiOptions;
+
+export interface VideoInput {
+  /**
+   * The prompt before the video.
+   */
+  prompt: string;
+  /**
+   * Path to a video file in local file system.
+   */
+  videoFile: string;
+}
+
+export interface ImagesInput {
+  /**
+   * The prompt before the images.
+   */
+  prompt: string;
+  images: Array<{
+    /**
+     * The prompt before the image.
+     * This is optional, and could be used to provide the timestamp or other information about the image.
+     */
+    prompt?: string;
+    /**
+     * Path to an image file in local file system.
+     */
+    imageFile: string;
+  }>;
+}
 
 export class ChatAboutVideo<CLIENT = any, OPTIONS extends AdditionalCompletionOptions = any, PROMPT = any, RESPONSE = any> {
   protected options: SupportedChatApiOptions;
@@ -86,14 +125,27 @@ export class ChatAboutVideo<CLIENT = any, OPTIONS extends AdditionalCompletionOp
    */
   async startConversation(videoFile: string, options?: OPTIONS): Promise<Conversation<CLIENT, OPTIONS, PROMPT, RESPONSE>>;
 
+  /**
+   * Start a conversation about a video.
+   * @param videos Array of videos or images to be used in the conversation.
+   * For each video, the video file path and the prompt before the video should be provided.
+   * For each group of images, the image file paths and the prompt before the image group should be provided.
+   * @param options Overriding options for this conversation
+   * @returns The conversation.
+   */
+  async startConversation(videos: Array<VideoInput | ImagesInput>, options?: OPTIONS): Promise<Conversation<CLIENT, OPTIONS, PROMPT, RESPONSE>>;
+
   async startConversation(
-    videoFileOrOptions?: string | OPTIONS,
+    videoFileOrVideosOrOptions?: string | Array<VideoInput | ImagesInput> | OPTIONS,
     optionsOrUndefined?: OPTIONS,
   ): Promise<Conversation<CLIENT, OPTIONS, PROMPT, RESPONSE>> {
-    const videoFile = typeof videoFileOrOptions === 'string' ? videoFileOrOptions : undefined;
-    let options = {
+    const videoFile = typeof videoFileOrVideosOrOptions === 'string' ? videoFileOrVideosOrOptions : undefined;
+    const videosOrImages = Array.isArray(videoFileOrVideosOrOptions) ? videoFileOrVideosOrOptions : undefined;
+
+    let options: OPTIONS = {
       ...this.options.completionOptions,
-      ...(typeof videoFileOrOptions === 'string' ? optionsOrUndefined : videoFileOrOptions),
+      ...optionsOrUndefined,
+      ...(!videoFile && !videosOrImages ? (videoFileOrVideosOrOptions as OPTIONS | undefined) : undefined),
     } as OPTIONS;
 
     const cleanupFuncs: Array<() => Promise<any>> = [];
@@ -101,16 +153,48 @@ export class ChatAboutVideo<CLIENT = any, OPTIONS extends AdditionalCompletionOp
 
     const api = await this.apiPromise;
     let initialPrompt: PROMPT | undefined = undefined;
+
     if (options.startPromptText) {
       const { prompt } = await api.buildTextPrompt(options.startPromptText, conversationId);
       initialPrompt = await api.appendToPrompt(prompt, initialPrompt);
     }
+
+    // A single video
     if (videoFile) {
       const { prompt, options: additionalOptions, cleanup } = await api.buildVideoPrompt(videoFile, conversationId);
       initialPrompt = await api.appendToPrompt(prompt, initialPrompt);
       options = { ...options, ...additionalOptions };
       if (cleanup) {
         cleanupFuncs.push(cleanup);
+      }
+    }
+
+    // Multiple videos or groups of images
+    if (videosOrImages) {
+      for (const videoOrImages of videosOrImages) {
+        if (videoOrImages.prompt) {
+          const { prompt: promptBeforeVideoOrImages } = await api.buildTextPrompt(videoOrImages.prompt, conversationId);
+          initialPrompt = await api.appendToPrompt(promptBeforeVideoOrImages, initialPrompt);
+        }
+
+        const video = videoOrImages as VideoInput;
+        const images = videoOrImages as ImagesInput;
+        if (video.videoFile) {
+          const { prompt, options: additionalOptions, cleanup } = await api.buildVideoPrompt(video.videoFile, conversationId);
+          initialPrompt = await api.appendToPrompt(prompt, initialPrompt);
+          options = { ...options, ...additionalOptions };
+          if (cleanup) {
+            cleanupFuncs.push(cleanup);
+          }
+        }
+        if (images.images) {
+          const { prompt, options: additionalOptions, cleanup } = await api.buildImagesPrompt(images.images, conversationId);
+          initialPrompt = await api.appendToPrompt(prompt, initialPrompt);
+          options = { ...options, ...additionalOptions };
+          if (cleanup) {
+            cleanupFuncs.push(cleanup);
+          }
+        }
       }
     }
 
@@ -188,4 +272,65 @@ export class Conversation<CLIENT = any, OPTIONS extends AdditionalCompletionOpti
       this.log && this.log.debug(`Conversation ${this.conversationId} cleaned up`);
     }
   }
+}
+
+/**
+ * Convenient function to generate a temporary conversation ID.
+ * @returns A temporary conversation ID.
+ */
+export function generateTempConversationId(): string {
+  return `tmp-${generateRandomString(24)}`;
+}
+
+/**
+ * Build prompt for sending frame images of a video content to AI.
+ * This function is usually used for implementing the `buildVideoPrompt` function of ChatApi by utilising already implemented `buildImagesPrompt` function.
+ * It extracts frame images from the video and builds a prompt containing those images for the conversation.
+ * @param api The API instance.
+ * @param extractVideoFrames The options for extracting video frames.
+ * @param tmpDir The temporary directory to store the extracted frames.
+ * @param videoFile Path to a video file in local file system.
+ * @param conversationId The conversation ID.
+ * @returns The prompt and options for the conversation.
+ */
+export async function buildImagesPromptFromVideo<CLIENT, OPTIONS extends AdditionalCompletionOptions, PROMPT, RESPONSE>(
+  api: ChatApi<CLIENT, OPTIONS, PROMPT, RESPONSE>,
+  extractVideoFrames: EffectiveExtractVideoFramesOptions,
+  tmpDir: string,
+  videoFile: string,
+  conversationId = generateTempConversationId(),
+): Promise<BuildPromptOutput<PROMPT, OPTIONS>> {
+  const videoFramesDir = extractVideoFrames.framesDirectoryResolver(videoFile, tmpDir, conversationId);
+  const { relativePaths, cleanup: cleanupExtractedFrames } = await extractVideoFrames.extractor(
+    videoFile,
+    videoFramesDir,
+    extractVideoFrames.interval,
+    undefined,
+    extractVideoFrames.width,
+    extractVideoFrames.height,
+    undefined,
+    undefined,
+    extractVideoFrames.limit,
+  );
+
+  const output = await api.buildImagesPrompt(
+    relativePaths.map((relativePath) => ({
+      imageFile: path.join(videoFramesDir, relativePath),
+    })),
+    conversationId,
+  );
+
+  return {
+    ...output,
+    cleanup: async () => {
+      const tasks: Promise<any>[] = [];
+      if (extractVideoFrames.deleteFilesWhenConversationEnds) {
+        tasks.push(cleanupExtractedFrames());
+      }
+      if (output.cleanup) {
+        tasks.push(output.cleanup());
+      }
+      await Promise.all(tasks);
+    },
+  };
 }

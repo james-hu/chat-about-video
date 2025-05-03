@@ -1,5 +1,4 @@
-// This is a demo utilising GPT-4o or Vision preview hosted in Azure.
-// Up to 10 (maximum allowed by Azure's OpenAI API) frames are extracted from the input video.
+// This is a demo utilising ChatGPT hosted in Azure.
 // Video frame images are uploaded to Azure Blob Storage and then made available to GPT from there.
 //
 // This script can be executed with a command line like this from the project root directory:

@@ -1,9 +1,17 @@
-import { generateRandomString } from '@handy-common-utils/misc-utils';
 import os from 'node:os';
 import { AzureClientOptions, AzureOpenAI, OpenAI } from 'openai';
 
-import type { AdditionalCompletionOptions, BuildPromptOutput, ChatApi, ChatApiOptions, ExtractVideoFramesOptions, StorageOptions } from '../types';
+import type {
+  AdditionalCompletionOptions,
+  BuildPromptOutput,
+  ChatApi,
+  ChatApiOptions,
+  ExtractVideoFramesOptions,
+  ImageInput,
+  StorageOptions,
+} from '../types';
 
+import { buildImagesPromptFromVideo, generateTempConversationId } from '../chat';
 import { effectiveExtractVideoFramesOptions, effectiveStorageOptions } from '../utils';
 
 export type ChatGptClient = AzureOpenAI | OpenAI;
@@ -95,63 +103,51 @@ export class ChatGptApi implements ChatApi<ChatGptClient, ChatGptCompletionOptio
     };
   }
 
-  buildVideoPrompt(videoFile: string, conversationId?: string | undefined): Promise<BuildPromptOutput<ChatGptPrompt, ChatGptCompletionOptions>> {
-    if (this.extractVideoFrames) {
-      return this.buildVideoPromptWithFrames(videoFile, conversationId);
-    } else {
-      throw new Error('Provider of extractVideoFrames must be specified in options');
-    }
+  async buildVideoPrompt(
+    videoFile: string,
+    conversationId = generateTempConversationId(),
+  ): Promise<BuildPromptOutput<ChatGptPrompt, ChatGptCompletionOptions>> {
+    return buildImagesPromptFromVideo(this, this.extractVideoFrames!, this.tmpDir, videoFile, conversationId);
   }
 
-  protected async buildVideoPromptWithFrames(
-    videoFile: string,
-    conversationId = `tmp-${generateRandomString(24)}`,
+  async buildImagesPrompt(
+    imageInputs: ImageInput[],
+    conversationId = generateTempConversationId(),
   ): Promise<BuildPromptOutput<ChatGptPrompt, ChatGptCompletionOptions>> {
-    const extractVideoFrames = this.extractVideoFrames!;
-    const videoFramesDir = extractVideoFrames.framesDirectoryResolver(videoFile, this.tmpDir, conversationId);
-    const { relativePaths: frameImageFiles, cleanup: cleanupExtractedFrames } = await extractVideoFrames.extractor(
-      videoFile,
-      videoFramesDir,
-      extractVideoFrames.interval,
-      undefined,
-      extractVideoFrames.width,
-      extractVideoFrames.height,
-      undefined,
-      undefined,
-      extractVideoFrames.limit,
-    );
-
     const { downloadUrls: frameImageUrls, cleanup: cleanupUploadedFrames } = await this.storage.uploader(
-      videoFramesDir,
-      frameImageFiles,
+      '',
+      imageInputs.map((imageInput) => imageInput.imageFile),
       this.storage.storageContainerName!,
       `${this.storage.storagePathPrefix}${conversationId}/`,
     );
 
     const messages: ChatGptPrompt = [];
     messages.push(
-      ...frameImageUrls.map(
-        (url) =>
-          ({
-            role: 'user',
-            content: [
-              {
-                type: 'image_url',
-                image_url: {
-                  url,
-                  detail: 'auto',
-                },
-              },
-            ],
-          }) as OpenAI.ChatCompletionUserMessageParam,
-      ),
+      ...frameImageUrls.map((url, i) => {
+        const content: OpenAI.ChatCompletionUserMessageParam['content'] = [];
+        const { promptText } = imageInputs[i];
+        if (promptText) {
+          content.push({
+            type: 'text',
+            text: promptText,
+          });
+        }
+        content.push({
+          type: 'image_url',
+          image_url: {
+            url,
+            detail: 'auto',
+          },
+        });
+        return {
+          role: 'user',
+          content,
+        } as OpenAI.ChatCompletionUserMessageParam;
+      }),
     );
     return {
       prompt: messages,
       cleanup: async () => {
-        if (extractVideoFrames.deleteFilesWhenConversationEnds) {
-          await cleanupExtractedFrames();
-        }
         if (this.storage.deleteFilesWhenConversationEnds) {
           await cleanupUploadedFrames();
         }

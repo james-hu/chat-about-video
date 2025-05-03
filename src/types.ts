@@ -1,6 +1,18 @@
 import { FileBatchUploader } from './storage/types';
 import { VideoFramesExtractor } from './video/types';
 
+export interface ImageInput {
+  /**
+   * The prompt text before the image.
+   * This is optional, and could be used to provide the timestamp or other information about the image.
+   */
+  promptText?: string;
+  /**
+   * Path to an image file in local file system.
+   */
+  imageFile: string;
+}
+
 export interface AdditionalCompletionOptions {
   /**
    * System prompt text. If not provided, a default prompt will be used.
@@ -94,13 +106,24 @@ export interface ChatApi<CLIENT, OPTIONS extends AdditionalCompletionOptions, PR
   /**
    * Build prompt for sending video content to AI.
    * Sometimes, to include video in the conversation, additional options and/or clean up is needed.
-   * In such case, options to be passed to generateContent function and/or a clean up call back function
-   * will be returned in the output of this function.
+   * In such case, options to be passed to generateContent function and/or a clean up callback function
+   * can be returned from this function.
    * @param videoFile Path to the video file.
    * @param conversationId Unique identifier of the conversation.
    * @returns An object containing the prompt, optional options, and an optional cleanup function.
    */
   buildVideoPrompt(videoFile: string, conversationId?: string): Promise<BuildPromptOutput<PROMPT, OPTIONS>>;
+
+  /**
+   * Build prompt for sending images content to AI.
+   * Sometimes, to include images in the conversation, additional options and/or clean up is needed.
+   * In such case, options to be passed to generateContent function and/or a clean up callback function
+   * can be returned from this function.
+   * @param imageInputs Array of image inputs.
+   * @param conversationId Unique identifier of the conversation.
+   * @returns An object containing the prompt, optional options, and an optional cleanup function.
+   */
+  buildImagesPrompt(imageInputs: ImageInput[], conversationId?: string): Promise<BuildPromptOutput<PROMPT, OPTIONS>>;
 
   /**
    * Build prompt for sending text content to AI
@@ -165,6 +188,8 @@ export interface ExtractVideoFramesOptions {
    */
   deleteFilesWhenConversationEnds?: boolean;
 }
+
+export type EffectiveExtractVideoFramesOptions = Pick<ExtractVideoFramesOptions, 'height'> & Required<Omit<ExtractVideoFramesOptions, 'height'>>;
 
 export interface StorageOptions {
   /**
