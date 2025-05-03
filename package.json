@@ -1,6 +1,6 @@
 {
   "name": "chat-about-video",
-  "version": "4.0.0",
+  "version": "5.0.0",
   "description": "Chat about a video clip using ChatGPT hosted in OpenAI or Azure, or Gemini provided by Google",
   "engines": {
     "node": ">=18"
