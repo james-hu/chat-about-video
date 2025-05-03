@@ -564,6 +564,23 @@ Start a conversation about a video.
 
 The conversation.
 
+▸ **startConversation**(`videos`, `options?`): `Promise`\<[`Conversation`](#classeschatconversationmd)\<`CLIENT`, `OPTIONS`, `PROMPT`, `RESPONSE`\>\>
+
+Start a conversation about a video.
+
+###### Parameters
+
+| Name       | Type                                                                                             | Description                                                                                                                                                                                                                                                |
+| :--------- | :----------------------------------------------------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `videos`   | ([`VideoInput`](#interfaceschatvideoinputmd) \| [`ImagesInput`](#interfaceschatimagesinputmd))[] | Array of videos or images to be used in the conversation. For each video, the video file path and the prompt before the video should be provided. For each group of images, the image file paths and the prompt before the image group should be provided. |
+| `options?` | `OPTIONS`                                                                                        | Overriding options for this conversation                                                                                                                                                                                                                   |
+
+###### Returns
+
+`Promise`\<[`Conversation`](#classeschatconversationmd)\<`CLIENT`, `OPTIONS`, `PROMPT`, `RESPONSE`\>\>
+
+The conversation.
+
 <a name="classeschatconversationmd"></a>
 
 ### Class: Conversation\<CLIENT, OPTIONS, PROMPT, RESPONSE\>
@@ -700,13 +717,13 @@ The response/completion
 
 #### Properties
 
-| Property                                                                                                                                                                                                                                                         | Description |
-| ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------- |
-| `Protected` **client**: [`ChatGptClient`](#chatgptclient)                                                                                                                                                                                                        |             |
-| `Protected` `Optional` **extractVideoFrames**: `Pick`\<[`ExtractVideoFramesOptions`](#interfacestypesextractvideoframesoptionsmd), `"height"`\> & `Required`\<`Omit`\<[`ExtractVideoFramesOptions`](#interfacestypesextractvideoframesoptionsmd), `"height"`\>\> |             |
-| `Protected` **options**: [`ChatGptOptions`](#chatgptoptions)                                                                                                                                                                                                     |             |
-| `Protected` **storage**: `Required`\<`Pick`\<[`StorageOptions`](#interfacestypesstorageoptionsmd), `"uploader"`\>\> & [`StorageOptions`](#interfacestypesstorageoptionsmd)                                                                                       |             |
-| `Protected` **tmpDir**: `string`                                                                                                                                                                                                                                 |             |
+| Property                                                                                                                                                                   | Description |
+| -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------- |
+| `Protected` **client**: [`ChatGptClient`](#chatgptclient)                                                                                                                  |             |
+| `Protected` `Optional` **extractVideoFrames**: [`EffectiveExtractVideoFramesOptions`](#effectiveextractvideoframesoptions)                                                 |             |
+| `Protected` **options**: [`ChatGptOptions`](#chatgptoptions)                                                                                                               |             |
+| `Protected` **storage**: `Required`\<`Pick`\<[`StorageOptions`](#interfacestypesstorageoptionsmd), `"uploader"`\>\> & [`StorageOptions`](#interfacestypesstorageoptionsmd) |             |
+| `Protected` **tmpDir**: `string`                                                                                                                                           |             |
 
 #### Methods
 
@@ -733,6 +750,34 @@ The full prompt which is effectively the conversation history.
 ###### Implementation of
 
 [ChatApi](#interfacestypeschatapimd).[appendToPrompt](#appendtoprompt)
+
+---
+
+##### buildImagesPrompt
+
+▸ **buildImagesPrompt**(`imageInputs`, `conversationId?`): `Promise`\<[`BuildPromptOutput`](#interfacestypesbuildpromptoutputmd)\<`ChatCompletionMessageParam`[], [`ChatGptCompletionOptions`](#chatgptcompletionoptions)\>\>
+
+Build prompt for sending images content to AI.
+Sometimes, to include images in the conversation, additional options and/or clean up is needed.
+In such case, options to be passed to generateContent function and/or a clean up callback function
+can be returned from this function.
+
+###### Parameters
+
+| Name             | Type                                           | Description                            |
+| :--------------- | :--------------------------------------------- | :------------------------------------- |
+| `imageInputs`    | [`ImageInput`](#interfacestypesimageinputmd)[] | Array of image inputs.                 |
+| `conversationId` | `string`                                       | Unique identifier of the conversation. |
+
+###### Returns
+
+`Promise`\<[`BuildPromptOutput`](#interfacestypesbuildpromptoutputmd)\<`ChatCompletionMessageParam`[], [`ChatGptCompletionOptions`](#chatgptcompletionoptions)\>\>
+
+An object containing the prompt, optional options, and an optional cleanup function.
+
+###### Implementation of
+
+[ChatApi](#interfacestypeschatapimd).[buildImagesPrompt](#buildimagesprompt)
 
 ---
 
@@ -767,15 +812,15 @@ An object containing the prompt.
 
 Build prompt for sending video content to AI.
 Sometimes, to include video in the conversation, additional options and/or clean up is needed.
-In such case, options to be passed to generateContent function and/or a clean up call back function
-will be returned in the output of this function.
+In such case, options to be passed to generateContent function and/or a clean up callback function
+can be returned from this function.
 
 ###### Parameters
 
-| Name              | Type     | Description                            |
-| :---------------- | :------- | :------------------------------------- |
-| `videoFile`       | `string` | Path to the video file.                |
-| `conversationId?` | `string` | Unique identifier of the conversation. |
+| Name             | Type     | Description                            |
+| :--------------- | :------- | :------------------------------------- |
+| `videoFile`      | `string` | Path to the video file.                |
+| `conversationId` | `string` | Unique identifier of the conversation. |
 
 ###### Returns
 
@@ -786,23 +831,6 @@ An object containing the prompt, optional options, and an optional cleanup funct
 ###### Implementation of
 
 [ChatApi](#interfacestypeschatapimd).[buildVideoPrompt](#buildvideoprompt)
-
----
-
-##### buildVideoPromptWithFrames
-
-▸ `Protected` **buildVideoPromptWithFrames**(`videoFile`, `conversationId?`): `Promise`\<[`BuildPromptOutput`](#interfacestypesbuildpromptoutputmd)\<`ChatCompletionMessageParam`[], [`ChatGptCompletionOptions`](#chatgptcompletionoptions)\>\>
-
-###### Parameters
-
-| Name             | Type     |
-| :--------------- | :------- |
-| `videoFile`      | `string` |
-| `conversationId` | `string` |
-
-###### Returns
-
-`Promise`\<[`BuildPromptOutput`](#interfacestypesbuildpromptoutputmd)\<`ChatCompletionMessageParam`[], [`ChatGptCompletionOptions`](#chatgptcompletionoptions)\>\>
 
 ---
 
@@ -942,12 +970,12 @@ true if the error is a throttling error, false otherwise.
 
 #### Properties
 
-| Property                                                                                                                                                                                                                                              | Description |
-| ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------- |
-| `Protected` **client**: `GenerativeModel`                                                                                                                                                                                                             |             |
-| `Protected` **extractVideoFrames**: `Pick`\<[`ExtractVideoFramesOptions`](#interfacestypesextractvideoframesoptionsmd), `"height"`\> & `Required`\<`Omit`\<[`ExtractVideoFramesOptions`](#interfacestypesextractvideoframesoptionsmd), `"height"`\>\> |             |
-| `Protected` **options**: [`GeminiOptions`](#geminioptions)                                                                                                                                                                                            |             |
-| `Protected` **tmpDir**: `string`                                                                                                                                                                                                                      |             |
+| Property                                                                                                        | Description |
+| --------------------------------------------------------------------------------------------------------------- | ----------- |
+| `Protected` **client**: `GenerativeModel`                                                                       |             |
+| `Protected` **extractVideoFrames**: [`EffectiveExtractVideoFramesOptions`](#effectiveextractvideoframesoptions) |             |
+| `Protected` **options**: [`GeminiOptions`](#geminioptions)                                                      |             |
+| `Protected` **tmpDir**: `string`                                                                                |             |
 
 #### Methods
 
@@ -974,6 +1002,34 @@ The full prompt which is effectively the conversation history.
 ###### Implementation of
 
 [ChatApi](#interfacestypeschatapimd).[appendToPrompt](#appendtoprompt)
+
+---
+
+##### buildImagesPrompt
+
+▸ **buildImagesPrompt**(`imageInputs`, `_conversationId`): `Promise`\<[`BuildPromptOutput`](#interfacestypesbuildpromptoutputmd)\<`Content`[], [`GeminiCompletionOptions`](#geminicompletionoptions)\>\>
+
+Build prompt for sending images content to AI.
+Sometimes, to include images in the conversation, additional options and/or clean up is needed.
+In such case, options to be passed to generateContent function and/or a clean up callback function
+can be returned from this function.
+
+###### Parameters
+
+| Name              | Type                                           | Description                            |
+| :---------------- | :--------------------------------------------- | :------------------------------------- |
+| `imageInputs`     | [`ImageInput`](#interfacestypesimageinputmd)[] | Array of image inputs.                 |
+| `_conversationId` | `string`                                       | Unique identifier of the conversation. |
+
+###### Returns
+
+`Promise`\<[`BuildPromptOutput`](#interfacestypesbuildpromptoutputmd)\<`Content`[], [`GeminiCompletionOptions`](#geminicompletionoptions)\>\>
+
+An object containing the prompt, optional options, and an optional cleanup function.
+
+###### Implementation of
+
+[ChatApi](#interfacestypeschatapimd).[buildImagesPrompt](#buildimagesprompt)
 
 ---
 
@@ -1008,8 +1064,8 @@ An object containing the prompt.
 
 Build prompt for sending video content to AI.
 Sometimes, to include video in the conversation, additional options and/or clean up is needed.
-In such case, options to be passed to generateContent function and/or a clean up call back function
-will be returned in the output of this function.
+In such case, options to be passed to generateContent function and/or a clean up callback function
+can be returned from this function.
 
 ###### Parameters
 
@@ -1144,6 +1200,32 @@ true if the error is a throttling error, false otherwise.
 
 ## Interfaces
 
+<a name="interfaceschatimagesinputmd"></a>
+
+### Interface: ImagesInput
+
+[chat](#moduleschatmd).ImagesInput
+
+#### Properties
+
+| Property                                                       | Description                   |
+| -------------------------------------------------------------- | ----------------------------- |
+| **images**: \{ `imageFile`: `string` ; `prompt?`: `string` }[] |                               |
+| **prompt**: `string`                                           | The prompt before the images. |
+
+<a name="interfaceschatvideoinputmd"></a>
+
+### Interface: VideoInput
+
+[chat](#moduleschatmd).VideoInput
+
+#### Properties
+
+| Property                | Description                                |
+| ----------------------- | ------------------------------------------ |
+| **prompt**: `string`    | The prompt before the video.               |
+| **videoFile**: `string` | Path to a video file in local file system. |
+
 <a name="interfacestypesadditionalcompletionoptionsmd"></a>
 
 ### Interface: AdditionalCompletionOptions
@@ -1224,6 +1306,30 @@ The full prompt which is effectively the conversation history.
 
 ---
 
+##### buildImagesPrompt
+
+▸ **buildImagesPrompt**(`imageInputs`, `conversationId?`): `Promise`\<[`BuildPromptOutput`](#interfacestypesbuildpromptoutputmd)\<`PROMPT`, `OPTIONS`\>\>
+
+Build prompt for sending images content to AI.
+Sometimes, to include images in the conversation, additional options and/or clean up is needed.
+In such case, options to be passed to generateContent function and/or a clean up callback function
+can be returned from this function.
+
+###### Parameters
+
+| Name              | Type                                           | Description                            |
+| :---------------- | :--------------------------------------------- | :------------------------------------- |
+| `imageInputs`     | [`ImageInput`](#interfacestypesimageinputmd)[] | Array of image inputs.                 |
+| `conversationId?` | `string`                                       | Unique identifier of the conversation. |
+
+###### Returns
+
+`Promise`\<[`BuildPromptOutput`](#interfacestypesbuildpromptoutputmd)\<`PROMPT`, `OPTIONS`\>\>
+
+An object containing the prompt, optional options, and an optional cleanup function.
+
+---
+
 ##### buildTextPrompt
 
 ▸ **buildTextPrompt**(`text`, `conversationId?`): `Promise`\<\{ `prompt`: `PROMPT` }\>
@@ -1251,8 +1357,8 @@ An object containing the prompt.
 
 Build prompt for sending video content to AI.
 Sometimes, to include video in the conversation, additional options and/or clean up is needed.
-In such case, options to be passed to generateContent function and/or a clean up call back function
-will be returned in the output of this function.
+In such case, options to be passed to generateContent function and/or a clean up callback function
+can be returned from this function.
 
 ###### Parameters
 
@@ -1403,6 +1509,19 @@ true if the error is a throttling error, false otherwise.
 | `Optional` **limit**: `number`                                                                                              | Maximum number of frames to be extracted.<br>Default value is 10 which is the current per-request limitation of ChatGPT Vision.                                                                                                         |
 | `Optional` **width**: `number`                                                                                              | Video frame width, default is 200.<br>If both videoFrameWidth and videoFrameHeight are not specified,<br>then the frames will not be resized/scaled.                                                                                    |
 
+<a name="interfacestypesimageinputmd"></a>
+
+### Interface: ImageInput
+
+[types](#modulestypesmd).ImageInput
+
+#### Properties
+
+| Property                            | Description                                                                                                                             |
+| ----------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
+| **imageFile**: `string`             | Path to an image file in local file system.                                                                                             |
+| `Optional` **promptText**: `string` | The prompt text before the image.<br>This is optional, and could be used to provide the timestamp or other information about the image. |
+
 <a name="interfacestypesstorageoptionsmd"></a>
 
 ### Interface: StorageOptions
@@ -1473,6 +1592,11 @@ true if the error is a throttling error, false otherwise.
 - [ChatAboutVideo](#classeschatchataboutvideomd)
 - [Conversation](#classeschatconversationmd)
 
+#### Interfaces
+
+- [ImagesInput](#interfaceschatimagesinputmd)
+- [VideoInput](#interfaceschatvideoinputmd)
+
 #### Type Aliases
 
 ##### ChatAboutVideoWith
@@ -1526,6 +1650,55 @@ true if the error is a throttling error, false otherwise.
 ##### SupportedChatApiOptions
 
 Ƭ **SupportedChatApiOptions**: [`ChatGptOptions`](#chatgptoptions) \| [`GeminiOptions`](#geminioptions)
+
+#### Functions
+
+##### buildImagesPromptFromVideo
+
+▸ **buildImagesPromptFromVideo**\<`CLIENT`, `OPTIONS`, `PROMPT`, `RESPONSE`\>(`api`, `extractVideoFrames`, `tmpDir`, `videoFile`, `conversationId?`): `Promise`\<[`BuildPromptOutput`](#interfacestypesbuildpromptoutputmd)\<`PROMPT`, `OPTIONS`\>\>
+
+Build prompt for sending frame images of a video content to AI.
+This function is usually used for implementing the `buildVideoPrompt` function of ChatApi by utilising already implemented `buildImagesPrompt` function.
+It extracts frame images from the video and builds a prompt containing those images for the conversation.
+
+###### Type parameters
+
+| Name       | Type                                                                                   |
+| :--------- | :------------------------------------------------------------------------------------- |
+| `CLIENT`   | `CLIENT`                                                                               |
+| `OPTIONS`  | extends [`AdditionalCompletionOptions`](#interfacestypesadditionalcompletionoptionsmd) |
+| `PROMPT`   | `PROMPT`                                                                               |
+| `RESPONSE` | `RESPONSE`                                                                             |
+
+###### Parameters
+
+| Name                 | Type                                                                                | Description                                            |
+| :------------------- | :---------------------------------------------------------------------------------- | :----------------------------------------------------- |
+| `api`                | [`ChatApi`](#interfacestypeschatapimd)\<`CLIENT`, `OPTIONS`, `PROMPT`, `RESPONSE`\> | The API instance.                                      |
+| `extractVideoFrames` | [`EffectiveExtractVideoFramesOptions`](#effectiveextractvideoframesoptions)         | The options for extracting video frames.               |
+| `tmpDir`             | `string`                                                                            | The temporary directory to store the extracted frames. |
+| `videoFile`          | `string`                                                                            | Path to a video file in local file system.             |
+| `conversationId`     | `string`                                                                            | The conversation ID.                                   |
+
+###### Returns
+
+`Promise`\<[`BuildPromptOutput`](#interfacestypesbuildpromptoutputmd)\<`PROMPT`, `OPTIONS`\>\>
+
+The prompt and options for the conversation.
+
+---
+
+##### generateTempConversationId
+
+▸ **generateTempConversationId**(): `string`
+
+Convenient function to generate a temporary conversation ID.
+
+###### Returns
+
+`string`
+
+A temporary conversation ID.
 
 <a name="moduleschat_gptmd"></a>
 
@@ -1700,6 +1873,12 @@ Re-exports [ConversationWithGemini](#conversationwithgemini)
 
 ---
 
+##### EffectiveExtractVideoFramesOptions
+
+Re-exports [EffectiveExtractVideoFramesOptions](#effectiveextractvideoframesoptions)
+
+---
+
 ##### ExtractVideoFramesOptions
 
 Re-exports [ExtractVideoFramesOptions](#interfacestypesextractvideoframesoptionsmd)
@@ -1709,6 +1888,18 @@ Re-exports [ExtractVideoFramesOptions](#interfacestypesextractvideoframesoptions
 ##### FileBatchUploader
 
 Re-exports [FileBatchUploader](#filebatchuploader)
+
+---
+
+##### ImageInput
+
+Re-exports [ImageInput](#interfacestypesimageinputmd)
+
+---
+
+##### ImagesInput
+
+Re-exports [ImagesInput](#interfaceschatimagesinputmd)
 
 ---
 
@@ -1748,9 +1939,27 @@ Re-exports [VideoFramesExtractor](#videoframesextractor)
 
 ---
 
+##### VideoInput
+
+Re-exports [VideoInput](#interfaceschatvideoinputmd)
+
+---
+
+##### buildImagesPromptFromVideo
+
+Re-exports [buildImagesPromptFromVideo](#buildimagespromptfromvideo)
+
+---
+
 ##### extractVideoFramesWithFfmpeg
 
 Re-exports [extractVideoFramesWithFfmpeg](#extractvideoframeswithffmpeg)
+
+---
+
+##### generateTempConversationId
+
+Re-exports [generateTempConversationId](#generatetempconversationid)
 
 ---
 
@@ -1832,6 +2041,7 @@ A Promise that resolves with an object containing an array of download URLs for 
 - [ChatApi](#interfacestypeschatapimd)
 - [ChatApiOptions](#interfacestypeschatapioptionsmd)
 - [ExtractVideoFramesOptions](#interfacestypesextractvideoframesoptionsmd)
+- [ImageInput](#interfacestypesimageinputmd)
 - [StorageOptions](#interfacestypesstorageoptionsmd)
 
 #### Type Aliases
@@ -1845,6 +2055,12 @@ A Promise that resolves with an object containing an array of download URLs for 
 | Name |
 | :--- |
 | `T`  |
+
+---
+
+##### EffectiveExtractVideoFramesOptions
+
+Ƭ **EffectiveExtractVideoFramesOptions**: `Pick`\<[`ExtractVideoFramesOptions`](#interfacestypesextractvideoframesoptionsmd), `"height"`\> & `Required`\<`Omit`\<[`ExtractVideoFramesOptions`](#interfacestypesextractvideoframesoptionsmd), `"height"`\>\>
 
 ---
 
@@ -1890,7 +2106,7 @@ A Promise that resolves with an object containing an array of download URLs for 
 
 ##### effectiveExtractVideoFramesOptions
 
-▸ **effectiveExtractVideoFramesOptions**(`options?`): `Pick`\<[`ExtractVideoFramesOptions`](#interfacestypesextractvideoframesoptionsmd), `"height"`\> & `Required`\<`Omit`\<[`ExtractVideoFramesOptions`](#interfacestypesextractvideoframesoptionsmd), `"height"`\>\>
+▸ **effectiveExtractVideoFramesOptions**(`options?`): [`EffectiveExtractVideoFramesOptions`](#effectiveextractvideoframesoptions)
 
 Calculate the effective values for ExtractVideoFramesOptions by combining the default values and the values provided
 
@@ -1902,7 +2118,7 @@ Calculate the effective values for ExtractVideoFramesOptions by combining the de
 
 ###### Returns
 
-`Pick`\<[`ExtractVideoFramesOptions`](#interfacestypesextractvideoframesoptionsmd), `"height"`\> & `Required`\<`Omit`\<[`ExtractVideoFramesOptions`](#interfacestypesextractvideoframesoptionsmd), `"height"`\>\>
+[`EffectiveExtractVideoFramesOptions`](#effectiveextractvideoframesoptions)
 
 The effective values for ExtractVideoFramesOptions
 
