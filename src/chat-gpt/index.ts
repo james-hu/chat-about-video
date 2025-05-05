@@ -52,6 +52,12 @@ export class ChatGptApi implements ChatApi<ChatGptClient, ChatGptCompletionOptio
     delete effectiveOptions.backoffOnServerError;
     delete effectiveOptions.backoffOnThrottling;
     delete effectiveOptions.systemPromptText;
+    delete effectiveOptions.startPromptText;
+
+    // These fields were used in previous versions of chat-about-video, just in case they are removed from the config/options/settings.
+    delete (effectiveOptions as any).maxTokens;
+    delete (effectiveOptions as any).deploymentName;
+    delete (effectiveOptions as any).extractVideoFrames;
 
     return this.client.chat.completions.create({ ...effectiveOptions, messages: prompt, stream: false });
   }
