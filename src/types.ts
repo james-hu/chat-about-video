@@ -13,6 +13,25 @@ export interface ImageInput {
   imageFile: string;
 }
 
+export interface VideoInput {
+  /**
+   * The prompt before the video.
+   */
+  promptText: string;
+  /**
+   * Path to a video file in local file system.
+   */
+  videoFile: string;
+}
+
+export interface ImagesInput {
+  /**
+   * The prompt before the images.
+   */
+  promptText: string;
+  images: Array<ImageInput>;
+}
+
 export interface AdditionalCompletionOptions {
   /**
    * System prompt text. If not provided, a default prompt will be used.

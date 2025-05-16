@@ -241,9 +241,9 @@ async function demo() {
   ...
 
   const conversation = (await chat.startConversation([
-    { videoFile: process.env.DEMO_VIDEO_1!, prompt: 'This is the first video:' },
-    { videoFile: process.env.DEMO_VIDEO_2!, prompt: 'This is the second video:' },
-    { videoFile: process.env.DEMO_VIDEO_1!, prompt: 'This is the third video:' },
+    { videoFile: process.env.DEMO_VIDEO_1!, promptText: 'This is the first video:' },
+    { videoFile: process.env.DEMO_VIDEO_2!, promptText: 'This is the second video:' },
+    { videoFile: process.env.DEMO_VIDEO_1!, promptText: 'This is the third video:' },
   ])) as ConversationWithChatGpt;
 
   ...
@@ -428,11 +428,11 @@ async function demo() {
 
   const conversation = (await chat.startConversation([
     {
-      prompt: 'Frame images from sample 1:',
+      promptText: 'Frame images from sample 1:',
       images: frames1.map((frame, i) => ({ imageFile: path.join(outputDir1, frame), promptText: `Frame CodeRed-${i + 1}` })),
     },
     {
-      prompt: 'Frame images from sample 2, also known as the "good example":',
+      promptText: 'Frame images from sample 2, also known as the "good example":',
       images: frames2.map((frame) => ({ imageFile: path.join(outputDir2, frame) })),
     },
   ])) as ConversationWithChatGpt;

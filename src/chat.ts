@@ -11,9 +11,11 @@ import {
   ChatApi,
   ClientOfChatApi,
   EffectiveExtractVideoFramesOptions,
+  ImagesInput,
   OptionsOfChatApi,
   PromptOfChatApi,
   ResponseOfChatApi,
+  VideoInput,
 } from './types';
 
 const defaultCompletionOptions: AdditionalCompletionOptions = {
@@ -42,35 +44,6 @@ export type ConversationWithChatGpt = ConversationWith<ChatGptApi>;
 export type ConversationWithGemini = ConversationWith<GeminiApi>;
 
 export type SupportedChatApiOptions = ChatGptOptions | GeminiOptions;
-
-export interface VideoInput {
-  /**
-   * The prompt before the video.
-   */
-  prompt: string;
-  /**
-   * Path to a video file in local file system.
-   */
-  videoFile: string;
-}
-
-export interface ImagesInput {
-  /**
-   * The prompt before the images.
-   */
-  prompt: string;
-  images: Array<{
-    /**
-     * The prompt before the image.
-     * This is optional, and could be used to provide the timestamp or other information about the image.
-     */
-    prompt?: string;
-    /**
-     * Path to an image file in local file system.
-     */
-    imageFile: string;
-  }>;
-}
 
 export class ChatAboutVideo<CLIENT = any, OPTIONS extends AdditionalCompletionOptions = any, PROMPT = any, RESPONSE = any> {
   protected options: SupportedChatApiOptions;
@@ -172,8 +145,8 @@ export class ChatAboutVideo<CLIENT = any, OPTIONS extends AdditionalCompletionOp
     // Multiple videos or groups of images
     if (videosOrImages) {
       for (const videoOrImages of videosOrImages) {
-        if (videoOrImages.prompt) {
-          const { prompt: promptBeforeVideoOrImages } = await api.buildTextPrompt(videoOrImages.prompt, conversationId);
+        if (videoOrImages.promptText) {
+          const { prompt: promptBeforeVideoOrImages } = await api.buildTextPrompt(videoOrImages.promptText, conversationId);
           initialPrompt = await api.appendToPrompt(promptBeforeVideoOrImages, initialPrompt);
         }
 

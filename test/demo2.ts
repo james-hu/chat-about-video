@@ -41,9 +41,9 @@ async function demo() {
   );
 
   const conversation = (await chat.startConversation([
-    { videoFile: process.env.DEMO_VIDEO_1!, prompt: 'This is the first video:' },
-    { videoFile: process.env.DEMO_VIDEO_2!, prompt: 'This is the second video:' },
-    { videoFile: process.env.DEMO_VIDEO_1!, prompt: 'This is the third video:' },
+    { videoFile: process.env.DEMO_VIDEO_1!, promptText: 'This is the first video:' },
+    { videoFile: process.env.DEMO_VIDEO_2!, promptText: 'This is the second video:' },
+    { videoFile: process.env.DEMO_VIDEO_1!, promptText: 'This is the third video:' },
   ])) as ConversationWithChatGpt;
 
   const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
