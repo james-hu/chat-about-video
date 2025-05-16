@@ -570,10 +570,10 @@ Start a conversation about a video.
 
 ###### Parameters
 
-| Name       | Type                                                                                             | Description                                                                                                                                                                                                                                                |
-| :--------- | :----------------------------------------------------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `videos`   | ([`VideoInput`](#interfaceschatvideoinputmd) \| [`ImagesInput`](#interfaceschatimagesinputmd))[] | Array of videos or images to be used in the conversation. For each video, the video file path and the prompt before the video should be provided. For each group of images, the image file paths and the prompt before the image group should be provided. |
-| `options?` | `OPTIONS`                                                                                        | Overriding options for this conversation                                                                                                                                                                                                                   |
+| Name       | Type                                                                                               | Description                                                                                                                                                                                                                                                |
+| :--------- | :------------------------------------------------------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `videos`   | ([`VideoInput`](#interfacestypesvideoinputmd) \| [`ImagesInput`](#interfacestypesimagesinputmd))[] | Array of videos or images to be used in the conversation. For each video, the video file path and the prompt before the video should be provided. For each group of images, the image file paths and the prompt before the image group should be provided. |
+| `options?` | `OPTIONS`                                                                                          | Overriding options for this conversation                                                                                                                                                                                                                   |
 
 ###### Returns
 
@@ -1200,32 +1200,6 @@ true if the error is a throttling error, false otherwise.
 
 ## Interfaces
 
-<a name="interfaceschatimagesinputmd"></a>
-
-### Interface: ImagesInput
-
-[chat](#moduleschatmd).ImagesInput
-
-#### Properties
-
-| Property                                                       | Description                   |
-| -------------------------------------------------------------- | ----------------------------- |
-| **images**: \{ `imageFile`: `string` ; `prompt?`: `string` }[] |                               |
-| **prompt**: `string`                                           | The prompt before the images. |
-
-<a name="interfaceschatvideoinputmd"></a>
-
-### Interface: VideoInput
-
-[chat](#moduleschatmd).VideoInput
-
-#### Properties
-
-| Property                | Description                                |
-| ----------------------- | ------------------------------------------ |
-| **prompt**: `string`    | The prompt before the video.               |
-| **videoFile**: `string` | Path to a video file in local file system. |
-
 <a name="interfacestypesadditionalcompletionoptionsmd"></a>
 
 ### Interface: AdditionalCompletionOptions
@@ -1522,6 +1496,19 @@ true if the error is a throttling error, false otherwise.
 | **imageFile**: `string`             | Path to an image file in local file system.                                                                                             |
 | `Optional` **promptText**: `string` | The prompt text before the image.<br>This is optional, and could be used to provide the timestamp or other information about the image. |
 
+<a name="interfacestypesimagesinputmd"></a>
+
+### Interface: ImagesInput
+
+[types](#modulestypesmd).ImagesInput
+
+#### Properties
+
+| Property                                                   | Description                   |
+| ---------------------------------------------------------- | ----------------------------- |
+| **images**: [`ImageInput`](#interfacestypesimageinputmd)[] |                               |
+| **promptText**: `string`                                   | The prompt before the images. |
+
 <a name="interfacestypesstorageoptionsmd"></a>
 
 ### Interface: StorageOptions
@@ -1537,7 +1524,20 @@ true if the error is a throttling error, false otherwise.
 | `Optional` **downloadUrlExpirationSeconds**: `number`              | Expiration time for the download URL of the frame images in seconds. Default is 3600 seconds. |
 | `Optional` **storageContainerName**: `string`                      | Storage container for storing frame images of the video.                                      |
 | `Optional` **storagePathPrefix**: `string`                         | Path prefix to be prepended for storing frame images of the video.<br>Default is empty.       |
-| `Optional` **uploader**: [`FileBatchUploader`](#filebatchuploader) | Function for uploading files<br><br>## Modules                                                |
+| `Optional` **uploader**: [`FileBatchUploader`](#filebatchuploader) | Function for uploading files                                                                  |
+
+<a name="interfacestypesvideoinputmd"></a>
+
+### Interface: VideoInput
+
+[types](#modulestypesmd).VideoInput
+
+#### Properties
+
+| Property                 | Description                                                  |
+| ------------------------ | ------------------------------------------------------------ |
+| **promptText**: `string` | The prompt before the video.                                 |
+| **videoFile**: `string`  | Path to a video file in local file system.<br><br>## Modules |
 
 <a name="modulesawsmd"></a>
 
@@ -1591,11 +1591,6 @@ true if the error is a throttling error, false otherwise.
 
 - [ChatAboutVideo](#classeschatchataboutvideomd)
 - [Conversation](#classeschatconversationmd)
-
-#### Interfaces
-
-- [ImagesInput](#interfaceschatimagesinputmd)
-- [VideoInput](#interfaceschatvideoinputmd)
 
 #### Type Aliases
 
@@ -1899,7 +1894,7 @@ Re-exports [ImageInput](#interfacestypesimageinputmd)
 
 ##### ImagesInput
 
-Re-exports [ImagesInput](#interfaceschatimagesinputmd)
+Re-exports [ImagesInput](#interfacestypesimagesinputmd)
 
 ---
 
@@ -1941,7 +1936,7 @@ Re-exports [VideoFramesExtractor](#videoframesextractor)
 
 ##### VideoInput
 
-Re-exports [VideoInput](#interfaceschatvideoinputmd)
+Re-exports [VideoInput](#interfacestypesvideoinputmd)
 
 ---
 
@@ -2042,7 +2037,9 @@ A Promise that resolves with an object containing an array of download URLs for 
 - [ChatApiOptions](#interfacestypeschatapioptionsmd)
 - [ExtractVideoFramesOptions](#interfacestypesextractvideoframesoptionsmd)
 - [ImageInput](#interfacestypesimageinputmd)
+- [ImagesInput](#interfacestypesimagesinputmd)
 - [StorageOptions](#interfacestypesstorageoptionsmd)
+- [VideoInput](#interfacestypesvideoinputmd)
 
 #### Type Aliases
 
