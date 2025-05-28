@@ -66,13 +66,35 @@ export class ChatGptApi implements ChatApi<ChatGptClient, ChatGptCompletionOptio
     return result?.choices?.[0]?.message?.content ?? undefined;
   }
 
+  // Example error object:
+  // {
+  //   "name": "Error",
+  //   "message": "400 Invalid image data",
+  //   "stack": "...",
+  //   "status:": 400,
+  //   "code": "BadRequest",
+  //   "param": null,
+  //   "type": null,
+  //   "headers": {
+  //     ...
+  //   },
+  //   "error": {
+  //     "code": "BadRequest",
+  //     "message": "Invalid image data",
+  //     "param": null,
+  //     "type": null,
+  //   }
+  // }
+
   isThrottlingError(error: any): boolean {
-    const code = String(error?.code);
+    const code = String(error?.status ?? error?.code ?? error?.error?.code);
     return code === 'TooManyRequests' || code === '429';
   }
 
   isServerError(error: any): boolean {
-    return ['500', 'InternalServerError', '502', 'BadGateway', '503', 'ServiceUnavailable', '504', 'GatewayTimeout'].includes(String(error?.status));
+    return ['500', 'InternalServerError', '502', 'BadGateway', '503', 'ServiceUnavailable', '504', 'GatewayTimeout'].includes(
+      String(error?.status ?? error?.code ?? error?.error?.code),
+    );
   }
 
   async appendToPrompt(newPromptOrResponse: ChatGptPrompt | ChatGptResponse, prompt?: ChatGptPrompt): Promise<ChatGptPrompt> {
