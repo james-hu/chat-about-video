@@ -2139,6 +2139,32 @@ Calculate the effective values for StorageOptions by combining the default value
 
 The effective values for StorageOptions
 
+---
+
+##### findCommonParentPath
+
+▸ **findCommonParentPath**(`paths`): `Object`
+
+Find the common parent path of the given paths.
+If there is no common parent path, then the root path of the current process will be returned.
+
+###### Parameters
+
+| Name    | Type       | Description                                                                           |
+| :------ | :--------- | :------------------------------------------------------------------------------------ |
+| `paths` | `string`[] | Input paths to find the common parent path for. It can be absolute or relative paths. |
+
+###### Returns
+
+`Object`
+
+The common parent path and the relative paths from the common parent.
+
+| Name            | Type       |
+| :-------------- | :--------- |
+| `commonParent`  | `string`   |
+| `relativePaths` | `string`[] |
+
 <a name="modulesvideomd"></a>
 
 ### Module: video
