@@ -12,7 +12,7 @@ import type {
 } from '../types';
 
 import { buildImagesPromptFromVideo, generateTempConversationId } from '../chat';
-import { effectiveExtractVideoFramesOptions, effectiveStorageOptions } from '../utils';
+import { effectiveExtractVideoFramesOptions, effectiveStorageOptions, findCommonParentPath } from '../utils';
 
 export type ChatGptClient = AzureOpenAI | OpenAI;
 export type ChatGptResponse = OpenAI.ChatCompletion;
@@ -120,9 +120,11 @@ export class ChatGptApi implements ChatApi<ChatGptClient, ChatGptCompletionOptio
     imageInputs: ImageInput[],
     conversationId = generateTempConversationId(),
   ): Promise<BuildPromptOutput<ChatGptPrompt, ChatGptCompletionOptions>> {
+    const { commonParent, relativePaths } = findCommonParentPath(imageInputs.map((imageInput) => imageInput.imageFile));
+
     const { downloadUrls: frameImageUrls, cleanup: cleanupUploadedFrames } = await this.storage.uploader(
-      '',
-      imageInputs.map((imageInput) => imageInput.imageFile),
+      commonParent,
+      relativePaths,
       this.storage.storageContainerName!,
       `${this.storage.storagePathPrefix}${conversationId}/`,
     );
