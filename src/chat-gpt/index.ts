@@ -49,6 +49,7 @@ export class ChatGptApi implements ChatApi<ChatGptClient, ChatGptCompletionOptio
       ...options,
     };
     // OpenAI does not allow unknown properties
+    delete effectiveOptions.backoffOnConnectivityError;
     delete effectiveOptions.backoffOnServerError;
     delete effectiveOptions.backoffOnThrottling;
     delete effectiveOptions.systemPromptText;
@@ -95,6 +96,10 @@ export class ChatGptApi implements ChatApi<ChatGptClient, ChatGptCompletionOptio
     return ['500', 'InternalServerError', '502', 'BadGateway', '503', 'ServiceUnavailable', '504', 'GatewayTimeout'].includes(
       String(error?.status ?? error?.code ?? error?.error?.code),
     );
+  }
+
+  isConnectivityError(error: any): boolean {
+    return ['Request timed out.', 'Connection error.'].includes(error?.message);
   }
 
   async appendToPrompt(newPromptOrResponse: ChatGptPrompt | ChatGptResponse, prompt?: ChatGptPrompt): Promise<ChatGptPrompt> {
