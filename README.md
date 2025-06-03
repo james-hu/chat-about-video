@@ -14,7 +14,7 @@ Key features:
 - Gemini models hosted in Google Cloud are supported.
 - Frame images are extracted from the input video(s) and uploaded for ChatGPT/Gemini to consume.
 - Supports multiple video files and multiple groups of extracted frame images in a single conversation.
-- Automatically retries on receiving throttling (HTTP status code 429) and error (HTTP status code 5xx) responses from the API.
+- Automatically retries on receiving throttling (HTTP status code 429) and error (HTTP status code 5xx) responses from the API, as well as on connectivity errors.
 - Options supported by the underlying API are exposed for customization.
 - Can also be used in scenarios where no video is involved, making it suitable for "normal" text chats.
 
@@ -28,11 +28,11 @@ Below are examples for typical setups:
 
 ```shell
 # ChatGPT on OpenAI or Azure with Azure Blob Storage
-npm i chat-about-video openai @azure/openai @ffmpeg-installer/ffmpeg @azure/storage-blob
+npm i chat-about-video openai @ffmpeg-installer/ffmpeg @azure/storage-blob
 # Gemini in Google Cloud
 npm i chat-about-video @google/generative-ai @ffmpeg-installer/ffmpeg
 # ChatGPT on OpenAI or Azure with AWS S3
-npm i chat-about-video openai @azure/openai @ffmpeg-installer/ffmpeg @handy-common-utils/aws-utils @aws-sdk/s3-request-presigner @aws-sdk/client-s3
+npm i chat-about-video openai @ffmpeg-installer/ffmpeg @handy-common-utils/aws-utils @aws-sdk/s3-request-presigner @aws-sdk/client-s3
 ```
 
 If `ffmpeg` binary is already available, you don't need to add dependency `@ffmpeg-installer/ffmpeg`.
@@ -44,7 +44,7 @@ If `ffmpeg` binary is already available, you don't need to add dependency `@ffmp
 To use ChatGPT hosted on OpenAI or Azure:
 
 ```shell
-npm i openai @azure/openai
+npm i openai
 ```
 
 **Gemini**

@@ -48,12 +48,11 @@
     }
   },
   "optionalDependencies": {
-    "@azure/openai": "^2.0.0",
     "@azure/storage-blob": "^12.27.0",
     "@ffmpeg-installer/ffmpeg": "^1.1.0",
     "@google/generative-ai": "^0.14.1",
     "@handy-common-utils/aws-utils": ">=3.1.1",
-    "openai": "^4.91.1"
+    "openai": "^4.104.0"
   },
   "dependencies": {
     "@handy-common-utils/misc-utils": ">=1.5.2",
