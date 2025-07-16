@@ -96,6 +96,11 @@ export class GeminiApi implements ChatApi<GeminiClient, GeminiCompletionOptions,
     return ['Request timed out.', 'Connection error.'].includes(error?.message);
   }
 
+  isDownloadError(_error: any): boolean {
+    // To be updated
+    return false;
+  }
+
   async appendToPrompt(newPromptOrResponse: GeminiPrompt | GeminiResponse, prompt?: GeminiPrompt): Promise<GeminiPrompt> {
     prompt = prompt ?? [];
     if (isGeminiResponse(newPromptOrResponse)) {

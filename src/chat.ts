@@ -24,6 +24,7 @@ const defaultCompletionOptions: AdditionalCompletionOptions = {
   backoffOnThrottling: [1000, 2000, 3000, 5000, 10000, 10000],
   backoffOnServerError: [2000, 5000, 10000, 20000, 30000],
   backoffOnConnectivityError: [1000, 2000, 5000, 10000],
+  backoffOnDownloadError: [500, 800, 1000, 2000],
 };
 
 function isGeminiOptions(options: any): options is GeminiOptions {
@@ -228,15 +229,20 @@ export class Conversation<CLIENT = any, OPTIONS extends AdditionalCompletionOpti
         withRetry(
           () =>
             withRetry(
-              () => this.api.generateContent(updatedPrompt, effectiveOptions),
-              effectiveOptions.backoffOnThrottling ?? [],
-              (error) => this.api.isThrottlingError(error),
+              () =>
+                withRetry(
+                  () => this.api.generateContent(updatedPrompt, effectiveOptions),
+                  effectiveOptions.backoffOnThrottling ?? [],
+                  (error) => this.api.isThrottlingError(error),
+                ),
+              effectiveOptions.backoffOnServerError ?? [],
+              (error) => this.api.isServerError(error),
             ),
-          effectiveOptions.backoffOnServerError ?? [],
-          (error) => this.api.isServerError(error),
+          effectiveOptions.backoffOnConnectivityError ?? [],
+          (error) => this.api.isConnectivityError(error),
         ),
-      effectiveOptions.backoffOnConnectivityError ?? [],
-      (error) => this.api.isConnectivityError(error),
+      effectiveOptions.backoffOnDownloadError ?? [],
+      (error) => this.api.isDownloadError(error),
     );
     const responseText = await this.api.getResponseText(response);
     this.prompt = await this.api.appendToPrompt(response, updatedPrompt);

@@ -49,6 +49,7 @@ export class ChatGptApi implements ChatApi<ChatGptClient, ChatGptCompletionOptio
       ...options,
     };
     // OpenAI does not allow unknown properties
+    delete effectiveOptions.backoffOnDownloadError;
     delete effectiveOptions.backoffOnConnectivityError;
     delete effectiveOptions.backoffOnServerError;
     delete effectiveOptions.backoffOnThrottling;
@@ -100,6 +101,13 @@ export class ChatGptApi implements ChatApi<ChatGptClient, ChatGptCompletionOptio
 
   isConnectivityError(error: any): boolean {
     return ['Request timed out.', 'Connection error.'].includes(error?.message);
+  }
+
+  isDownloadError(error: any): boolean {
+    const type = String(error?.type ?? error?.error?.type);
+    const code = String(error?.code ?? error?.error?.code);
+    const message = String(error?.message ?? error?.error?.message);
+    return (type === 'invalid_request_error' && code === 'invalid_image_url') || message.startsWith('Timeout while downloading ');
   }
 
   async appendToPrompt(newPromptOrResponse: ChatGptPrompt | ChatGptResponse, prompt?: ChatGptPrompt): Promise<ChatGptPrompt> {

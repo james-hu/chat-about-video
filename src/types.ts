@@ -54,6 +54,11 @@ export interface AdditionalCompletionOptions {
    * Array of retry backoff periods (unit: milliseconds) for situations that the network connection couldn't be established or lost or request/response timeout.
    */
   backoffOnConnectivityError?: number[];
+  /**
+   * Array of retry backoff periods (unit: milliseconds) for situations that the AI temporarily fails to download a file.
+   * This kind of situation has a chance to happen when many image URLs are passed to OpenAI at the same time.
+   */
+  backoffOnDownloadError?: number[];
 }
 
 export interface ChatApiOptions<CS, CO> {
@@ -132,6 +137,13 @@ export interface ChatApi<CLIENT, OPTIONS extends AdditionalCompletionOptions, PR
    * @returns true if the error is a connectivity error, false otherwise.
    */
   isConnectivityError(error: any): boolean;
+
+  /**
+   * Check if the error is a temporary download error.
+   * @param error any error object
+   * @returns true if the error is a temporary connectivity error, false otherwise.
+   */
+  isDownloadError(error: any): boolean;
 
   /**
    * Build prompt for sending video content to AI.
