@@ -924,6 +924,30 @@ true if the error is a connectivity error, false otherwise.
 
 ---
 
+##### isDownloadError
+
+▸ **isDownloadError**(`error`): `boolean`
+
+Check if the error is a temporary download error.
+
+###### Parameters
+
+| Name    | Type  | Description      |
+| :------ | :---- | :--------------- |
+| `error` | `any` | any error object |
+
+###### Returns
+
+`boolean`
+
+true if the error is a temporary connectivity error, false otherwise.
+
+###### Implementation of
+
+[ChatApi](#interfacestypeschatapimd).[isDownloadError](#isdownloaderror)
+
+---
+
 ##### isServerError
 
 ▸ **isServerError**(`error`): `boolean`
@@ -1200,6 +1224,30 @@ true if the error is a connectivity error, false otherwise.
 
 ---
 
+##### isDownloadError
+
+▸ **isDownloadError**(`_error`): `boolean`
+
+Check if the error is a temporary download error.
+
+###### Parameters
+
+| Name     | Type  | Description      |
+| :------- | :---- | :--------------- |
+| `_error` | `any` | any error object |
+
+###### Returns
+
+`boolean`
+
+true if the error is a temporary connectivity error, false otherwise.
+
+###### Implementation of
+
+[ChatApi](#interfacestypeschatapimd).[isDownloadError](#isdownloaderror)
+
+---
+
 ##### isServerError
 
 ▸ **isServerError**(`error`): `boolean`
@@ -1256,13 +1304,14 @@ true if the error is a throttling error, false otherwise.
 
 #### Properties
 
-| Property                                              | Description                                                                                                                                                 |
-| ----------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `Optional` **backoffOnConnectivityError**: `number`[] | Array of retry backoff periods (unit: milliseconds) for situations that the network connection couldn't be established or lost or request/response timeout. |
-| `Optional` **backoffOnServerError**: `number`[]       | Array of retry backoff periods (unit: milliseconds) for situations that the server returns 5xx response                                                     |
-| `Optional` **backoffOnThrottling**: `number`[]        | Array of retry backoff periods (unit: milliseconds) for situations that the server returns 429 response                                                     |
-| `Optional` **startPromptText**: `string`              | The user prompt that will be sent before the video content.<br>If not provided, nothing will be sent before the video content.                              |
-| `Optional` **systemPromptText**: `string`             | System prompt text. If not provided, a default prompt will be used.                                                                                         |
+| Property                                              | Description                                                                                                                                                                                                                       |
+| ----------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `Optional` **backoffOnConnectivityError**: `number`[] | Array of retry backoff periods (unit: milliseconds) for situations that the network connection couldn't be established or lost or request/response timeout.                                                                       |
+| `Optional` **backoffOnDownloadError**: `number`[]     | Array of retry backoff periods (unit: milliseconds) for situations that the AI temporarily fails to download a file.<br>This kind of situation has a chance to happen when many image URLs are passed to OpenAI at the same time. |
+| `Optional` **backoffOnServerError**: `number`[]       | Array of retry backoff periods (unit: milliseconds) for situations that the server returns 5xx response                                                                                                                           |
+| `Optional` **backoffOnThrottling**: `number`[]        | Array of retry backoff periods (unit: milliseconds) for situations that the server returns 429 response                                                                                                                           |
+| `Optional` **startPromptText**: `string`              | The user prompt that will be sent before the video content.<br>If not provided, nothing will be sent before the video content.                                                                                                    |
+| `Optional` **systemPromptText**: `string`             | System prompt text. If not provided, a default prompt will be used.                                                                                                                                                               |
 
 <a name="interfacestypesbuildpromptoutputmd"></a>
 
@@ -1469,6 +1518,26 @@ Check if the error is a connectivity error.
 `boolean`
 
 true if the error is a connectivity error, false otherwise.
+
+---
+
+##### isDownloadError
+
+▸ **isDownloadError**(`error`): `boolean`
+
+Check if the error is a temporary download error.
+
+###### Parameters
+
+| Name    | Type  | Description      |
+| :------ | :---- | :--------------- |
+| `error` | `any` | any error object |
+
+###### Returns
+
+`boolean`
+
+true if the error is a temporary connectivity error, false otherwise.
 
 ---
 
