@@ -634,6 +634,7 @@ The conversation.
 | `Protected` **log**: `undefined` \| `LineLogger`\<(`message?`: `any`, ...`optionalParams`: `any`[]) => `void`, (`message?`: `any`, ...`optionalParams`: `any`[]) => `void`, (`message?`: `any`, ...`optionalParams`: `any`[]) => `void`, (`message?`: `any`, ...`optionalParams`: `any`[]) => `void`\> |             |
 | `Protected` **options**: `OPTIONS`                                                                                                                                                                                                                                                                     |             |
 | `Protected` **prompt**: `undefined` \| `PROMPT`                                                                                                                                                                                                                                                        |             |
+| `Protected` **usage**: `undefined` \| [`UsageMetadata`](#interfacestypesusagemetadatamd)                                                                                                                                                                                                               |             |
 
 #### Methods
 
@@ -673,6 +674,24 @@ The prompt is the accumulated messages in the conversation so far.
 `undefined` \| `PROMPT`
 
 The prompt which is the accumulated messages in the conversation so far.
+
+---
+
+##### getUsage
+
+▸ **getUsage**(): `undefined` \| [`UsageMetadata`](#interfacestypesusagemetadatamd)
+
+Get usage statistics of the conversation.
+Please note that the usage statistics would be undefined before the first `say` call.
+It could also be undefined if the underlying API does not support usage statistics.
+The usage statistics may not cover those failed requests due to content filtering or other reasons.
+Therefore, it could be less than the billable usage.
+
+###### Returns
+
+`undefined` \| [`UsageMetadata`](#interfacestypesusagemetadatamd)
+
+The usage statistics of the conversation. Or undefined if not available.
 
 ---
 
@@ -899,6 +918,31 @@ Get the text from the response object
 ###### Implementation of
 
 [ChatApi](#interfacestypeschatapimd).[getResponseText](#getresponsetext)
+
+---
+
+##### getUsageMetadata
+
+▸ **getUsageMetadata**(`result`): `Promise`\<`undefined` \| [`UsageMetadata`](#interfacestypesusagemetadatamd)\>
+
+Extract usage metadata from the response object.
+
+###### Parameters
+
+| Name     | Type             | Description         |
+| :------- | :--------------- | :------------------ |
+| `result` | `ChatCompletion` | the response object |
+
+###### Returns
+
+`Promise`\<`undefined` \| [`UsageMetadata`](#interfacestypesusagemetadatamd)\>
+
+Usage metadata from the response, if available.
+If the response does not contain usage metadata, it returns undefined.
+
+###### Implementation of
+
+[ChatApi](#interfacestypeschatapimd).[getUsageMetadata](#getusagemetadata)
 
 ---
 
@@ -1199,6 +1243,31 @@ Get the text from the response object
 ###### Implementation of
 
 [ChatApi](#interfacestypeschatapimd).[getResponseText](#getresponsetext)
+
+---
+
+##### getUsageMetadata
+
+▸ **getUsageMetadata**(`result`): `Promise`\<`undefined` \| [`UsageMetadata`](#interfacestypesusagemetadatamd)\>
+
+Extract usage metadata from the response object.
+
+###### Parameters
+
+| Name     | Type                    | Description         |
+| :------- | :---------------------- | :------------------ |
+| `result` | `GenerateContentResult` | the response object |
+
+###### Returns
+
+`Promise`\<`undefined` \| [`UsageMetadata`](#interfacestypesusagemetadatamd)\>
+
+Usage metadata from the response, if available.
+If the response does not contain usage metadata, it returns undefined.
+
+###### Implementation of
+
+[ChatApi](#interfacestypeschatapimd).[getUsageMetadata](#getusagemetadata)
 
 ---
 
@@ -1503,6 +1572,27 @@ Get the text from the response object
 
 ---
 
+##### getUsageMetadata
+
+▸ **getUsageMetadata**(`response`): `Promise`\<`undefined` \| [`UsageMetadata`](#interfacestypesusagemetadatamd)\>
+
+Extract usage metadata from the response object.
+
+###### Parameters
+
+| Name       | Type       | Description         |
+| :--------- | :--------- | :------------------ |
+| `response` | `RESPONSE` | the response object |
+
+###### Returns
+
+`Promise`\<`undefined` \| [`UsageMetadata`](#interfacestypesusagemetadatamd)\>
+
+Usage metadata from the response, if available.
+If the response does not contain usage metadata, it returns undefined.
+
+---
+
 ##### isConnectivityError
 
 ▸ **isConnectivityError**(`error`): `boolean`
@@ -1666,6 +1756,20 @@ true if the error is a throttling error, false otherwise.
 | `Optional` **storagePathPrefix**: `string`                         | Path prefix to be prepended for storing frame images of the video.<br>Default is empty.       |
 | `Optional` **uploader**: [`FileBatchUploader`](#filebatchuploader) | Function for uploading files                                                                  |
 
+<a name="interfacestypesusagemetadatamd"></a>
+
+### Interface: UsageMetadata
+
+[types](#modulestypesmd).UsageMetadata
+
+#### Properties
+
+| Property                                  | Description |
+| ----------------------------------------- | ----------- |
+| `Optional` **completionTokens**: `number` |             |
+| `Optional` **promptTokens**: `number`     |             |
+| **totalTokens**: `number`                 |             |
+
 <a name="interfacestypesvideoinputmd"></a>
 
 ### Interface: VideoInput
@@ -1787,6 +1891,27 @@ true if the error is a throttling error, false otherwise.
 Ƭ **SupportedChatApiOptions**: [`ChatGptOptions`](#chatgptoptions) \| [`GeminiOptions`](#geminioptions)
 
 #### Functions
+
+##### accumulateUsage
+
+▸ **accumulateUsage**(`totalUsage`, `incrementalUsage`): `undefined` \| [`UsageMetadata`](#interfacestypesusagemetadatamd)
+
+Add up usage.
+
+###### Parameters
+
+| Name               | Type                                                              | Description                                                                       |
+| :----------------- | :---------------------------------------------------------------- | :-------------------------------------------------------------------------------- |
+| `totalUsage`       | [`UsageMetadata`](#interfacestypesusagemetadatamd)                | Existing usage that will be updated.                                              |
+| `incrementalUsage` | `undefined` \| [`UsageMetadata`](#interfacestypesusagemetadatamd) | New usage to add. If it is undefined, then there will be no change to totalUsage. |
+
+###### Returns
+
+`undefined` \| [`UsageMetadata`](#interfacestypesusagemetadatamd)
+
+nothing, the totalUsage is updated in place.
+
+---
 
 ##### buildImagesPromptFromVideo
 
@@ -2068,6 +2193,12 @@ Re-exports [SupportedChatApiOptions](#supportedchatapioptions)
 
 ---
 
+##### UsageMetadata
+
+Re-exports [UsageMetadata](#interfacestypesusagemetadatamd)
+
+---
+
 ##### VideoFramesExtractor
 
 Re-exports [VideoFramesExtractor](#videoframesextractor)
@@ -2077,6 +2208,12 @@ Re-exports [VideoFramesExtractor](#videoframesextractor)
 ##### VideoInput
 
 Re-exports [VideoInput](#interfacestypesvideoinputmd)
+
+---
+
+##### accumulateUsage
+
+Re-exports [accumulateUsage](#accumulateusage)
 
 ---
 
@@ -2179,6 +2316,7 @@ A Promise that resolves with an object containing an array of download URLs for 
 - [ImageInput](#interfacestypesimageinputmd)
 - [ImagesInput](#interfacestypesimagesinputmd)
 - [StorageOptions](#interfacestypesstorageoptionsmd)
+- [UsageMetadata](#interfacestypesusagemetadatamd)
 - [VideoInput](#interfacestypesvideoinputmd)
 
 #### Type Aliases
