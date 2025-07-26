@@ -1,3 +1,5 @@
+import type { ResponseFormatJSONSchema } from 'openai/resources/shared';
+
 import os from 'node:os';
 import { AzureClientOptions, AzureOpenAI, OpenAI } from 'openai';
 
@@ -49,6 +51,20 @@ export class ChatGptApi implements ChatApi<ChatGptClient, ChatGptCompletionOptio
       ...this.options.completionOptions,
       ...options,
     };
+    const requestOptions = effectiveOptions as OpenAI.ChatCompletionCreateParamsNonStreaming;
+    if (effectiveOptions.jsonResponse) {
+      requestOptions.response_format =
+        effectiveOptions.jsonResponse === true
+          ? { type: 'json_object' }
+          : {
+              type: 'json_schema',
+              json_schema: {
+                ...(effectiveOptions.jsonResponse as Partial<ResponseFormatJSONSchema.JSONSchema>),
+                name: effectiveOptions.jsonResponse.name ?? 'InlineResponseSchema',
+              },
+            };
+    }
+
     // OpenAI does not allow unknown properties
     delete effectiveOptions.backoffOnDownloadError;
     delete effectiveOptions.backoffOnConnectivityError;
@@ -56,13 +72,14 @@ export class ChatGptApi implements ChatApi<ChatGptClient, ChatGptCompletionOptio
     delete effectiveOptions.backoffOnThrottling;
     delete effectiveOptions.systemPromptText;
     delete effectiveOptions.startPromptText;
+    delete effectiveOptions.jsonResponse;
 
-    // These fields were used in previous versions of chat-about-video, just in case they are removed from the config/options/settings.
+    // These fields were used in previous versions of chat-about-video, just in case they are not removed from the config/options/settings.
     delete (effectiveOptions as any).maxTokens;
     delete (effectiveOptions as any).deploymentName;
     delete (effectiveOptions as any).extractVideoFrames;
 
-    return this.client.chat.completions.create({ ...effectiveOptions, messages: prompt, stream: false });
+    return this.client.chat.completions.create({ ...requestOptions, messages: prompt, stream: false });
   }
 
   async getResponseText(result: ChatGptResponse): Promise<string | undefined> {

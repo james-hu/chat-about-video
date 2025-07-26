@@ -17,6 +17,7 @@ Key features:
 - Supports multiple video files and multiple groups of extracted frame images in a single conversation.
 - Automatically retries on receiving throttling (HTTP status code 429) and error (HTTP status code 5xx) responses from the API, as well as on connectivity errors.
 - Options supported by the underlying API are exposed for customization.
+- JSON response can be mandated with or without a JSON schema specified.
 - Can also be used in scenarios where no video is involved, making it suitable for "normal" text chats.
 - Usage statistics (token counts) collected.
 
@@ -126,6 +127,39 @@ To get the raw API client, use the `getClient()` function on the awaited object 
 Intermediate files, such as extracted frame images, can be saved locally or in the cloud.
 To remove these files when they are no longer needed, remember to call the `end()` function
 on the `Conversation` instance when the conversion finishes.
+
+## Mandating JSON response
+
+JSON response can be guaranteed either with a JSON Schema or without. Below example code works for both ChatGPT and Gemini:
+
+```typescript
+// Without specifying a JSON schema
+const explanation = await conversation.say(
+  'Explain your answer. The response should be in JSON like this: {"referencedFrames": [1, 5], "why": "Reason for giving this response."}',
+  { jsonResponse: true },
+);
+console.log(chalk.grey("\nAI's Explanation: " + JSON.stringify(JSON.parse(explanation!), null, 2)));
+
+// With a JSON schema
+const detailedExplanation = await conversation.say('Explain your answer in detail. The response should be in JSON.', {
+  jsonResponse: {
+    name: 'DetailedExplanation',
+    schema: {
+      type: 'object',
+      properties: {
+        referencedFrames: {
+          type: 'array',
+          items: { type: 'integer' },
+        },
+        understandingOfTheQuestion: { type: 'string' },
+        reasoningSteps: { type: 'array', items: { type: 'string' } },
+      },
+      required: ['referencedFrames', 'understandingOfTheQuestion', 'reasoningSteps'],
+    },
+  },
+});
+console.log(chalk.grey("\nAI's detailed explanation: " + JSON.stringify(JSON.parse(detailedExplanation!), null, 2)));
+```
 
 ## Customisation
 

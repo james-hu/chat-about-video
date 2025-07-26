@@ -1,3 +1,6 @@
+import type { ResponseSchema } from '@google/generative-ai';
+import type { ResponseFormatJSONSchema } from 'openai/resources/shared';
+
 import { FileBatchUploader } from './storage/types';
 import { VideoFramesExtractor } from './video/types';
 
@@ -59,6 +62,10 @@ export interface AdditionalCompletionOptions {
    * This kind of situation has a chance to happen when many image URLs are passed to OpenAI at the same time.
    */
   backoffOnDownloadError?: number[];
+  jsonResponse?:
+    | boolean
+    | ResponseFormatJSONSchema.JSONSchema
+    | ({ schema: ResponseSchema } & Partial<Omit<ResponseFormatJSONSchema.JSONSchema, 'schema'>>);
 }
 
 export interface ChatApiOptions<CS, CO> {

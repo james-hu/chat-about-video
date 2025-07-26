@@ -55,6 +55,31 @@ async function demo() {
     }
     const answer = await conversation.say(question, { max_tokens: 2000 });
     console.log(chalk.blue('\nAI:' + answer));
+
+    // Below are for showing how to mandate JSON response from ChatGPT.
+    const explanation = await conversation.say(
+      'Explain your answer. The response should be in JSON like this: {"referencedFrames": [1, 5], "why": "Reason for giving this response."}',
+      { jsonResponse: true },
+    );
+    console.log(chalk.grey("\nAI's Explanation: " + JSON.stringify(JSON.parse(explanation!), null, 2)));
+    const detailedExplanation = await conversation.say('Explain your answer in detail. The response should be in JSON.', {
+      jsonResponse: {
+        name: 'DetailedExplanation',
+        schema: {
+          type: 'object',
+          properties: {
+            referencedFrames: {
+              type: 'array',
+              items: { type: 'integer' },
+            },
+            understandingOfTheQuestion: { type: 'string' },
+            reasoningSteps: { type: 'array', items: { type: 'string' } },
+          },
+          required: ['referencedFrames', 'understandingOfTheQuestion', 'reasoningSteps'],
+        },
+      },
+    });
+    console.log(chalk.grey("\nAI's detailed explanation: " + JSON.stringify(JSON.parse(detailedExplanation!), null, 2)));
   }
   console.log('Demo finished');
   rl.close();

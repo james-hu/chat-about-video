@@ -1,4 +1,12 @@
-import type { GenerateContentRequest, GenerateContentResult, GenerativeModel, ModelParams, Part, RequestOptions } from '@google/generative-ai';
+import type {
+  GenerateContentRequest,
+  GenerateContentResult,
+  GenerativeModel,
+  ModelParams,
+  Part,
+  RequestOptions,
+  ResponseSchema,
+} from '@google/generative-ai';
 
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { withConcurrency } from '@handy-common-utils/promise-utils';
@@ -62,6 +70,19 @@ export class GeminiApi implements ChatApi<GeminiClient, GeminiCompletionOptions,
       ...this.options.completionOptions,
       ...options,
     };
+    let generationConfig = effectiveOptions.generationConfig;
+
+    let responseMimeType: string | undefined = undefined;
+    let responseSchema: ResponseSchema | undefined = undefined;
+    if (effectiveOptions.jsonResponse === true) {
+      responseMimeType = 'application/json';
+    } else if ((effectiveOptions.jsonResponse as any)?.schema) {
+      responseMimeType = 'application/json';
+      responseSchema = (effectiveOptions.jsonResponse as { schema: ResponseSchema }).schema;
+    }
+    if (responseMimeType) {
+      generationConfig = { ...generationConfig, responseMimeType, responseSchema };
+    }
 
     const safetySettings = effectiveOptions.safetySettings;
     // Only need to prevent overwriting when both arrays exist
@@ -81,7 +102,7 @@ export class GeminiApi implements ChatApi<GeminiClient, GeminiCompletionOptions,
       systemInstruction: effectiveOptions.systemInstruction,
       cachedContent: effectiveOptions.cachedContent,
       safetySettings,
-      generationConfig: effectiveOptions.generationConfig,
+      generationConfig,
     };
 
     return this.client.generateContent(request);
