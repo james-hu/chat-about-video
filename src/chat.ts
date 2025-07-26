@@ -15,6 +15,7 @@ import {
   OptionsOfChatApi,
   PromptOfChatApi,
   ResponseOfChatApi,
+  UsageMetadata,
   VideoInput,
 } from './types';
 
@@ -185,7 +186,28 @@ export class ChatAboutVideo<CLIENT = any, OPTIONS extends AdditionalCompletionOp
   }
 }
 
+/**
+ * Add up usage.
+ * @param totalUsage Existing usage that will be updated.
+ * @param incrementalUsage New usage to add. If it is undefined, then there will be no change to totalUsage.
+ * @returns nothing, the totalUsage is updated in place.
+ */
+export function accumulateUsage(totalUsage: UsageMetadata, incrementalUsage: UsageMetadata | undefined) {
+  if (!incrementalUsage) {
+    return totalUsage;
+  }
+  totalUsage.totalTokens += incrementalUsage.totalTokens;
+  if (incrementalUsage.promptTokens != null) {
+    totalUsage.promptTokens = (totalUsage.promptTokens ?? 0) + incrementalUsage.promptTokens;
+  }
+  if (incrementalUsage.completionTokens != null) {
+    totalUsage.completionTokens = (totalUsage.completionTokens ?? 0) + incrementalUsage.completionTokens;
+  }
+}
+
 export class Conversation<CLIENT = any, OPTIONS extends AdditionalCompletionOptions = any, PROMPT = any, RESPONSE = any> {
+  protected usage: UsageMetadata | undefined;
+
   constructor(
     protected conversationId: string,
     protected api: ChatApi<CLIENT, OPTIONS, PROMPT, RESPONSE>,
@@ -203,6 +225,18 @@ export class Conversation<CLIENT = any, OPTIONS extends AdditionalCompletionOpti
    */
   getApi(): ChatApi<CLIENT, OPTIONS, PROMPT, RESPONSE> {
     return this.api;
+  }
+
+  /**
+   * Get usage statistics of the conversation.
+   * Please note that the usage statistics would be undefined before the first `say` call.
+   * It could also be undefined if the underlying API does not support usage statistics.
+   * The usage statistics may not cover those failed requests due to content filtering or other reasons.
+   * Therefore, it could be less than the billable usage.
+   * @returns The usage statistics of the conversation. Or undefined if not available.
+   */
+  getUsage(): UsageMetadata | undefined {
+    return this.usage;
   }
 
   /**
@@ -244,17 +278,32 @@ export class Conversation<CLIENT = any, OPTIONS extends AdditionalCompletionOpti
       effectiveOptions.backoffOnDownloadError ?? [],
       (error) => this.api.isDownloadError(error),
     );
+    const incrementalUsage = await this.api.getUsageMetadata(response);
+    if (incrementalUsage) {
+      if (this.usage) {
+        accumulateUsage(this.usage, incrementalUsage);
+      } else {
+        this.usage = { ...incrementalUsage };
+      }
+    }
+
     const responseText = await this.api.getResponseText(response);
     this.prompt = await this.api.appendToPrompt(response, updatedPrompt);
 
-    this.log && this.log.debug(`Conversation ${this.conversationId} progressed`, { conversation: this.prompt, effectiveOptions });
+    this.log &&
+      this.log.debug(`Conversation ${this.conversationId} progressed`, {
+        conversation: this.prompt,
+        effectiveOptions,
+        totalUsage: this.usage,
+        incrementalUsage,
+      });
     return responseText;
   }
 
   async end(): Promise<void> {
     if (this.cleanup) {
       await this.cleanup();
-      this.log && this.log.debug(`Conversation ${this.conversationId} cleaned up`);
+      this.log && this.log.debug(`Conversation ${this.conversationId} cleaned up`, { totalUsage: this.usage });
     }
   }
 }

@@ -6,7 +6,15 @@ import fs from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 
-import type { AdditionalCompletionOptions, BuildPromptOutput, ChatApi, ChatApiOptions, ExtractVideoFramesOptions, ImageInput } from '../types';
+import type {
+  AdditionalCompletionOptions,
+  BuildPromptOutput,
+  ChatApi,
+  ChatApiOptions,
+  ExtractVideoFramesOptions,
+  ImageInput,
+  UsageMetadata,
+} from '../types';
 
 import { buildImagesPromptFromVideo, generateTempConversationId } from '../chat';
 import { effectiveExtractVideoFramesOptions } from '../utils';
@@ -81,6 +89,18 @@ export class GeminiApi implements ChatApi<GeminiClient, GeminiCompletionOptions,
 
   async getResponseText(result: GeminiResponse): Promise<string | undefined> {
     return result.response.text().replace(/\n$/, '').trim();
+  }
+
+  async getUsageMetadata(result: GeminiResponse): Promise<UsageMetadata | undefined> {
+    const usage = result.response.usageMetadata;
+    if (usage) {
+      return {
+        totalTokens: usage.totalTokenCount,
+        promptTokens: usage.promptTokenCount,
+        completionTokens: usage.candidatesTokenCount,
+      };
+    }
+    return undefined;
   }
 
   isThrottlingError(error: any): boolean {

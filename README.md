@@ -6,17 +6,19 @@ Chat about zero or one or more video clip(s) using the powerful OpenAI ChatGPT (
 [![Downloads/week](https://img.shields.io/npm/dw/chat-about-video.svg)](https://npmjs.org/package/chat-about-video)
 [![License](https://img.shields.io/npm/l/chat-about-video.svg)](https://github.com/james-hu/chat-about-video/blob/master/package.json)
 
-`chat-about-video` is an open-source NPM package designed to accelerate the development of conversation applications about video content. Harnessing the capabilities of ChatGPT from Microsoft Azure or OpenAI, as well as Gemini from Google, this package opens up a range of usage scenarios with minimal effort.
+`chat-about-video` is an open-source NPM package designed to accelerate the development of conversation applications about video content (or without video). Harnessing the capabilities of ChatGPT from Microsoft Azure or OpenAI, as well as Gemini from Google, this package opens up a range of usage scenarios with minimal effort.
 
 Key features:
 
+- API that allows you to switch between ChatGPT and Gemini without changing a single line of code.
 - ChatGPT models hosted in both Azure and OpenAI are supported.
 - Gemini models hosted in Google Cloud are supported.
-- Frame images are extracted from the input video(s) and uploaded for ChatGPT/Gemini to consume.
+- Frame images are extracted from the input video(s) and uploaded for ChatGPT/Gemini to consume. Or you can supply frame images by yourself.
 - Supports multiple video files and multiple groups of extracted frame images in a single conversation.
 - Automatically retries on receiving throttling (HTTP status code 429) and error (HTTP status code 5xx) responses from the API, as well as on connectivity errors.
 - Options supported by the underlying API are exposed for customization.
 - Can also be used in scenarios where no video is involved, making it suitable for "normal" text chats.
+- Usage statistics (token counts) collected.
 
 ## Usage
 

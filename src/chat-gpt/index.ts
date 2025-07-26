@@ -9,6 +9,7 @@ import type {
   ExtractVideoFramesOptions,
   ImageInput,
   StorageOptions,
+  UsageMetadata,
 } from '../types';
 
 import { buildImagesPromptFromVideo, generateTempConversationId } from '../chat';
@@ -68,6 +69,17 @@ export class ChatGptApi implements ChatApi<ChatGptClient, ChatGptCompletionOptio
     return result?.choices?.[0]?.message?.content ?? undefined;
   }
 
+  async getUsageMetadata(result: ChatGptResponse): Promise<UsageMetadata | undefined> {
+    if (result.usage) {
+      return {
+        totalTokens: result.usage.total_tokens,
+        promptTokens: result.usage.prompt_tokens,
+        completionTokens: result.usage.completion_tokens,
+      };
+    }
+    return undefined;
+  }
+
   // Example error object:
   // {
   //   "name": "Error",
@@ -86,6 +98,58 @@ export class ChatGptApi implements ChatApi<ChatGptClient, ChatGptCompletionOptio
   //     "param": null,
   //     "type": null,
   //   }
+  // }
+  //
+  // Another example error object:
+  //   {
+  //   "status": 400,
+  //   "headers": {
+  //     "api-supported-versions": "1",
+  //     "apim-request-id": "aa24a9c4-d46b-47d6-b9bc-6f3ad0e2cc29",
+  //     "content-length": "612",
+  //     "content-type": "application/json; charset=utf-8",
+  //     "date": "Sat, 26 Jul 2025 06:15:34 GMT",
+  //     "request-id": "aa24a9c4-d46b-47d6-b9bc-6f3ad0e2cc29",
+  //     "strict-transport-security": "max-age=31536000; includeSubDomains; preload",
+  //     "x-content-type-options": "nosniff",
+  //     "x-envoy-upstream-service-time": "1084",
+  //     "x-ms-deployment-name": "gpt-4o",
+  //     "x-ms-region": "East US 2",
+  //     "x-ratelimit-limit-requests": "4500",
+  //     "x-ratelimit-limit-tokens": "450000",
+  //     "x-ratelimit-remaining-requests": "4499",
+  //     "x-ratelimit-remaining-tokens": "438897"
+  //   },
+  //   "error": {
+  //     "inner_error": {
+  //       "code": "ResponsibleAIPolicyViolation",
+  //       "content_filter_results": {
+  //         "sexual": {
+  //           "filtered": true,
+  //           "severity": "high"
+  //         },
+  //         "violence": {
+  //           "filtered": false,
+  //           "severity": "safe"
+  //         },
+  //         "hate": {
+  //           "filtered": false,
+  //           "severity": "safe"
+  //         },
+  //         "self_harm": {
+  //           "filtered": false,
+  //           "severity": "safe"
+  //         }
+  //       }
+  //     },
+  //     "code": "content_filter",
+  //     "message": "The response was filtered due to the prompt triggering Azure OpenAI's content management policy. Please modify your prompt and retry. To learn more about our content filtering policies please read our documentation: \r\nhttps://go.microsoft.com/fwlink/?linkid=2198766.",
+  //     "param": "prompt",
+  //     "type": null
+  //   },
+  //   "code": "content_filter",
+  //   "param": "prompt",
+  //   "type": null
   // }
 
   isThrottlingError(error: any): boolean {

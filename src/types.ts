@@ -86,6 +86,12 @@ export type OptionsOfChatApi<T> = T extends ChatApi<any, infer OPTIONS, any, any
 export type PromptOfChatApi<T> = T extends ChatApi<any, any, infer PROMPT, any> ? PROMPT : never;
 export type ResponseOfChatApi<T> = T extends ChatApi<any, any, any, infer RESPONSE> ? RESPONSE : never;
 
+export interface UsageMetadata {
+  totalTokens: number;
+  promptTokens?: number;
+  completionTokens?: number;
+}
+
 export interface ChatApi<CLIENT, OPTIONS extends AdditionalCompletionOptions, PROMPT, RESPONSE> {
   /**
    * Get the raw client.
@@ -116,6 +122,14 @@ export interface ChatApi<CLIENT, OPTIONS extends AdditionalCompletionOptions, PR
    * @param response the response object
    */
   getResponseText(response: RESPONSE): Promise<string | undefined>;
+
+  /**
+   * Extract usage metadata from the response object.
+   * @param response the response object
+   * @returns Usage metadata from the response, if available.
+   * If the response does not contain usage metadata, it returns undefined.
+   */
+  getUsageMetadata(response: RESPONSE): Promise<UsageMetadata | undefined>;
 
   /**
    * Check if the error is a throttling error.
