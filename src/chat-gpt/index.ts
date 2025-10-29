@@ -185,10 +185,11 @@ export class ChatGptApi implements ChatApi<ChatGptClient, ChatGptCompletionOptio
   }
 
   isDownloadError(error: any): boolean {
-    const type = String(error?.type ?? error?.error?.type);
-    const code = String(error?.code ?? error?.error?.code);
+    // const type = String(error?.type ?? error?.error?.type);
+    // const code = String(error?.code ?? error?.error?.code);
     const message = String(error?.message ?? error?.error?.message);
-    return (type === 'invalid_request_error' && code === 'invalid_image_url') || message.startsWith('Timeout while downloading ');
+    // (type === 'invalid_request_error' && code === 'invalid_image_url') ||
+    return message.startsWith('400 Timeout while downloading') || message.startsWith('Timeout while downloading');
   }
 
   async appendToPrompt(newPromptOrResponse: ChatGptPrompt | ChatGptResponse, prompt?: ChatGptPrompt): Promise<ChatGptPrompt> {
