@@ -30,7 +30,7 @@ async function demo() {
       },
       clientSettings: {
         // deployment is required by Azure
-        deployment: process.env.AZURE_OPENAI_DEPLOYMENT_NAME || 'gpt4vision',
+        deployment: process.env.AZURE_OPENAI_DEPLOYMENT_NAME || 'gpt-4.1-mini',
         // apiVersion is required by Azure
         apiVersion: '2024-10-21',
       },

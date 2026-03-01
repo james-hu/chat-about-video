@@ -1,7 +1,8 @@
-import type { ResponseFormatJSONSchema } from 'openai/resources/shared';
+import type { ChatCompletionMessageFunctionToolCall, ResponseFormatJSONSchema } from 'openai/resources';
 
 import os from 'node:os';
-import { AzureClientOptions, AzureOpenAI, OpenAI } from 'openai';
+import { AzureOpenAI, OpenAI } from 'openai';
+import { AzureClientOptions } from 'openai/azure';
 
 import type {
   AdditionalCompletionOptions,
@@ -103,7 +104,14 @@ export class ChatGptApi implements ChatApi<ChatGptClient, ChatGptCompletionOptio
   async getToolCalls(result: ChatGptResponse): Promise<ToolCall[] | undefined> {
     const toolCalls = result?.choices?.[0]?.message?.tool_calls;
     if (toolCalls && toolCalls.length > 0) {
-      return toolCalls.map((tc) => ({
+      // We currently only handle the "function" type
+      const functionToolCalls = toolCalls.filter((tc) => tc.type === 'function') as ChatCompletionMessageFunctionToolCall[];
+      if (functionToolCalls.length !== toolCalls.length) {
+        throw new Error(
+          `Only function tool calls are supported, but ${toolCalls.length - functionToolCalls.length} non-function tool calls were received`,
+        );
+      }
+      return functionToolCalls.map((tc) => ({
         id: tc.id,
         name: tc.function.name,
         arguments: JSON.parse(tc.function.arguments),

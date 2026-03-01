@@ -6,20 +6,24 @@ Chat about zero or one or more video clip(s) using the powerful OpenAI ChatGPT (
 [![Downloads/week](https://img.shields.io/npm/dw/chat-about-video.svg)](https://npmjs.org/package/chat-about-video)
 [![License](https://img.shields.io/npm/l/chat-about-video.svg)](https://github.com/james-hu/chat-about-video/blob/master/package.json)
 
-`chat-about-video` is an open-source NPM package designed to accelerate the development of conversation applications about video content (or without video). Harnessing the capabilities of ChatGPT from Microsoft Azure or OpenAI, as well as Gemini from Google, this package opens up a range of usage scenarios with minimal effort.
+`chat-about-video` is a powerful **Unified Abstraction Layer** designed to accelerate the development of conversational AI applications. It provides a standardized interface for interacting with **OpenAI ChatGPT** (OpenAI or Azure) and **Google Gemini**, allowing you to switch between providers with zero or minimal changes to your application logic.
 
-Key features:
+### Why use chat-about-video?
 
-- API that allows you to switch between ChatGPT and Gemini without changing a single line of code.
-- ChatGPT models hosted in both Azure and OpenAI are supported.
-- Gemini models hosted in Google Cloud are supported.
-- Frame images are extracted from the input video(s) and uploaded for ChatGPT/Gemini to consume. Or you can supply frame images by yourself.
-- Supports multiple video files and multiple groups of extracted frame images in a single conversation.
-- Automatically retries on receiving throttling (HTTP status code 429) and error (HTTP status code 5xx) responses from the API, as well as on connectivity errors.
-- Options supported by the underlying API are exposed for customization.
-- JSON response can be mandated with or without a JSON schema specified.
-- Can also be used in scenarios where no video is involved, making it suitable for "normal" text chats.
-- Usage statistics (token counts) collected.
+- **Provider Agnostic**: Write your code once and swap between ChatGPT and Gemini via configuration. This future-proofs your application against model changes or pricing shifts.
+- **Unified Video Handling**: Seamlessly handles the complexities of frame extraction and cloud storage uploading (for ChatGPT) or direct ingestion (for Gemini) through a single API.
+- **Simplified Tool Calling**: A standardized way to define and handle tool/function calls across different model providers.
+- **Production Ready**: Built-in retries for throttling, server errors, and connectivity issues.
+
+## Key features
+
+- **Switch providers effortlessly**: Change from ChatGPT to Gemini (or vice-versa) without rewritten your conversation logic.
+- **Multi-Cloud Support**: Supports models hosted in Azure OpenAI, OpenAI, and Google Cloud.
+- **Flexible Media Input**: Extract frames automatically via FFmpeg or supply your own images.
+- **Rich Conversations**: Supports multiple videos and image groups in a single chat.
+- **Mandated Output**: Force JSON responses with or without schemas.
+- **Resilient**: Automatic backoff and retries for 429, 5xx, and network errors.
+- **Usage Tracking**: Built-in token usage metadata collection.
 
 ## Usage
 

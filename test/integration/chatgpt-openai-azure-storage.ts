@@ -29,7 +29,7 @@ async function demo() {
       },
       completionOptions: {
         // model is required by OpenAI
-        model: process.env.OPENAI_MODEL_NAME || 'gpt-4o',
+        model: process.env.OPENAI_MODEL_NAME || 'gpt-4.1-mini',
       },
       extractVideoFrames: {
         limit: 100,

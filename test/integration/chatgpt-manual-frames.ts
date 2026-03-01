@@ -42,7 +42,7 @@ async function demo() {
         storagePathPrefix: 'video-frames/',
       },
       completionOptions: {
-        model: process.env.OPENAI_MODEL_NAME || 'gpt-4o',
+        model: process.env.OPENAI_MODEL_NAME || 'gpt-4.1-mini',
       },
     },
     consoleWithColour({ debug: process.env.ENABLE_DEBUG === 'true' }, chalk),
