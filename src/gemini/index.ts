@@ -21,6 +21,8 @@ import type {
   ChatApiOptions,
   ExtractVideoFramesOptions,
   ImageInput,
+  ToolCall,
+  ToolCallResult,
   UsageMetadata,
 } from '../types';
 
@@ -124,6 +126,20 @@ export class GeminiApi implements ChatApi<GeminiClient, GeminiCompletionOptions,
     return undefined;
   }
 
+  async getToolCalls(result: GeminiResponse): Promise<ToolCall[] | undefined> {
+    const functionCalls = result.response.functionCalls();
+    if (!functionCalls || functionCalls.length === 0) {
+      return undefined;
+    }
+    return functionCalls.map(
+      (functionCall) =>
+        ({
+          name: functionCall.name,
+          arguments: functionCall.args,
+        }) as ToolCall,
+    );
+  }
+
   isThrottlingError(error: any): boolean {
     return error?.status === 429;
   }
@@ -145,15 +161,10 @@ export class GeminiApi implements ChatApi<GeminiClient, GeminiCompletionOptions,
   async appendToPrompt(newPromptOrResponse: GeminiPrompt | GeminiResponse, prompt?: GeminiPrompt): Promise<GeminiPrompt> {
     prompt = prompt ?? [];
     if (isGeminiResponse(newPromptOrResponse)) {
-      const responseText = (await this.getResponseText(newPromptOrResponse)) ?? '';
-      prompt.push({
-        role: 'model',
-        parts: [
-          {
-            text: responseText,
-          },
-        ],
-      });
+      const content = newPromptOrResponse.response.candidates?.[0]?.content;
+      if (content) {
+        prompt.push(content);
+      }
     } else {
       prompt.push(...newPromptOrResponse);
     }
@@ -180,6 +191,26 @@ export class GeminiApi implements ChatApi<GeminiClient, GeminiCompletionOptions,
     conversationId = generateTempConversationId(),
   ): Promise<BuildPromptOutput<GeminiPrompt, GeminiCompletionOptions>> {
     return buildImagesPromptFromVideo(this, this.extractVideoFrames!, this.tmpDir, videoFile, conversationId);
+  }
+
+  async buildToolCallResultsPrompt(
+    toolResults: ToolCallResult[],
+    _conversationId?: string,
+  ): Promise<BuildPromptOutput<GeminiPrompt, GeminiCompletionOptions>> {
+    const prompt: GeminiPrompt = [
+      {
+        role: 'user',
+        parts: toolResults.map((tr) => ({
+          functionResponse: {
+            name: tr.name,
+            response: tr.result,
+          },
+        })),
+      },
+    ];
+    return {
+      prompt,
+    };
   }
 
   async buildImagesPrompt(imageInputs: ImageInput[], _conversationId: string): Promise<BuildPromptOutput<GeminiPrompt, GeminiCompletionOptions>> {

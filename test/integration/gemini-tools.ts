@@ -1,21 +1,17 @@
-// This is a demo utilising Google Gemini through Google Generative Language API.
+// This is a demo utilising Google Gemini tool calling.
 // Google Gemini allows many frame images to be supplied because of its huge context length.
-// Video frame images are sent through Google Generative Language API directly.
 //
 // This script can be executed with a command line like this from the project root directory:
 // export GEMINI_API_KEY=...
-// ENABLE_DEBUG=true DEMO_VIDEO=~/Downloads/test1.mp4 npx ts-node test/demo4.ts
+// ENABLE_DEBUG=true DEMO_VIDEO=~/Downloads/test1.mp4 npx ts-node test/integration/gemini-tools.ts
 
+import { HarmBlockThreshold, HarmCategory } from '@google/generative-ai';
 import { consoleWithColour } from '@handy-common-utils/misc-utils';
 /* eslint-disable node/no-unpublished-import */
 import chalk from 'chalk';
 import readline from 'node:readline';
-// eslint-disable-next-line unicorn/prefer-module
-// const whyIsNodeRunning = require('why-is-node-running');
 
-import { HarmBlockThreshold, HarmCategory } from '@google/generative-ai';
-
-import { ChatAboutVideo, ConversationWithGemini } from '../src';
+import { ChatAboutVideo, ConversationWithGemini, ToolCallResult } from '../../src';
 
 async function demo() {
   const chat = new ChatAboutVideo(
@@ -25,7 +21,7 @@ async function demo() {
       },
       clientSettings: {
         modelParams: {
-          model: 'gemini-1.5-flash',
+          model: 'gemini-2.5-flash',
         },
       },
       extractVideoFrames: {
@@ -46,6 +42,21 @@ async function demo() {
 
   const conversation = (await chat.startConversation(process.env.DEMO_VIDEO!)) as ConversationWithGemini;
 
+  const tools: any[] = [
+    {
+      functionDeclarations: [
+        {
+          name: 'get_current_time',
+          description: 'Get the current local time',
+          parameters: {
+            type: 'OBJECT',
+            properties: {},
+          },
+        },
+      ],
+    },
+  ];
+
   const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
   const prompt = (question: string) => new Promise<string>((resolve) => rl.question(question, resolve));
   while (true) {
@@ -57,35 +68,28 @@ async function demo() {
       await conversation.end();
       break;
     }
-    const answer = await conversation.say(question, {
+
+    let response = await conversation.say(question, {
+      tools,
       safetySettings: [{ category: HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT, threshold: HarmBlockThreshold.BLOCK_NONE }],
     });
-    console.log(chalk.blue('\nAI:' + answer));
 
-    // Below are for showing how to mandate JSON response from Gemini.
-    const explanation = await conversation.say(
-      'Explain your answer. The response should be in JSON like this: {"referencedFrames": [1, 5], "why": "Reason for giving this response."}',
-      { jsonResponse: true },
-    );
-    console.log(chalk.grey("\nAI's Explanation: " + JSON.stringify(JSON.parse(explanation!), null, 2)));
-    const detailedExplanation = await conversation.say('Explain your answer in detail. The response should be in JSON.', {
-      jsonResponse: {
-        name: 'DetailedExplanation',
-        schema: {
-          type: 'object',
-          properties: {
-            referencedFrames: {
-              type: 'array',
-              items: { type: 'integer' },
-            },
-            understandingOfTheQuestion: { type: 'string' },
-            reasoningSteps: { type: 'array', items: { type: 'string' } },
-          },
-          required: ['referencedFrames', 'understandingOfTheQuestion', 'reasoningSteps'],
-        },
-      },
-    });
-    console.log(chalk.grey("\nAI's detailed explanation: " + JSON.stringify(JSON.parse(detailedExplanation!), null, 2)));
+    while (typeof response !== 'string' && response?.toolCalls) {
+      const toolResults: ToolCallResult[] = [];
+      for (const call of response.toolCalls) {
+        console.log(chalk.yellow(`AI requests tool: ${call.name}(${JSON.stringify(call.arguments)})`));
+
+        const result = call.name === 'get_current_time' ? { currentTime: new Date().toLocaleString() } : { error: 'Unknown tool' };
+
+        toolResults.push({
+          name: call.name,
+          result,
+        });
+      }
+      response = await conversation.submitToolCallResults(toolResults);
+    }
+
+    console.log(chalk.blue('\nAI: ' + response));
   }
   console.log('Demo finished');
   rl.close();

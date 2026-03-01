@@ -11,6 +11,8 @@ import type {
   ExtractVideoFramesOptions,
   ImageInput,
   StorageOptions,
+  ToolCall,
+  ToolCallResult,
   UsageMetadata,
 } from '../types';
 
@@ -83,7 +85,8 @@ export class ChatGptApi implements ChatApi<ChatGptClient, ChatGptCompletionOptio
   }
 
   async getResponseText(result: ChatGptResponse): Promise<string | undefined> {
-    return result?.choices?.[0]?.message?.content ?? undefined;
+    const text = result?.choices?.[0]?.message?.content;
+    return text === null ? undefined : text;
   }
 
   async getUsageMetadata(result: ChatGptResponse): Promise<UsageMetadata | undefined> {
@@ -93,6 +96,18 @@ export class ChatGptApi implements ChatApi<ChatGptClient, ChatGptCompletionOptio
         promptTokens: result.usage.prompt_tokens,
         completionTokens: result.usage.completion_tokens,
       };
+    }
+    return undefined;
+  }
+
+  async getToolCalls(result: ChatGptResponse): Promise<ToolCall[] | undefined> {
+    const toolCalls = result?.choices?.[0]?.message?.tool_calls;
+    if (toolCalls && toolCalls.length > 0) {
+      return toolCalls.map((tc) => ({
+        id: tc.id,
+        name: tc.function.name,
+        arguments: JSON.parse(tc.function.arguments),
+      }));
     }
     return undefined;
   }
@@ -204,11 +219,12 @@ export class ChatGptApi implements ChatApi<ChatGptClient, ChatGptCompletionOptio
           ]
         : []);
     if (isChatGptResponse(newPromptOrResponse)) {
-      const responseText = (await this.getResponseText(newPromptOrResponse)) ?? '';
+      const message = newPromptOrResponse.choices[0].message;
       prompt.push({
         role: 'assistant',
-        content: responseText,
-      });
+        content: message.content,
+        tool_calls: message.tool_calls,
+      } as OpenAI.ChatCompletionAssistantMessageParam);
     } else {
       prompt.push(...newPromptOrResponse);
     }
@@ -231,6 +247,20 @@ export class ChatGptApi implements ChatApi<ChatGptClient, ChatGptCompletionOptio
     conversationId = generateTempConversationId(),
   ): Promise<BuildPromptOutput<ChatGptPrompt, ChatGptCompletionOptions>> {
     return buildImagesPromptFromVideo(this, this.extractVideoFrames!, this.tmpDir, videoFile, conversationId);
+  }
+
+  async buildToolCallResultsPrompt(
+    toolResults: ToolCallResult[],
+    _conversationId?: string,
+  ): Promise<BuildPromptOutput<ChatGptPrompt, ChatGptCompletionOptions>> {
+    const messages: ChatGptPrompt = toolResults.map((tr) => ({
+      role: 'tool',
+      tool_call_id: tr.toolCallId!,
+      content: typeof tr.result === 'string' ? tr.result : JSON.stringify(tr.result),
+    }));
+    return {
+      prompt: messages,
+    };
   }
 
   async buildImagesPrompt(

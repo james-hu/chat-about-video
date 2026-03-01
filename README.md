@@ -161,6 +161,67 @@ const detailedExplanation = await conversation.say('Explain your answer in detai
 console.log(chalk.grey("\nAI's detailed explanation: " + JSON.stringify(JSON.parse(detailedExplanation!), null, 2)));
 ```
 
+## Tool Calling (Function Calling)
+
+`chat-about-video` supports tool calling for both ChatGPT and Gemini. This allows the AI to request information by calling functions you've defined.
+
+### 1. Define Tools
+
+Pass your tool definitions in the completion options. The structure follows the underlying API (OpenAI or Gemini):
+
+```typescript
+const tools = [
+  {
+    type: 'function',
+    function: {
+      name: 'get_weather',
+      description: 'Get the current weather',
+      parameters: {
+        type: 'object',
+        properties: {
+          location: { type: 'string' },
+        },
+        required: ['location'],
+      },
+    },
+  },
+];
+
+const answer = await conversation.say("What's the weather like in Melbourne?", { tools });
+```
+
+### 2. Handle Tool Calls
+
+The `say` and `submitToolCallResults` methods will return an object containing `toolCalls` if the AI wants to call tools. You are responsible for executing the tools and submitting the results back.
+
+```typescript
+import { ConversationResponse, ToolCallResult } from 'chat-about-video';
+
+let response = await conversation.say('What is the weather in Melbourne?', { tools });
+
+// Loop to handle potential multiple rounds of tool calling
+while (typeof response !== 'string' && response?.toolCalls) {
+  const toolResults: ToolCallResult[] = [];
+  for (const call of response.toolCalls) {
+    console.log(`AI requests tool: ${call.name}(${JSON.stringify(call.arguments)})`);
+
+    // Execute your tool logic
+    const result = await myWeatherFunction(call.arguments.location);
+
+    toolResults.push({
+      name: call.name,
+      result: { temperature: result.temp, unit: 'C' },
+      toolCallId: call.id, // Required for OpenAI
+    });
+  }
+  // Submit results back to the AI
+  response = await conversation.submitToolCallResults(toolResults);
+}
+
+// Final text response
+console.log('AI Answer:', response);
+```
+
 ## Customisation
 
 ### Frame extraction
@@ -199,9 +260,21 @@ or the last parameter of `say(...)` function on `Conversation`.
 
 ## Code examples
 
+The following integration test files demonstrate various features and providers:
+
+| File                                                                                                        | AI Provider      | Features                             |
+| :---------------------------------------------------------------------------------------------------------- | :--------------- | :----------------------------------- |
+| [chatgpt-openai-azure-storage.ts](test/integration/chatgpt-openai-azure-storage.ts)                         | ChatGPT (OpenAI) | Basic usage with Azure Storage       |
+| [chatgpt-openai-azure-storage-multi-video.ts](test/integration/chatgpt-openai-azure-storage-multi-video.ts) | ChatGPT (OpenAI) | Multiple videos in one conversation  |
+| [chatgpt-azure-azure-storage-json.ts](test/integration/chatgpt-azure-azure-storage-json.ts)                 | ChatGPT (Azure)  | JSON response mode                   |
+| [gemini-json.ts](test/integration/gemini-json.ts)                                                           | Google Gemini    | JSON response mode                   |
+| [chatgpt-manual-frames.ts](test/integration/chatgpt-manual-frames.ts)                                       | ChatGPT          | Manual frame extraction using FFmpeg |
+| [chatgpt-azure-azure-storage-tools.ts](test/integration/chatgpt-azure-azure-storage-tools.ts)               | ChatGPT (Azure)  | Tool/Function calling                |
+| [gemini-tools.ts](test/integration/gemini-tools.ts)                                                         | Google Gemini    | Tool/Function calling                |
+
 ### Example 1: Using ChatGPT hosted in OpenAI with Azure Blob Storage
 
-Source: [test/demo1.ts](test/demo1.ts)
+Source: [test/integration/chatgpt-openai-azure-storage.ts](test/integration/chatgpt-openai-azure-storage.ts)
 
 ```typescript
 // This is a demo utilising ChatGPT hosted in OpenAI.
@@ -212,7 +285,7 @@ Source: [test/demo1.ts](test/demo1.ts)
 // export AZURE_STORAGE_CONNECTION_STRING=...
 // export OPENAI_MODEL_NAME=...
 // export AZURE_STORAGE_CONTAINER_NAME=...
-// ENABLE_DEBUG=true DEMO_VIDEO=~/Downloads/test1.mp4 npx ts-node test/demo1.ts
+// ENABLE_DEBUG=true DEMO_VIDEO=~/Downloads/test1.mp4 npx ts-node test/integration/chatgpt-openai-azure-storage.ts
 //
 
 import { consoleWithColour } from '@handy-common-utils/misc-utils';
@@ -269,7 +342,7 @@ demo().catch((error) => console.log(chalk.red(JSON.stringify(error, null, 2))));
 
 ### Example 2: Multiple videos using ChatGPT hosted in OpenAI with Azure Blob Storage
 
-Source: [test/demo2.ts](test/demo2.ts)
+Source: [test/integration/chatgpt-openai-azure-storage-multi-video.ts](test/integration/chatgpt-openai-azure-storage-multi-video.ts)
 
 ```typescript
 async function demo() {
@@ -289,7 +362,7 @@ async function demo() {
 
 ### Example 3: Using ChatGPT hosted in Azure with Azure Blob Storage
 
-Source: [test/demo3.ts](test/demo3.ts)
+Source: [test/integration/chatgpt-azure-azure-storage-json.ts](test/integration/chatgpt-azure-azure-storage-json.ts)
 
 ```typescript
 // This is a demo utilising ChatGPT hosted in Azure.
@@ -301,7 +374,7 @@ Source: [test/demo3.ts](test/demo3.ts)
 // export AZURE_OPENAI_DEPLOYMENT_NAME=...
 // export AZURE_STORAGE_CONNECTION_STRING=...
 // export AZURE_STORAGE_CONTAINER_NAME=...
-// ENABLE_DEBUG=true DEMO_VIDEO=~/Downloads/test1.mp4 npx ts-node test/demo3.ts
+// ENABLE_DEBUG=true DEMO_VIDEO=~/Downloads/test1.mp4 npx ts-node test/integration/chatgpt-azure-azure-storage-json.ts
 
 import { consoleWithColour } from '@handy-common-utils/misc-utils';
 import chalk from 'chalk';
@@ -356,7 +429,7 @@ demo().catch((error) => console.log(chalk.red(JSON.stringify(error, null, 2))));
 
 ### Example 4: Using Gemini hosted in Google Cloud
 
-Source: [test/demo4.ts](test/demo4.ts)
+Source: [test/integration/gemini-json.ts](test/integration/gemini-json.ts)
 
 ```typescript
 // This is a demo utilising Google Gemini through Google Generative Language API.
@@ -365,7 +438,7 @@ Source: [test/demo4.ts](test/demo4.ts)
 //
 // This script can be executed with a command line like this from the project root directory:
 // export GEMINI_API_KEY=...
-// ENABLE_DEBUG=true DEMO_VIDEO=~/Downloads/test1.mp4 npx ts-node test/demo4.ts
+// ENABLE_DEBUG=true DEMO_VIDEO=~/Downloads/test1.mp4 npx ts-node test/integration/gemini-json.ts
 
 import { consoleWithColour } from '@handy-common-utils/misc-utils';
 import chalk from 'chalk';
@@ -383,7 +456,7 @@ async function demo() {
       },
       clientSettings: {
         modelParams: {
-          model: 'gemini-1.5-flash',
+          model: 'gemini-2.5-flash',
         },
       },
       extractVideoFrames: {
@@ -429,7 +502,7 @@ demo().catch((error) => console.log(chalk.red(JSON.stringify(error, null, 2)), e
 
 ### Example 5: Multiple groups of extracted frame images using ChatGPT hosted in Azure with Azure Blob Storage
 
-Source: [test/demo5.ts](test/demo5.ts)
+Source: [test/integration/chatgpt-manual-frames.ts](test/integration/chatgpt-manual-frames.ts)
 
 ```typescript
 async function demo() {

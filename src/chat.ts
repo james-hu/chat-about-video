@@ -4,17 +4,18 @@ import path from 'node:path';
 
 import type { ChatGptApi, ChatGptOptions } from './chat-gpt';
 import type { GeminiApi, GeminiOptions } from './gemini';
-
-import {
+import type {
   AdditionalCompletionOptions,
   BuildPromptOutput,
   ChatApi,
   ClientOfChatApi,
+  ConversationResponse,
   EffectiveExtractVideoFramesOptions,
   ImagesInput,
   OptionsOfChatApi,
   PromptOfChatApi,
   ResponseOfChatApi,
+  ToolCallResult,
   UsageMetadata,
   VideoInput,
 } from './types';
@@ -252,12 +253,33 @@ export class Conversation<CLIENT = any, OPTIONS extends AdditionalCompletionOpti
    * Say something in the conversation, and get the response from AI
    * @param message The message to say in the conversation.
    * @param options Options for fine control.
-   * @returns The response/completion
+   * @returns The response/completion or tool calls.
    */
-  async say(message: string, options?: Partial<OPTIONS>): Promise<string | undefined> {
+  async say(message: string, options?: Partial<OPTIONS>): Promise<string | undefined | ConversationResponse> {
     const { prompt: newPromptPart } = await this.api.buildTextPrompt(message);
     const updatedPrompt = await this.api.appendToPrompt(newPromptPart, this.prompt);
-    const effectiveOptions = { ...this.options, ...options };
+    const effectiveOptions = { ...this.options, ...options } as OPTIONS;
+    return this.progressConversation(updatedPrompt, effectiveOptions);
+  }
+
+  /**
+   * Submit tool call results to the conversation, and get the response from AI.
+   * @param toolResults Array of tool call results.
+   * @param options Options for fine control.
+   * @returns The response/completion or tool calls.
+   */
+  async submitToolCallResults(toolResults: ToolCallResult[], options?: Partial<OPTIONS>): Promise<string | undefined | ConversationResponse> {
+    const { prompt: toolResultsPrompt, cleanup } = await this.api.buildToolCallResultsPrompt(toolResults, this.conversationId);
+    const updatedPrompt = await this.api.appendToPrompt(toolResultsPrompt, this.prompt);
+    const effectiveOptions = { ...this.options, ...options } as OPTIONS;
+    const response = await this.progressConversation(updatedPrompt, effectiveOptions);
+    if (cleanup) {
+      await cleanup();
+    }
+    return response;
+  }
+
+  protected async progressConversation(updatedPrompt: PROMPT, effectiveOptions: OPTIONS): Promise<string | undefined | ConversationResponse> {
     const response = await withRetry(
       () =>
         withRetry(
@@ -287,7 +309,6 @@ export class Conversation<CLIENT = any, OPTIONS extends AdditionalCompletionOpti
       }
     }
 
-    const responseText = await this.api.getResponseText(response);
     this.prompt = await this.api.appendToPrompt(response, updatedPrompt);
 
     this.log &&
@@ -297,7 +318,11 @@ export class Conversation<CLIENT = any, OPTIONS extends AdditionalCompletionOpti
         totalUsage: this.usage,
         incrementalUsage,
       });
-    return responseText;
+
+    const toolCalls = await this.api.getToolCalls(response);
+    const responseText = await this.api.getResponseText(response);
+
+    return toolCalls && toolCalls.length > 0 ? { toolCalls } : responseText;
   }
 
   async end(): Promise<void> {

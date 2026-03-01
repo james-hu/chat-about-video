@@ -1,46 +1,47 @@
-// This is a demo utilising ChatGPT hosted in Azure.
-// Video frame images are uploaded to Azure Blob Storage and then made available to GPT from there.
+// This is a demo utilising Google Gemini through Google Generative Language API.
+// Google Gemini allows many frame images to be supplied because of its huge context length.
+// Video frame images are sent through Google Generative Language API directly.
 //
 // This script can be executed with a command line like this from the project root directory:
-// export AZURE_OPENAI_API_ENDPOINT=..
-// export AZURE_OPENAI_API_KEY=...
-// export AZURE_OPENAI_DEPLOYMENT_NAME=...
-// export AZURE_STORAGE_CONNECTION_STRING=...
-// export AZURE_STORAGE_CONTAINER_NAME=...
-// ENABLE_DEBUG=true DEMO_VIDEO=~/Downloads/test1.mp4 npx ts-node test/demo3.ts
+// export GEMINI_API_KEY=...
+// ENABLE_DEBUG=true DEMO_VIDEO=~/Downloads/test1.mp4 npx ts-node test/integration/gemini-json.ts
 
+import { HarmBlockThreshold, HarmCategory } from '@google/generative-ai';
 import { consoleWithColour } from '@handy-common-utils/misc-utils';
 /* eslint-disable node/no-unpublished-import */
 import chalk from 'chalk';
 import readline from 'node:readline';
-// eslint-disable-next-line unicorn/prefer-module
-// const whyIsNodeRunning = require('why-is-node-running');
 
-import { ChatAboutVideo, ConversationWithChatGpt } from '../src';
+import { ChatAboutVideo, ConversationWithGemini } from '../../src';
 
 async function demo() {
   const chat = new ChatAboutVideo(
     {
-      endpoint: process.env.AZURE_OPENAI_API_ENDPOINT!,
       credential: {
-        key: process.env.AZURE_OPENAI_API_KEY!,
-      },
-      storage: {
-        azureStorageConnectionString: process.env.AZURE_STORAGE_CONNECTION_STRING!,
-        storageContainerName: process.env.AZURE_STORAGE_CONTAINER_NAME || 'vision-experiment-input',
-        storagePathPrefix: 'video-frames/',
+        key: process.env.GEMINI_API_KEY!,
       },
       clientSettings: {
-        // deployment is required by Azure
-        deployment: process.env.AZURE_OPENAI_DEPLOYMENT_NAME || 'gpt4vision',
-        // apiVersion is required by Azure
-        apiVersion: '2024-10-21',
+        modelParams: {
+          model: 'gemini-2.5-flash',
+        },
+      },
+      extractVideoFrames: {
+        limit: 100,
+        interval: 0.5,
+      },
+      completionOptions: {
+        safetySettings: [
+          {
+            category: 'HARM_CATEGORY_HATE_SPEECH' as any,
+            threshold: 'BLOCK_NONE' as any,
+          },
+        ],
       },
     },
     consoleWithColour({ debug: process.env.ENABLE_DEBUG === 'true' }, chalk),
   );
 
-  const conversation = (await chat.startConversation(process.env.DEMO_VIDEO!)) as ConversationWithChatGpt;
+  const conversation = (await chat.startConversation(process.env.DEMO_VIDEO!)) as ConversationWithGemini;
 
   const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
   const prompt = (question: string) => new Promise<string>((resolve) => rl.question(question, resolve));
@@ -53,15 +54,17 @@ async function demo() {
       await conversation.end();
       break;
     }
-    const answer = await conversation.say(question, { max_tokens: 2000 });
+    const answer = await conversation.say(question, {
+      safetySettings: [{ category: HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT, threshold: HarmBlockThreshold.BLOCK_NONE }],
+    });
     console.log(chalk.blue('\nAI:' + answer));
 
-    // Below are for showing how to mandate JSON response from ChatGPT.
+    // Below are for showing how to mandate JSON response from Gemini.
     const explanation = await conversation.say(
       'Explain your answer. The response should be in JSON like this: {"referencedFrames": [1, 5], "why": "Reason for giving this response."}',
       { jsonResponse: true },
     );
-    console.log(chalk.grey("\nAI's Explanation: " + JSON.stringify(JSON.parse(explanation!), null, 2)));
+    console.log(chalk.grey("\nAI's Explanation: " + JSON.stringify(JSON.parse(explanation as string), null, 2)));
     const detailedExplanation = await conversation.say('Explain your answer in detail. The response should be in JSON.', {
       jsonResponse: {
         name: 'DetailedExplanation',
@@ -79,11 +82,11 @@ async function demo() {
         },
       },
     });
-    console.log(chalk.grey("\nAI's detailed explanation: " + JSON.stringify(JSON.parse(detailedExplanation!), null, 2)));
+    console.log(chalk.grey("\nAI's detailed explanation: " + JSON.stringify(JSON.parse(detailedExplanation as string), null, 2)));
   }
   console.log('Demo finished');
   rl.close();
 }
 
 // eslint-disable-next-line unicorn/prefer-top-level-await
-demo().catch((error) => console.log(chalk.red(JSON.stringify(error, null, 2))));
+demo().catch((error) => console.log(chalk.red(JSON.stringify(error, null, 2)), error));

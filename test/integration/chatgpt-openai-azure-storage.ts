@@ -6,7 +6,7 @@
 // export AZURE_STORAGE_CONNECTION_STRING=...
 // export OPENAI_MODEL_NAME=...
 // export AZURE_STORAGE_CONTAINER_NAME=...
-// ENABLE_DEBUG=true DEMO_VIDEO=~/Downloads/test1.mp4 npx ts-node test/demo1.ts
+// ENABLE_DEBUG=true DEMO_VIDEO=~/Downloads/test1.mp4 npx ts-node test/integration/chatgpt-openai-azure-storage.ts
 //
 
 import { consoleWithColour } from '@handy-common-utils/misc-utils';
@@ -14,7 +14,7 @@ import { consoleWithColour } from '@handy-common-utils/misc-utils';
 import chalk from 'chalk';
 import readline from 'node:readline';
 
-import { ChatAboutVideo, ConversationWithChatGpt } from '../src';
+import { ChatAboutVideo, ConversationWithChatGpt } from '../../src';
 
 async function demo() {
   const chat = new ChatAboutVideo(
@@ -29,7 +29,7 @@ async function demo() {
       },
       completionOptions: {
         // model is required by OpenAI
-        model: process.env.OPENAI_MODEL_NAME || 'gpt-4o', // 'gpt-4-vision-preview', // or gpt-4o
+        model: process.env.OPENAI_MODEL_NAME || 'gpt-4o',
       },
       extractVideoFrames: {
         limit: 100,

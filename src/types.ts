@@ -4,6 +4,46 @@ import type { ResponseFormatJSONSchema } from 'openai/resources/shared';
 import { FileBatchUploader } from './storage/types';
 import { VideoFramesExtractor } from './video/types';
 
+export interface ToolCall {
+  /**
+   * Unique identifier for the tool call.
+   * OpenAI always provides this, Gemini does not.
+   */
+  id?: string;
+  /**
+   * The name of the function to be called.
+   */
+  name: string;
+  /**
+   * The arguments to the function call, already parsed into an object.
+   */
+  arguments: Record<string, any>;
+}
+
+export interface ConversationResponse {
+  /**
+   * Array of tool calls if tool calling is requested by AI.
+   */
+  toolCalls?: ToolCall[];
+}
+
+export interface ToolCallResult {
+  /**
+   * The name of the function being responded to.
+   * Required by Gemini.
+   */
+  name: string;
+  /**
+   * The result of the function call, as an object.
+   */
+  result: Record<string, any>;
+  /**
+   * Unique identifier for the tool call being responded to.
+   * Required by OpenAI.
+   */
+  toolCallId?: string;
+}
+
 export interface ImageInput {
   /**
    * The prompt text before the image.
@@ -139,6 +179,13 @@ export interface ChatApi<CLIENT, OPTIONS extends AdditionalCompletionOptions, PR
   getUsageMetadata(response: RESPONSE): Promise<UsageMetadata | undefined>;
 
   /**
+   * Extract tool calls from the response object.
+   * @param response the response object
+   * @returns Array of tool calls if tool calling is requested by AI, or undefined otherwise.
+   */
+  getToolCalls(response: RESPONSE): Promise<ToolCall[] | undefined>;
+
+  /**
    * Check if the error is a throttling error.
    * @param error any error object
    * @returns true if the error is a throttling error, false otherwise.
@@ -200,6 +247,14 @@ export interface ChatApi<CLIENT, OPTIONS extends AdditionalCompletionOptions, PR
   ): Promise<{
     prompt: PROMPT;
   }>;
+
+  /**
+   * Build prompt for tool results.
+   * @param toolResults Array of tool call results.
+   * @param conversationId Unique identifier of the conversation.
+   * @returns An object containing the prompt.
+   */
+  buildToolCallResultsPrompt(toolResults: ToolCallResult[], conversationId?: string): Promise<BuildPromptOutput<PROMPT, OPTIONS>>;
 }
 
 export interface ExtractVideoFramesOptions {

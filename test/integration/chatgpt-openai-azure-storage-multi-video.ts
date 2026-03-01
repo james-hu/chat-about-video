@@ -1,36 +1,24 @@
-// This is a demo that extracts frame images from two video files using ffmpeg and creates a conversation with those two groups of images.
+// This is a demo utilising GPT-4o or Vision preview hosted in OpenAI.
+// OpenAI API allows more than 10 (maximum allowed by Azure's OpenAI API) images to be supplied.
 // Video frame images are uploaded to Azure Blob Storage and then made available to GPT from there.
+//
+// This demo shows how multiple videos can be used in a single conversation.
 //
 // This script can be executed with a command line like this from the project root directory:
 // export OPENAI_API_KEY=...
 // export AZURE_STORAGE_CONNECTION_STRING=...
-// export AZURE_STORAGE_CONTAINER_NAME=...
 // export OPENAI_MODEL_NAME=...
-// ENABLE_DEBUG=true DEMO_VIDEO_1=~/Downloads/test1.mp4 DEMO_VIDEO_2=~/Downloads/test2.mp4 npx ts-node test/demo5.ts
+// export AZURE_STORAGE_CONTAINER_NAME=...
+// ENABLE_DEBUG=true DEMO_VIDEO_1=~/Downloads/test1.mp4 DEMO_VIDEO_2=~/Downloads/test2.mp4 npx ts-node test/integration/chatgpt-openai-azure-storage-multi-video.ts
 //
 
 import { consoleWithColour } from '@handy-common-utils/misc-utils';
 import chalk from 'chalk';
-import os from 'node:os';
-import path from 'node:path';
 import readline from 'node:readline';
 
-import { ChatAboutVideo, ConversationWithChatGpt } from '../src';
-import { extractVideoFramesWithFfmpeg } from '../src/video/ffmpeg';
+import { ChatAboutVideo, ConversationWithChatGpt } from '../../src';
 
 async function demo() {
-  const tmpDir = os.tmpdir();
-  const video1 = process.env.DEMO_VIDEO_1!;
-  const video2 = process.env.DEMO_VIDEO_2!;
-  const outputDir1 = path.join(tmpDir, 'video1-frames');
-  const outputDir2 = path.join(tmpDir, 'video2-frames');
-
-  console.log(chalk.green('Extracting frames from the first video...'));
-  const { relativePaths: frames1, cleanup: cleanupFrames1 } = await extractVideoFramesWithFfmpeg(video1, outputDir1, 1, 'jpg', 200);
-
-  console.log(chalk.green('Extracting frames from the second video...'));
-  const { relativePaths: frames2, cleanup: cleanupFrames2 } = await extractVideoFramesWithFfmpeg(video2, outputDir2, 3, 'jpg', 200);
-
   const chat = new ChatAboutVideo(
     {
       credential: {
@@ -44,19 +32,18 @@ async function demo() {
       completionOptions: {
         model: process.env.OPENAI_MODEL_NAME || 'gpt-4o',
       },
+      extractVideoFrames: {
+        limit: 100,
+        interval: 2,
+      },
     },
     consoleWithColour({ debug: process.env.ENABLE_DEBUG === 'true' }, chalk),
   );
 
   const conversation = (await chat.startConversation([
-    {
-      promptText: 'Frame images from sample 1:',
-      images: frames1.map((frame, i) => ({ imageFile: path.join(outputDir1, frame), promptText: `Frame CodeRed-${i + 1}` })),
-    },
-    {
-      promptText: 'Frame images from sample 2, also known as the "good example":',
-      images: frames2.map((frame) => ({ imageFile: path.join(outputDir2, frame) })),
-    },
+    { videoFile: process.env.DEMO_VIDEO_1!, promptText: 'This is the first video:' },
+    { videoFile: process.env.DEMO_VIDEO_2!, promptText: 'This is the second video:' },
+    { videoFile: process.env.DEMO_VIDEO_1!, promptText: 'This is the third video:' },
   ])) as ConversationWithChatGpt;
 
   const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
@@ -71,15 +58,10 @@ async function demo() {
       break;
     }
     const answer = await conversation.say(question, { max_tokens: 2000 });
-    console.log(chalk.blue('\nAI: ' + answer));
+    console.log(chalk.blue('\nAI:' + answer));
   }
   console.log('Demo finished');
-
   rl.close();
-
-  console.log(chalk.green('Cleaning up extracted frames...'));
-  await cleanupFrames1();
-  await cleanupFrames2();
 }
 
 // eslint-disable-next-line unicorn/prefer-top-level-await
