@@ -1,6 +1,7 @@
 # chat-about-video
 
 Chat about zero or one or more video clip(s) using the powerful OpenAI ChatGPT (hosted in OpenAI or Microsoft Azure) or Google Gemini (hosted in Google Could).
+It provides a standardized interface for interacting with OpenAI ChatGPT (OpenAI or Azure) and Google Gemini,
 
 [![Version](https://img.shields.io/npm/v/chat-about-video.svg)](https://npmjs.org/package/chat-about-video)
 [![Downloads/week](https://img.shields.io/npm/dw/chat-about-video.svg)](https://npmjs.org/package/chat-about-video)
