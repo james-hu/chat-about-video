@@ -807,9 +807,26 @@ The usage statistics of the conversation. Or undefined if not available.
 
 ---
 
+##### progressConversation
+
+▸ `Protected` **progressConversation**(`updatedPrompt`, `effectiveOptions`): `Promise`\<`undefined` \| `string` \| [`ConversationResponse`](#interfacestypesconversationresponsemd)\>
+
+###### Parameters
+
+| Name               | Type      |
+| :----------------- | :-------- |
+| `updatedPrompt`    | `PROMPT`  |
+| `effectiveOptions` | `OPTIONS` |
+
+###### Returns
+
+`Promise`\<`undefined` \| `string` \| [`ConversationResponse`](#interfacestypesconversationresponsemd)\>
+
+---
+
 ##### say
 
-▸ **say**(`message`, `options?`): `Promise`\<`undefined` \| `string`\>
+▸ **say**(`message`, `options?`): `Promise`\<`undefined` \| `string` \| [`ConversationResponse`](#interfacestypesconversationresponsemd)\>
 
 Say something in the conversation, and get the response from AI
 
@@ -822,9 +839,30 @@ Say something in the conversation, and get the response from AI
 
 ###### Returns
 
-`Promise`\<`undefined` \| `string`\>
+`Promise`\<`undefined` \| `string` \| [`ConversationResponse`](#interfacestypesconversationresponsemd)\>
 
-The response/completion
+The response/completion or tool calls.
+
+---
+
+##### submitToolCallResults
+
+▸ **submitToolCallResults**(`toolResults`, `options?`): `Promise`\<`undefined` \| `string` \| [`ConversationResponse`](#interfacestypesconversationresponsemd)\>
+
+Submit tool call results to the conversation, and get the response from AI.
+
+###### Parameters
+
+| Name          | Type                                                   | Description                 |
+| :------------ | :----------------------------------------------------- | :-------------------------- |
+| `toolResults` | [`ToolCallResult`](#interfacestypestoolcallresultmd)[] | Array of tool call results. |
+| `options?`    | `Partial`\<`OPTIONS`\>                                 | Options for fine control.   |
+
+###### Returns
+
+`Promise`\<`undefined` \| `string` \| [`ConversationResponse`](#interfacestypesconversationresponsemd)\>
+
+The response/completion or tool calls.
 
 <a name="classeschat_gptchatgptapimd"></a>
 
@@ -871,7 +909,7 @@ This function is useful to build a prompt that contains conversation history.
 
 | Name                  | Type                                               | Description                                                                                                                                                                                      |
 | :-------------------- | :------------------------------------------------- | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `newPromptOrResponse` | `ChatCompletion` \| `ChatCompletionMessageParam`[] | A new prompt to be appended, or previous response to be appended.                                                                                                                                |
+| `newPromptOrResponse` | `ChatCompletionMessageParam`[] \| `ChatCompletion` | A new prompt to be appended, or previous response to be appended.                                                                                                                                |
 | `prompt?`             | `ChatCompletionMessageParam`[]                     | The conversation history which is a prompt containing previous prompts and responses. If it is not provided, the conversation history returned will contain only what is in newPromptOrResponse. |
 
 ###### Returns
@@ -936,6 +974,31 @@ An object containing the prompt.
 ###### Implementation of
 
 [ChatApi](#interfacestypeschatapimd).[buildTextPrompt](#buildtextprompt)
+
+---
+
+##### buildToolCallResultsPrompt
+
+▸ **buildToolCallResultsPrompt**(`toolResults`, `_conversationId?`): `Promise`\<[`BuildPromptOutput`](#interfacestypesbuildpromptoutputmd)\<`ChatCompletionMessageParam`[], [`ChatGptCompletionOptions`](#chatgptcompletionoptions)\>\>
+
+Build prompt for tool results.
+
+###### Parameters
+
+| Name               | Type                                                   | Description                            |
+| :----------------- | :----------------------------------------------------- | :------------------------------------- |
+| `toolResults`      | [`ToolCallResult`](#interfacestypestoolcallresultmd)[] | Array of tool call results.            |
+| `_conversationId?` | `string`                                               | Unique identifier of the conversation. |
+
+###### Returns
+
+`Promise`\<[`BuildPromptOutput`](#interfacestypesbuildpromptoutputmd)\<`ChatCompletionMessageParam`[], [`ChatGptCompletionOptions`](#chatgptcompletionoptions)\>\>
+
+An object containing the prompt.
+
+###### Implementation of
+
+[ChatApi](#interfacestypeschatapimd).[buildToolCallResultsPrompt](#buildtoolcallresultsprompt)
 
 ---
 
@@ -1030,6 +1093,30 @@ Get the text from the response object
 ###### Implementation of
 
 [ChatApi](#interfacestypeschatapimd).[getResponseText](#getresponsetext)
+
+---
+
+##### getToolCalls
+
+▸ **getToolCalls**(`result`): `Promise`\<`undefined` \| [`ToolCall`](#interfacestypestoolcallmd)[]\>
+
+Extract tool calls from the response object.
+
+###### Parameters
+
+| Name     | Type             | Description         |
+| :------- | :--------------- | :------------------ |
+| `result` | `ChatCompletion` | the response object |
+
+###### Returns
+
+`Promise`\<`undefined` \| [`ToolCall`](#interfacestypestoolcallmd)[]\>
+
+Array of tool calls if tool calling is requested by AI, or undefined otherwise.
+
+###### Implementation of
+
+[ChatApi](#interfacestypeschatapimd).[getToolCalls](#gettoolcalls)
 
 ---
 
@@ -1264,6 +1351,31 @@ An object containing the prompt.
 
 ---
 
+##### buildToolCallResultsPrompt
+
+▸ **buildToolCallResultsPrompt**(`toolResults`, `_conversationId?`): `Promise`\<[`BuildPromptOutput`](#interfacestypesbuildpromptoutputmd)\<`Content`[], [`GeminiCompletionOptions`](#geminicompletionoptions)\>\>
+
+Build prompt for tool results.
+
+###### Parameters
+
+| Name               | Type                                                   | Description                            |
+| :----------------- | :----------------------------------------------------- | :------------------------------------- |
+| `toolResults`      | [`ToolCallResult`](#interfacestypestoolcallresultmd)[] | Array of tool call results.            |
+| `_conversationId?` | `string`                                               | Unique identifier of the conversation. |
+
+###### Returns
+
+`Promise`\<[`BuildPromptOutput`](#interfacestypesbuildpromptoutputmd)\<`Content`[], [`GeminiCompletionOptions`](#geminicompletionoptions)\>\>
+
+An object containing the prompt.
+
+###### Implementation of
+
+[ChatApi](#interfacestypeschatapimd).[buildToolCallResultsPrompt](#buildtoolcallresultsprompt)
+
+---
+
 ##### buildVideoPrompt
 
 ▸ **buildVideoPrompt**(`videoFile`, `conversationId?`): `Promise`\<[`BuildPromptOutput`](#interfacestypesbuildpromptoutputmd)\<`Content`[], [`GeminiCompletionOptions`](#geminicompletionoptions)\>\>
@@ -1355,6 +1467,30 @@ Get the text from the response object
 ###### Implementation of
 
 [ChatApi](#interfacestypeschatapimd).[getResponseText](#getresponsetext)
+
+---
+
+##### getToolCalls
+
+▸ **getToolCalls**(`result`): `Promise`\<`undefined` \| [`ToolCall`](#interfacestypestoolcallmd)[]\>
+
+Extract tool calls from the response object.
+
+###### Parameters
+
+| Name     | Type                    | Description         |
+| :------- | :---------------------- | :------------------ |
+| `result` | `GenerateContentResult` | the response object |
+
+###### Returns
+
+`Promise`\<`undefined` \| [`ToolCall`](#interfacestypestoolcallmd)[]\>
+
+Array of tool calls if tool calling is requested by AI, or undefined otherwise.
+
+###### Implementation of
+
+[ChatApi](#interfacestypeschatapimd).[getToolCalls](#gettoolcalls)
 
 ---
 
@@ -1487,15 +1623,15 @@ true if the error is a throttling error, false otherwise.
 
 #### Properties
 
-| Property                                                                                                                                    | Description                                                                                                                                                                                                                       |
-| ------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `Optional` **backoffOnConnectivityError**: `number`[]                                                                                       | Array of retry backoff periods (unit: milliseconds) for situations that the network connection couldn't be established or lost or request/response timeout.                                                                       |
-| `Optional` **backoffOnDownloadError**: `number`[]                                                                                           | Array of retry backoff periods (unit: milliseconds) for situations that the AI temporarily fails to download a file.<br>This kind of situation has a chance to happen when many image URLs are passed to OpenAI at the same time. |
-| `Optional` **backoffOnServerError**: `number`[]                                                                                             | Array of retry backoff periods (unit: milliseconds) for situations that the server returns 5xx response                                                                                                                           |
-| `Optional` **backoffOnThrottling**: `number`[]                                                                                              | Array of retry backoff periods (unit: milliseconds) for situations that the server returns 429 response                                                                                                                           |
-| `Optional` **jsonResponse**: `boolean` \| `JSONSchema` \| \{ `schema`: `ResponseSchema` } & `Partial`\<`Omit`\<`JSONSchema`, `"schema"`\>\> |                                                                                                                                                                                                                                   |
-| `Optional` **startPromptText**: `string`                                                                                                    | The user prompt that will be sent before the video content.<br>If not provided, nothing will be sent before the video content.                                                                                                    |
-| `Optional` **systemPromptText**: `string`                                                                                                   | System prompt text. If not provided, a default prompt will be used.                                                                                                                                                               |
+| Property                                                                                                                            | Description                                                                                                                                                                                                                       |
+| ----------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `Optional` **backoffOnConnectivityError**: `number`[]                                                                               | Array of retry backoff periods (unit: milliseconds) for situations that the network connection couldn't be established or lost or request/response timeout.                                                                       |
+| `Optional` **backoffOnDownloadError**: `number`[]                                                                                   | Array of retry backoff periods (unit: milliseconds) for situations that the AI temporarily fails to download a file.<br>This kind of situation has a chance to happen when many image URLs are passed to OpenAI at the same time. |
+| `Optional` **backoffOnServerError**: `number`[]                                                                                     | Array of retry backoff periods (unit: milliseconds) for situations that the server returns 5xx response                                                                                                                           |
+| `Optional` **backoffOnThrottling**: `number`[]                                                                                      | Array of retry backoff periods (unit: milliseconds) for situations that the server returns 429 response                                                                                                                           |
+| `Optional` **jsonResponse**: `boolean` \| `JSONSchema` \| \{ `schema`: `Schema` } & `Partial`\<`Omit`\<`JSONSchema`, `"schema"`\>\> |                                                                                                                                                                                                                                   |
+| `Optional` **startPromptText**: `string`                                                                                            | The user prompt that will be sent before the video content.<br>If not provided, nothing will be sent before the video content.                                                                                                    |
+| `Optional` **systemPromptText**: `string`                                                                                           | System prompt text. If not provided, a default prompt will be used.                                                                                                                                                               |
 
 <a name="interfacestypesbuildpromptoutputmd"></a>
 
@@ -1607,6 +1743,27 @@ An object containing the prompt.
 
 ---
 
+##### buildToolCallResultsPrompt
+
+▸ **buildToolCallResultsPrompt**(`toolResults`, `conversationId?`): `Promise`\<[`BuildPromptOutput`](#interfacestypesbuildpromptoutputmd)\<`PROMPT`, `OPTIONS`\>\>
+
+Build prompt for tool results.
+
+###### Parameters
+
+| Name              | Type                                                   | Description                            |
+| :---------------- | :----------------------------------------------------- | :------------------------------------- |
+| `toolResults`     | [`ToolCallResult`](#interfacestypestoolcallresultmd)[] | Array of tool call results.            |
+| `conversationId?` | `string`                                               | Unique identifier of the conversation. |
+
+###### Returns
+
+`Promise`\<[`BuildPromptOutput`](#interfacestypesbuildpromptoutputmd)\<`PROMPT`, `OPTIONS`\>\>
+
+An object containing the prompt.
+
+---
+
 ##### buildVideoPrompt
 
 ▸ **buildVideoPrompt**(`videoFile`, `conversationId?`): `Promise`\<[`BuildPromptOutput`](#interfacestypesbuildpromptoutputmd)\<`PROMPT`, `OPTIONS`\>\>
@@ -1682,6 +1839,26 @@ Get the text from the response object
 ###### Returns
 
 `Promise`\<`undefined` \| `string`\>
+
+---
+
+##### getToolCalls
+
+▸ **getToolCalls**(`response`): `Promise`\<`undefined` \| [`ToolCall`](#interfacestypestoolcallmd)[]\>
+
+Extract tool calls from the response object.
+
+###### Parameters
+
+| Name       | Type       | Description         |
+| :--------- | :--------- | :------------------ |
+| `response` | `RESPONSE` | the response object |
+
+###### Returns
+
+`Promise`\<`undefined` \| [`ToolCall`](#interfacestypestoolcallmd)[]\>
+
+Array of tool calls if tool calling is requested by AI, or undefined otherwise.
 
 ---
 
@@ -1807,6 +1984,18 @@ true if the error is a throttling error, false otherwise.
 | `Optional` **endpoint**: `string`                                                                                       |                                                                                                                            |
 | `Optional` **tmpDir**: `string`                                                                                         | Temporary directory for storing temporary files.<br>If not specified, then the temporary directory of the OS will be used. |
 
+<a name="interfacestypesconversationresponsemd"></a>
+
+### Interface: ConversationResponse
+
+[types](#modulestypesmd).ConversationResponse
+
+#### Properties
+
+| Property                                                             | Description                                             |
+| -------------------------------------------------------------------- | ------------------------------------------------------- |
+| `Optional` **toolCalls**: [`ToolCall`](#interfacestypestoolcallmd)[] | Array of tool calls if tool calling is requested by AI. |
+
 <a name="interfacestypesextractvideoframesoptionsmd"></a>
 
 ### Interface: ExtractVideoFramesOptions
@@ -1868,6 +2057,34 @@ true if the error is a throttling error, false otherwise.
 | `Optional` **storageContainerName**: `string`                      | Storage container for storing frame images of the video.                                      |
 | `Optional` **storagePathPrefix**: `string`                         | Path prefix to be prepended for storing frame images of the video.<br>Default is empty.       |
 | `Optional` **uploader**: [`FileBatchUploader`](#filebatchuploader) | Function for uploading files                                                                  |
+
+<a name="interfacestypestoolcallmd"></a>
+
+### Interface: ToolCall
+
+[types](#modulestypesmd).ToolCall
+
+#### Properties
+
+| Property                                   | Description                                                                           |
+| ------------------------------------------ | ------------------------------------------------------------------------------------- |
+| **arguments**: `Record`\<`string`, `any`\> | The arguments to the function call, already parsed into an object.                    |
+| `Optional` **id**: `string`                | Unique identifier for the tool call.<br>OpenAI always provides this, Gemini does not. |
+| **name**: `string`                         | The name of the function to be called.                                                |
+
+<a name="interfacestypestoolcallresultmd"></a>
+
+### Interface: ToolCallResult
+
+[types](#modulestypesmd).ToolCallResult
+
+#### Properties
+
+| Property                                | Description                                                                    |
+| --------------------------------------- | ------------------------------------------------------------------------------ |
+| **name**: `string`                      | The name of the function being responded to.<br>Required by Gemini.            |
+| **result**: `Record`\<`string`, `any`\> | The result of the function call, as an object.                                 |
+| `Optional` **toolCallId**: `string`     | Unique identifier for the tool call being responded to.<br>Required by OpenAI. |
 
 <a name="interfacestypesusagemetadatamd"></a>
 
@@ -2228,6 +2445,12 @@ Re-exports [Conversation](#classeschatconversationmd)
 
 ---
 
+##### ConversationResponse
+
+Re-exports [ConversationResponse](#interfacestypesconversationresponsemd)
+
+---
+
 ##### ConversationWith
 
 Re-exports [ConversationWith](#conversationwith)
@@ -2303,6 +2526,18 @@ Re-exports [StorageOptions](#interfacestypesstorageoptionsmd)
 ##### SupportedChatApiOptions
 
 Re-exports [SupportedChatApiOptions](#supportedchatapioptions)
+
+---
+
+##### ToolCall
+
+Re-exports [ToolCall](#interfacestypestoolcallmd)
+
+---
+
+##### ToolCallResult
+
+Re-exports [ToolCallResult](#interfacestypestoolcallresultmd)
 
 ---
 
@@ -2425,10 +2660,13 @@ A Promise that resolves with an object containing an array of download URLs for 
 - [BuildPromptOutput](#interfacestypesbuildpromptoutputmd)
 - [ChatApi](#interfacestypeschatapimd)
 - [ChatApiOptions](#interfacestypeschatapioptionsmd)
+- [ConversationResponse](#interfacestypesconversationresponsemd)
 - [ExtractVideoFramesOptions](#interfacestypesextractvideoframesoptionsmd)
 - [ImageInput](#interfacestypesimageinputmd)
 - [ImagesInput](#interfacestypesimagesinputmd)
 - [StorageOptions](#interfacestypesstorageoptionsmd)
+- [ToolCall](#interfacestypestoolcallmd)
+- [ToolCallResult](#interfacestypestoolcallresultmd)
 - [UsageMetadata](#interfacestypesusagemetadatamd)
 - [VideoInput](#interfacestypesvideoinputmd)
 
