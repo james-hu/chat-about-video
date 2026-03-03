@@ -35,8 +35,8 @@ function isGeminiOptions(options: any): options is GeminiOptions {
 }
 
 function isChatGptOptions(options: any): options is ChatGptOptions {
-  const opts = options as ChatGptOptions;
-  return !isGeminiOptions(options) && opts?.storage != null;
+  // const opts = options as ChatGptOptions;
+  return !isGeminiOptions(options); //  && opts?.storage != null;
 }
 
 export type ChatAboutVideoWith<T> = ChatAboutVideo<ClientOfChatApi<T>, OptionsOfChatApi<T>, PromptOfChatApi<T>, ResponseOfChatApi<T>>;

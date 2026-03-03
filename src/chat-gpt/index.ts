@@ -26,12 +26,12 @@ export type ChatGptPrompt = OpenAI.ChatCompletionCreateParamsNonStreaming['messa
 export type ChatGptCompletionOptions = AdditionalCompletionOptions & Omit<OpenAI.ChatCompletionCreateParamsNonStreaming, 'messages' | 'stream'>;
 export type ChatGptOptions = {
   extractVideoFrames?: ExtractVideoFramesOptions;
-  storage: StorageOptions;
+  storage?: StorageOptions;
 } & ChatApiOptions<AzureClientOptions, ChatGptCompletionOptions>;
 
 export class ChatGptApi implements ChatApi<ChatGptClient, ChatGptCompletionOptions, ChatGptPrompt, ChatGptResponse> {
   protected client: ChatGptClient;
-  protected storage: ReturnType<typeof effectiveStorageOptions>;
+  protected storage?: ReturnType<typeof effectiveStorageOptions>;
   protected extractVideoFrames?: ReturnType<typeof effectiveExtractVideoFramesOptions>;
   protected tmpDir: string;
 
@@ -40,7 +40,7 @@ export class ChatGptApi implements ChatApi<ChatGptClient, ChatGptCompletionOptio
     this.client = endpoint
       ? new AzureOpenAI({ ...clientSettings, endpoint, apiKey: credential.key })
       : new OpenAI({ ...clientSettings, apiKey: credential.key });
-    this.storage = effectiveStorageOptions(options.storage);
+    this.storage = options.storage ? effectiveStorageOptions(options.storage) : undefined;
     this.extractVideoFrames = effectiveExtractVideoFramesOptions(options.extractVideoFrames);
     this.tmpDir = options.tmpDir ?? os.tmpdir();
   }
@@ -277,6 +277,9 @@ export class ChatGptApi implements ChatApi<ChatGptClient, ChatGptCompletionOptio
   ): Promise<BuildPromptOutput<ChatGptPrompt, ChatGptCompletionOptions>> {
     const { commonParent, relativePaths } = findCommonParentPath(imageInputs.map((imageInput) => imageInput.imageFile));
 
+    if (!this.storage) {
+      throw new Error('Storage is required to upload images and generate image prompts, did you forget to configure storage options?');
+    }
     const { downloadUrls: frameImageUrls, cleanup: cleanupUploadedFrames } = await this.storage.uploader(
       commonParent,
       relativePaths,
@@ -311,7 +314,7 @@ export class ChatGptApi implements ChatApi<ChatGptClient, ChatGptCompletionOptio
     return {
       prompt: messages,
       cleanup: async () => {
-        if (this.storage.deleteFilesWhenConversationEnds) {
+        if (this.storage?.deleteFilesWhenConversationEnds) {
           await cleanupUploadedFrames();
         }
       },
