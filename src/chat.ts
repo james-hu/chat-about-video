@@ -89,18 +89,45 @@ export class ChatAboutVideo<CLIENT = any, OPTIONS extends AdditionalCompletionOp
 
   /**
    * Start a conversation without a video
-   * @param options Overriding options for this conversation
+   * @param log Optional logger for this conversation, if not provided, the logger of ChatAboutVideo instance will be used.
    * @returns The conversation.
    */
-  async startConversation(options?: OPTIONS): Promise<Conversation<CLIENT, OPTIONS, PROMPT, RESPONSE>>;
+  async startConversation(log?: ConsoleLineLogger): Promise<Conversation<CLIENT, OPTIONS, PROMPT, RESPONSE>>;
+
+  /**
+   * Start a conversation without a video
+   * @param options Overriding options for this conversation
+   * @param log Optional logger for this conversation, if not provided, the logger of ChatAboutVideo instance will be used.
+   * @returns The conversation.
+   */
+  async startConversation(options?: OPTIONS, log?: ConsoleLineLogger): Promise<Conversation<CLIENT, OPTIONS, PROMPT, RESPONSE>>;
+
+  /**
+   * Start a conversation about a video.
+   * @param videoFile Path to a video file in local file system.
+   * @param log Optional logger for this conversation, if not provided, the logger of ChatAboutVideo instance will be used.
+   * @returns The conversation.
+   */
+  async startConversation(videoFile: string, log?: ConsoleLineLogger): Promise<Conversation<CLIENT, OPTIONS, PROMPT, RESPONSE>>;
 
   /**
    * Start a conversation about a video.
    * @param videoFile Path to a video file in local file system.
    * @param options Overriding options for this conversation
+   * @param log Optional logger for this conversation, if not provided, the logger of ChatAboutVideo instance will be used.
    * @returns The conversation.
    */
-  async startConversation(videoFile: string, options?: OPTIONS): Promise<Conversation<CLIENT, OPTIONS, PROMPT, RESPONSE>>;
+  async startConversation(videoFile: string, options?: OPTIONS, log?: ConsoleLineLogger): Promise<Conversation<CLIENT, OPTIONS, PROMPT, RESPONSE>>;
+
+  /**
+   * Start a conversation about a video.
+   * @param videos Array of videos or images to be used in the conversation.
+   * For each video, the video file path and the prompt before the video should be provided.
+   * For each group of images, the image file paths and the prompt before the image group should be provided.
+   * @param log Optional logger for this conversation, if not provided, the logger of ChatAboutVideo instance will be used.
+   * @returns The conversation.
+   */
+  async startConversation(videos: Array<VideoInput | ImagesInput>, log?: ConsoleLineLogger): Promise<Conversation<CLIENT, OPTIONS, PROMPT, RESPONSE>>;
 
   /**
    * Start a conversation about a video.
@@ -108,21 +135,54 @@ export class ChatAboutVideo<CLIENT = any, OPTIONS extends AdditionalCompletionOp
    * For each video, the video file path and the prompt before the video should be provided.
    * For each group of images, the image file paths and the prompt before the image group should be provided.
    * @param options Overriding options for this conversation
+   * @param log Optional logger for this conversation, if not provided, the logger of ChatAboutVideo instance will be used.
    * @returns The conversation.
    */
-  async startConversation(videos: Array<VideoInput | ImagesInput>, options?: OPTIONS): Promise<Conversation<CLIENT, OPTIONS, PROMPT, RESPONSE>>;
+  async startConversation(
+    videos: Array<VideoInput | ImagesInput>,
+    options?: OPTIONS,
+    log?: ConsoleLineLogger,
+  ): Promise<Conversation<CLIENT, OPTIONS, PROMPT, RESPONSE>>;
 
   async startConversation(
-    videoFileOrVideosOrOptions?: string | Array<VideoInput | ImagesInput> | OPTIONS,
-    optionsOrUndefined?: OPTIONS,
+    arg1?: string | Array<VideoInput | ImagesInput> | OPTIONS | ConsoleLineLogger,
+    arg2?: OPTIONS | ConsoleLineLogger,
+    arg3?: ConsoleLineLogger,
   ): Promise<Conversation<CLIENT, OPTIONS, PROMPT, RESPONSE>> {
-    const videoFile = typeof videoFileOrVideosOrOptions === 'string' ? videoFileOrVideosOrOptions : undefined;
-    const videosOrImages = Array.isArray(videoFileOrVideosOrOptions) ? videoFileOrVideosOrOptions : undefined;
+    const videoFile = typeof arg1 === 'string' ? arg1 : undefined;
+    const videosOrImages = Array.isArray(arg1) ? arg1 : undefined;
 
-    let options: OPTIONS = {
+    let passedInLog: ConsoleLineLogger | undefined;
+    let passedInOptions: OPTIONS | undefined;
+    if (videoFile || videosOrImages) {
+      // (media, options, log) or (media, log)
+      if (isConsoleLineLogger(arg2)) {
+        // (media, log)
+        passedInOptions = undefined;
+        passedInLog = arg2;
+      } else {
+        // (media, options, log)
+        passedInOptions = arg2;
+        passedInLog = arg3;
+      }
+    } else {
+      // (options, log) or (log)
+      const arg1OfType2 = arg1 as typeof arg2;
+      const arg2OfType3 = arg2 as typeof arg3;
+      if (isConsoleLineLogger(arg1OfType2)) {
+        // (log)
+        passedInOptions = undefined;
+        passedInLog = arg1OfType2;
+      } else {
+        // (options, log)
+        passedInOptions = arg1OfType2;
+        passedInLog = arg2OfType3;
+      }
+    }
+
+    let options = {
       ...this.options.completionOptions,
-      ...optionsOrUndefined,
-      ...(!videoFile && !videosOrImages ? (videoFileOrVideosOrOptions as OPTIONS | undefined) : undefined),
+      ...passedInOptions,
     } as OPTIONS;
 
     const cleanupFuncs: Array<() => Promise<any>> = [];
@@ -181,7 +241,7 @@ export class ChatAboutVideo<CLIENT = any, OPTIONS extends AdditionalCompletionOp
       initialPrompt,
       options,
       () => Promise.all(cleanupFuncs.map((cleanup) => cleanup())),
-      this.log,
+      passedInLog ?? this.log,
     );
     return conversation;
   }
@@ -392,4 +452,14 @@ export async function buildImagesPromptFromVideo<CLIENT, OPTIONS extends Additio
       await Promise.all(tasks);
     },
   };
+}
+
+function isConsoleLineLogger(logger: any): logger is ConsoleLineLogger {
+  return (
+    logger &&
+    typeof logger.debug === 'function' &&
+    typeof logger.info === 'function' &&
+    typeof logger.warn === 'function' &&
+    typeof logger.error === 'function'
+  );
 }

@@ -9,7 +9,7 @@
 // export AZURE_STORAGE_CONTAINER_NAME=...
 // ENABLE_DEBUG=true npx ts-node test/integration/chatgpt-azure-no-storage-tools.ts
 
-import { consoleWithColour } from '@handy-common-utils/misc-utils';
+import { consoleWithColour, consoleWithoutColour } from '@handy-common-utils/misc-utils';
 /* eslint-disable node/no-unpublished-import */
 import chalk from 'chalk';
 import readline from 'node:readline';
@@ -33,7 +33,7 @@ async function demo() {
     consoleWithColour({ debug: process.env.ENABLE_DEBUG === 'true' }, chalk),
   );
 
-  const conversation = (await chat.startConversation()) as ConversationWithChatGpt;
+  const conversation = (await chat.startConversation(consoleWithoutColour({ debug: false, quiet: false }))) as ConversationWithChatGpt;
 
   const tools: any[] = [
     {
