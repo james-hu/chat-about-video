@@ -888,13 +888,13 @@ The response/completion or tool calls.
 
 #### Properties
 
-| Property                                                                                                                                                                   | Description |
-| -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------- |
-| `Protected` **client**: [`ChatGptClient`](#chatgptclient)                                                                                                                  |             |
-| `Protected` `Optional` **extractVideoFrames**: [`EffectiveExtractVideoFramesOptions`](#effectiveextractvideoframesoptions)                                                 |             |
-| `Protected` **options**: [`ChatGptOptions`](#chatgptoptions)                                                                                                               |             |
-| `Protected` **storage**: `Required`\<`Pick`\<[`StorageOptions`](#interfacestypesstorageoptionsmd), `"uploader"`\>\> & [`StorageOptions`](#interfacestypesstorageoptionsmd) |             |
-| `Protected` **tmpDir**: `string`                                                                                                                                           |             |
+| Property                                                                                                                                                                              | Description |
+| ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------- |
+| `Protected` **client**: [`ChatGptClient`](#chatgptclient)                                                                                                                             |             |
+| `Protected` `Optional` **extractVideoFrames**: [`EffectiveExtractVideoFramesOptions`](#effectiveextractvideoframesoptions)                                                            |             |
+| `Protected` **options**: [`ChatGptOptions`](#chatgptoptions)                                                                                                                          |             |
+| `Protected` `Optional` **storage**: `Required`\<`Pick`\<[`StorageOptions`](#interfacestypesstorageoptionsmd), `"uploader"`\>\> & [`StorageOptions`](#interfacestypesstorageoptionsmd) |             |
+| `Protected` **tmpDir**: `string`                                                                                                                                                      |             |
 
 #### Methods
 
@@ -2314,7 +2314,7 @@ A temporary conversation ID.
 
 ##### ChatGptOptions
 
-Ƭ **ChatGptOptions**: \{ `extractVideoFrames?`: [`ExtractVideoFramesOptions`](#interfacestypesextractvideoframesoptionsmd) ; `storage`: [`StorageOptions`](#interfacestypesstorageoptionsmd) } & [`ChatApiOptions`](#interfacestypeschatapioptionsmd)\<`AzureClientOptions`, [`ChatGptCompletionOptions`](#chatgptcompletionoptions)\>
+Ƭ **ChatGptOptions**: \{ `extractVideoFrames?`: [`ExtractVideoFramesOptions`](#interfacestypesextractvideoframesoptionsmd) ; `storage?`: [`StorageOptions`](#interfacestypesstorageoptionsmd) } & [`ChatApiOptions`](#interfacestypeschatapioptionsmd)\<`AzureClientOptions`, [`ChatGptCompletionOptions`](#chatgptcompletionoptions)\>
 
 ---
 
