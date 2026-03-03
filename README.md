@@ -645,15 +645,15 @@ The underlying API instance.
 
 ##### startConversation
 
-▸ **startConversation**(`options?`): `Promise`\<[`Conversation`](#classeschatconversationmd)\<`CLIENT`, `OPTIONS`, `PROMPT`, `RESPONSE`\>\>
+▸ **startConversation**(`log?`): `Promise`\<[`Conversation`](#classeschatconversationmd)\<`CLIENT`, `OPTIONS`, `PROMPT`, `RESPONSE`\>\>
 
 Start a conversation without a video
 
 ###### Parameters
 
-| Name       | Type      | Description                              |
-| :--------- | :-------- | :--------------------------------------- |
-| `options?` | `OPTIONS` | Overriding options for this conversation |
+| Name   | Type                                                                                                                                                                                                                                                               | Description                                                                                                 |
+| :----- | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :---------------------------------------------------------------------------------------------------------- |
+| `log?` | `LineLogger`\<(`message?`: `any`, ...`optionalParams`: `any`[]) => `void`, (`message?`: `any`, ...`optionalParams`: `any`[]) => `void`, (`message?`: `any`, ...`optionalParams`: `any`[]) => `void`, (`message?`: `any`, ...`optionalParams`: `any`[]) => `void`\> | Optional logger for this conversation, if not provided, the logger of ChatAboutVideo instance will be used. |
 
 ###### Returns
 
@@ -661,16 +661,16 @@ Start a conversation without a video
 
 The conversation.
 
-▸ **startConversation**(`videoFile`, `options?`): `Promise`\<[`Conversation`](#classeschatconversationmd)\<`CLIENT`, `OPTIONS`, `PROMPT`, `RESPONSE`\>\>
+▸ **startConversation**(`options?`, `log?`): `Promise`\<[`Conversation`](#classeschatconversationmd)\<`CLIENT`, `OPTIONS`, `PROMPT`, `RESPONSE`\>\>
 
-Start a conversation about a video.
+Start a conversation without a video
 
 ###### Parameters
 
-| Name        | Type      | Description                                |
-| :---------- | :-------- | :----------------------------------------- |
-| `videoFile` | `string`  | Path to a video file in local file system. |
-| `options?`  | `OPTIONS` | Overriding options for this conversation   |
+| Name       | Type                                                                                                                                                                                                                                                               | Description                                                                                                 |
+| :--------- | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :---------------------------------------------------------------------------------------------------------- |
+| `options?` | `OPTIONS`                                                                                                                                                                                                                                                          | Overriding options for this conversation                                                                    |
+| `log?`     | `LineLogger`\<(`message?`: `any`, ...`optionalParams`: `any`[]) => `void`, (`message?`: `any`, ...`optionalParams`: `any`[]) => `void`, (`message?`: `any`, ...`optionalParams`: `any`[]) => `void`, (`message?`: `any`, ...`optionalParams`: `any`[]) => `void`\> | Optional logger for this conversation, if not provided, the logger of ChatAboutVideo instance will be used. |
 
 ###### Returns
 
@@ -678,16 +678,69 @@ Start a conversation about a video.
 
 The conversation.
 
-▸ **startConversation**(`videos`, `options?`): `Promise`\<[`Conversation`](#classeschatconversationmd)\<`CLIENT`, `OPTIONS`, `PROMPT`, `RESPONSE`\>\>
+▸ **startConversation**(`videoFile`, `log?`): `Promise`\<[`Conversation`](#classeschatconversationmd)\<`CLIENT`, `OPTIONS`, `PROMPT`, `RESPONSE`\>\>
 
 Start a conversation about a video.
 
 ###### Parameters
 
-| Name       | Type                                                                                               | Description                                                                                                                                                                                                                                                |
-| :--------- | :------------------------------------------------------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `videos`   | ([`VideoInput`](#interfacestypesvideoinputmd) \| [`ImagesInput`](#interfacestypesimagesinputmd))[] | Array of videos or images to be used in the conversation. For each video, the video file path and the prompt before the video should be provided. For each group of images, the image file paths and the prompt before the image group should be provided. |
-| `options?` | `OPTIONS`                                                                                          | Overriding options for this conversation                                                                                                                                                                                                                   |
+| Name        | Type                                                                                                                                                                                                                                                               | Description                                                                                                 |
+| :---------- | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :---------------------------------------------------------------------------------------------------------- |
+| `videoFile` | `string`                                                                                                                                                                                                                                                           | Path to a video file in local file system.                                                                  |
+| `log?`      | `LineLogger`\<(`message?`: `any`, ...`optionalParams`: `any`[]) => `void`, (`message?`: `any`, ...`optionalParams`: `any`[]) => `void`, (`message?`: `any`, ...`optionalParams`: `any`[]) => `void`, (`message?`: `any`, ...`optionalParams`: `any`[]) => `void`\> | Optional logger for this conversation, if not provided, the logger of ChatAboutVideo instance will be used. |
+
+###### Returns
+
+`Promise`\<[`Conversation`](#classeschatconversationmd)\<`CLIENT`, `OPTIONS`, `PROMPT`, `RESPONSE`\>\>
+
+The conversation.
+
+▸ **startConversation**(`videoFile`, `options?`, `log?`): `Promise`\<[`Conversation`](#classeschatconversationmd)\<`CLIENT`, `OPTIONS`, `PROMPT`, `RESPONSE`\>\>
+
+Start a conversation about a video.
+
+###### Parameters
+
+| Name        | Type                                                                                                                                                                                                                                                               | Description                                                                                                 |
+| :---------- | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :---------------------------------------------------------------------------------------------------------- |
+| `videoFile` | `string`                                                                                                                                                                                                                                                           | Path to a video file in local file system.                                                                  |
+| `options?`  | `OPTIONS`                                                                                                                                                                                                                                                          | Overriding options for this conversation                                                                    |
+| `log?`      | `LineLogger`\<(`message?`: `any`, ...`optionalParams`: `any`[]) => `void`, (`message?`: `any`, ...`optionalParams`: `any`[]) => `void`, (`message?`: `any`, ...`optionalParams`: `any`[]) => `void`, (`message?`: `any`, ...`optionalParams`: `any`[]) => `void`\> | Optional logger for this conversation, if not provided, the logger of ChatAboutVideo instance will be used. |
+
+###### Returns
+
+`Promise`\<[`Conversation`](#classeschatconversationmd)\<`CLIENT`, `OPTIONS`, `PROMPT`, `RESPONSE`\>\>
+
+The conversation.
+
+▸ **startConversation**(`videos`, `log?`): `Promise`\<[`Conversation`](#classeschatconversationmd)\<`CLIENT`, `OPTIONS`, `PROMPT`, `RESPONSE`\>\>
+
+Start a conversation about a video.
+
+###### Parameters
+
+| Name     | Type                                                                                                                                                                                                                                                               | Description                                                                                                                                                                                                                                                |
+| :------- | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `videos` | ([`VideoInput`](#interfacestypesvideoinputmd) \| [`ImagesInput`](#interfacestypesimagesinputmd))[]                                                                                                                                                                 | Array of videos or images to be used in the conversation. For each video, the video file path and the prompt before the video should be provided. For each group of images, the image file paths and the prompt before the image group should be provided. |
+| `log?`   | `LineLogger`\<(`message?`: `any`, ...`optionalParams`: `any`[]) => `void`, (`message?`: `any`, ...`optionalParams`: `any`[]) => `void`, (`message?`: `any`, ...`optionalParams`: `any`[]) => `void`, (`message?`: `any`, ...`optionalParams`: `any`[]) => `void`\> | Optional logger for this conversation, if not provided, the logger of ChatAboutVideo instance will be used.                                                                                                                                                |
+
+###### Returns
+
+`Promise`\<[`Conversation`](#classeschatconversationmd)\<`CLIENT`, `OPTIONS`, `PROMPT`, `RESPONSE`\>\>
+
+The conversation.
+
+▸ **startConversation**(`videos`, `options?`, `log?`): `Promise`\<[`Conversation`](#classeschatconversationmd)\<`CLIENT`, `OPTIONS`, `PROMPT`, `RESPONSE`\>\>
+
+Start a conversation about a video.
+
+###### Parameters
+
+| Name       | Type                                                                                                                                                                                                                                                               | Description                                                                                                                                                                                                                                                |
+| :--------- | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `videos`   | ([`VideoInput`](#interfacestypesvideoinputmd) \| [`ImagesInput`](#interfacestypesimagesinputmd))[]                                                                                                                                                                 | Array of videos or images to be used in the conversation. For each video, the video file path and the prompt before the video should be provided. For each group of images, the image file paths and the prompt before the image group should be provided. |
+| `options?` | `OPTIONS`                                                                                                                                                                                                                                                          | Overriding options for this conversation                                                                                                                                                                                                                   |
+| `log?`     | `LineLogger`\<(`message?`: `any`, ...`optionalParams`: `any`[]) => `void`, (`message?`: `any`, ...`optionalParams`: `any`[]) => `void`, (`message?`: `any`, ...`optionalParams`: `any`[]) => `void`, (`message?`: `any`, ...`optionalParams`: `any`[]) => `void`\> | Optional logger for this conversation, if not provided, the logger of ChatAboutVideo instance will be used.                                                                                                                                                |
 
 ###### Returns
 
