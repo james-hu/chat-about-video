@@ -2,7 +2,7 @@
 //
 // This script can be executed with a command line like this from the project root directory:
 // export GEMINI_API_KEY=...
-// ENABLE_DEBUG=true DEMO_VIDEO=~/Downloads/test1.mp4 npx ts-node test/integration/gemini-chatgpt-style-tools.ts
+// npx ts-node test/integration/gemini-chatgpt-style-tools.ts
 
 import { consoleWithColour } from '@handy-common-utils/misc-utils';
 /* eslint-disable node/no-unpublished-import */
