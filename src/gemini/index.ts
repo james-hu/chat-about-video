@@ -264,7 +264,7 @@ function isChatGptStyleTools(tools: any[] | undefined): boolean {
 }
 
 function convertChatGptToolsToGemini(tools: any[]): any[] {
-  return [
+  const result = [
     {
       functionDeclarations: tools.map((t) => ({
         name: t.function.name,
@@ -273,16 +273,45 @@ function convertChatGptToolsToGemini(tools: any[]): any[] {
       })),
     },
   ];
+  // console.log(JSON.stringify(result, null, 2));
+  return result;
 }
 
 function normalizeSchema(schema: any): any {
+  if (Array.isArray(schema)) {
+    return schema.map((s) => normalizeSchema(s));
+  }
   if (!schema || typeof schema !== 'object') {
     return schema;
   }
+
   const result = { ...schema };
+
   if (typeof result.type === 'string') {
     result.type = result.type.toUpperCase();
+  } else if (Array.isArray(result.type)) {
+    if (result.type.length === 2 && result.type.includes('null')) {
+      // type: ["string", "null"] => type: "STRING", nullable: true
+      result.type = result.type.find((t: string) => t !== 'null')?.toUpperCase();
+      result.nullable = true;
+    } else {
+      result.type = result.type.map((t: string) => t.toUpperCase());
+    }
   }
+
+  if (result.additionalProperties === false) {
+    // not supported
+    delete result.additionalProperties;
+  }
+  if ('exclusiveMinimum' in result) {
+    // only support minimum
+    delete result.exclusiveMinimum;
+  }
+
+  if (result.anyOf) {
+    result.anyOf = result.anyOf.map((s: any) => normalizeSchema(s));
+  }
+
   if (result.properties && typeof result.properties === 'object') {
     result.properties = Object.fromEntries(Object.entries(result.properties).map(([key, value]) => [key, normalizeSchema(value)]));
   }
