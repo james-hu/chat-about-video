@@ -37,9 +37,9 @@ export class ChatGptApi implements ChatApi<ChatGptClient, ChatGptCompletionOptio
 
   constructor(protected options: ChatGptOptions) {
     const { credential, endpoint, clientSettings } = options;
-    this.client = endpoint
+    this.client = clientSettings?.apiVersion // API version is mandatory for Azure
       ? new AzureOpenAI({ ...clientSettings, endpoint, apiKey: credential.key })
-      : new OpenAI({ ...clientSettings, apiKey: credential.key });
+      : new OpenAI({ ...clientSettings, ...(endpoint ? { baseURL: endpoint } : {}), apiKey: credential.key });
     this.storage = options.storage ? effectiveStorageOptions(options.storage) : undefined;
     this.extractVideoFrames = effectiveExtractVideoFramesOptions(options.extractVideoFrames);
     this.tmpDir = options.tmpDir ?? os.tmpdir();
