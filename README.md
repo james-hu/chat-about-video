@@ -172,7 +172,7 @@ console.log(chalk.grey("\nAI's detailed explanation: " + JSON.stringify(JSON.par
 
 ### 1. Define Tools
 
-Pass your tool definitions in the completion options. The structure follows the underlying API (OpenAI or Gemini):
+Pass your tool definitions in the completion options. The structure follows the underlying API (OpenAI or Gemini). You can also use the ChatGPT style structure for Gemini providers, as the package will automatically convert it for Gemini if needed:
 
 ```typescript
 const tools = [
@@ -276,6 +276,7 @@ The following integration test files demonstrate various features and providers:
 | [chatgpt-manual-frames.ts](test/integration/chatgpt-manual-frames.ts)                                       | ChatGPT          | Manual frame extraction using FFmpeg |
 | [chatgpt-azure-azure-storage-tools.ts](test/integration/chatgpt-azure-azure-storage-tools.ts)               | ChatGPT (Azure)  | Tool/Function calling                |
 | [gemini-tools.ts](test/integration/gemini-tools.ts)                                                         | Google Gemini    | Tool/Function calling                |
+| [gemini-chatgpt-style-tools.ts](test/integration/gemini-chatgpt-style-tools.ts)                             | Google Gemini    | ChatGPT-style tool calling           |
 
 ### Example 1: Using ChatGPT hosted in OpenAI with Azure Blob Storage
 
