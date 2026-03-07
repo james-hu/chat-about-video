@@ -19,7 +19,7 @@ It provides a standardized interface for interacting with OpenAI ChatGPT (OpenAI
 ## Key features
 
 - **Switch providers effortlessly**: Change from ChatGPT to Gemini (or vice-versa) without rewritten your conversation logic.
-- **Multi-Cloud Support**: Supports models hosted in Azure OpenAI, OpenAI, and Google Cloud.
+- **Multi-Cloud Support**: Supports models hosted in Azure OpenAI, OpenAI, NVIDIA NIM (OpenAI compatible), and Google Cloud.
 - **Flexible Media Input**: Extract frames automatically via FFmpeg or supply your own images.
 - **Rich Conversations**: Supports multiple videos and image groups in a single chat.
 - **Mandated Output**: Force JSON responses with or without schemas.
@@ -277,6 +277,7 @@ The following integration test files demonstrate various features and providers:
 | [chatgpt-azure-azure-storage-tools.ts](test/integration/chatgpt-azure-azure-storage-tools.ts)               | ChatGPT (Azure)  | Tool/Function calling                |
 | [gemini-tools.ts](test/integration/gemini-tools.ts)                                                         | Google Gemini    | Tool/Function calling                |
 | [gemini-chatgpt-style-tools.ts](test/integration/gemini-chatgpt-style-tools.ts)                             | Google Gemini    | ChatGPT-style tool calling           |
+| [nvidia-nim-tools.ts](test/integration/nvidia-nim-tools.ts)                                                 | NVIDIA NIM       | OpenAI-compatible tools usage        |
 
 ### Example 1: Using ChatGPT hosted in OpenAI with Azure Blob Storage
 
@@ -554,6 +555,57 @@ async function demo() {
 
   ...
 
+}
+```
+
+### Example 6: Using NVIDIA NIM (OpenAI-compatible)
+
+Source: [test/integration/nvidia-nim-tools.ts](test/integration/nvidia-nim-tools.ts)
+
+```typescript
+// This is a demo utilizing NVIDIA NIM via its OpenAI-compatible API.
+//
+// This script can be executed with a command line like this from the project root directory:
+// export NVIDIA_NIM_API_KEY=...
+// ENABLE_DEBUG=true npx ts-node test/integration/nvidia-nim-tools.ts
+
+import { consoleWithColour, consoleWithoutColour } from '@handy-common-utils/misc-utils';
+import chalk from 'chalk';
+import readline from 'node:readline';
+
+import { ChatAboutVideo, ConversationWithChatGpt, ToolCallResult } from '../src';
+
+async function demo() {
+  const chat = new ChatAboutVideo(
+    {
+      endpoint: process.env.NVIDIA_NIM_API_ENDPOINT || 'https://integrate.api.nvidia.com/v1',
+      credential: {
+        key: process.env.NVIDIA_NIM_API_KEY!,
+      },
+      completionOptions: {
+        model: process.env.NVIDIA_NIM_MODEL || 'qwen/qwen3.5-397b-a17b',
+      },
+    },
+    consoleWithColour({ debug: process.env.ENABLE_DEBUG === 'true' }, chalk),
+  );
+
+  const conversation = (await chat.startConversation(consoleWithoutColour({ debug: false, quiet: false }))) as ConversationWithChatGpt;
+
+  const tools: any[] = [
+    {
+      type: 'function',
+      function: {
+        name: 'get_current_time',
+        description: 'Get the current local time',
+        parameters: {
+          type: 'object',
+          properties: {},
+        },
+      },
+    },
+  ];
+
+  // ... handling tool calls as shown in other examples ...
 }
 ```
 
