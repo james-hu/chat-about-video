@@ -96,10 +96,15 @@ export class GeminiApi implements ChatApi<GeminiClient, GeminiCompletionOptions,
       }
     }
 
+    let tools = effectiveOptions.tools;
+    if (isChatGptStyleTools(tools)) {
+      tools = convertChatGptToolsToGemini(tools!);
+    }
+
     // Google does not allow unknown properties
     const request: GenerateContentRequest = {
       contents: prompt,
-      tools: effectiveOptions.tools,
+      tools,
       toolConfig: effectiveOptions.toolConfig,
       systemInstruction: effectiveOptions.systemInstruction,
       cachedContent: effectiveOptions.cachedContent,
@@ -253,3 +258,36 @@ const fileExtToMimeType: Record<string, string> = {
   webp: 'image/webp',
   gif: 'image/gif',
 };
+
+function isChatGptStyleTools(tools: any[] | undefined): boolean {
+  return Array.isArray(tools) && tools.length > 0 && tools.every((t) => t.type === 'function' && t.function);
+}
+
+function convertChatGptToolsToGemini(tools: any[]): any[] {
+  return [
+    {
+      functionDeclarations: tools.map((t) => ({
+        name: t.function.name,
+        description: t.function.description,
+        parameters: normalizeSchema(t.function.parameters),
+      })),
+    },
+  ];
+}
+
+function normalizeSchema(schema: any): any {
+  if (!schema || typeof schema !== 'object') {
+    return schema;
+  }
+  const result = { ...schema };
+  if (typeof result.type === 'string') {
+    result.type = result.type.toUpperCase();
+  }
+  if (result.properties && typeof result.properties === 'object') {
+    result.properties = Object.fromEntries(Object.entries(result.properties).map(([key, value]) => [key, normalizeSchema(value)]));
+  }
+  if (result.items && typeof result.items === 'object') {
+    result.items = normalizeSchema(result.items);
+  }
+  return result;
+}
