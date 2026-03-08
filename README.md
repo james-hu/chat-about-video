@@ -2351,48 +2351,22 @@ true if the error is a throttling error, false otherwise.
 
 ---
 
+##### MultipleSupportedChatApiOptions
+
+Ƭ **MultipleSupportedChatApiOptions**: \{ `active`: `string` ; `base?`: `Partial`\<[`SupportedChatApiOptions`](#supportedchatapioptions)\> \| `null` } & `Record`\<`string`, `Partial`\<[`SupportedChatApiOptions`](#supportedchatapioptions)\> \| `string` \| `null` \| `undefined`\>
+
+Options for multiple supported chat APIs.
+Its "base" property is the base options to be used for merging with the active options.
+Its "active" property specifies the name of the active options.
+The active options will be merged with the base options, with the active options taking precedence.
+
+---
+
 ##### SupportedChatApiOptions
 
 Ƭ **SupportedChatApiOptions**: [`ChatGptOptions`](#chatgptoptions) \| [`GeminiOptions`](#geminioptions)
 
----
-
-##### MultipleSupportedChatApiOptions
-
-Ƭ **MultipleSupportedChatApiOptions**: {
-/\*\*
-
-- The name of the active options.
-  \*/
-  active: `string`;
-  /\*\*
-- The base options to be used for merging with the active options.
-  \*/
-  base?: `Partial`\<[`SupportedChatApiOptions`](#supportedchatapioptions)\> \| `null`;
-  } & Record<string, Partial<SupportedChatApiOptions> | string | null | undefined>
-
 #### Functions
-
-##### activeSupportedChatApiOptions
-
-▸ **activeSupportedChatApiOptions**(`options`): [`SupportedChatApiOptions`](#supportedchatapioptions)
-
-Get the active options from the multiple options.
-It first finds the active options using the active key, and then merges the base options with the active options, with the active options taking precedence.
-
-###### Parameters
-
-| Name      | Type                                                                  | Description                                                    |
-| :-------- | :-------------------------------------------------------------------- | :------------------------------------------------------------- |
-| `options` | [`MultipleSupportedChatApiOptions`](#multiplesupportedchatapioptions) | The multiple options. It will not be mutated by this function. |
-
-###### Returns
-
-[`SupportedChatApiOptions`](#supportedchatapioptions)
-
-The active options which can be passed into the constructor of ChatAboutVideo
-
----
 
 ##### accumulateUsage
 
@@ -2412,6 +2386,27 @@ Add up usage.
 `undefined` \| [`UsageMetadata`](#interfacestypesusagemetadatamd)
 
 nothing, the totalUsage is updated in place.
+
+---
+
+##### activeSupportedChatApiOptions
+
+▸ **activeSupportedChatApiOptions**(`options`): [`SupportedChatApiOptions`](#supportedchatapioptions)
+
+Get the active options from the multiple options.
+It first finds the active options using the active key, and then merges the base options with the active options.
+
+###### Parameters
+
+| Name      | Type                                                                  | Description                                                    |
+| :-------- | :-------------------------------------------------------------------- | :------------------------------------------------------------- |
+| `options` | [`MultipleSupportedChatApiOptions`](#multiplesupportedchatapioptions) | The multiple options. It will not be mutated by this function. |
+
+###### Returns
+
+[`SupportedChatApiOptions`](#supportedchatapioptions)
+
+The active options which can be passed into the constructor of ChatAboutVideo
 
 ---
 
@@ -2671,6 +2666,12 @@ Re-exports [ImagesInput](#interfacestypesimagesinputmd)
 
 ---
 
+##### MultipleSupportedChatApiOptions
+
+Re-exports [MultipleSupportedChatApiOptions](#multiplesupportedchatapioptions)
+
+---
+
 ##### OptionsOfChatApi
 
 Re-exports [OptionsOfChatApi](#optionsofchatapi)
@@ -2734,6 +2735,12 @@ Re-exports [VideoInput](#interfacestypesvideoinputmd)
 ##### accumulateUsage
 
 Re-exports [accumulateUsage](#accumulateusage)
+
+---
+
+##### activeSupportedChatApiOptions
+
+Re-exports [activeSupportedChatApiOptions](#activesupportedchatapioptions)
 
 ---
 
