@@ -133,6 +133,35 @@ Intermediate files, such as extracted frame images, can be saved locally or in t
 To remove these files when they are no longer needed, remember to call the `end()` function
 on the `Conversation` instance when the conversion finishes.
 
+## Switching between configurations
+
+You can define multiple configurations and switch between them using the `activeSupportedChatApiOptions` function.
+This is useful when you want to easily switch between different environments (e.g. dev, prod) or different models.
+Note that nested objects are deeply merged, while arrays are replaced rather than concatenated.
+
+```typescript
+import { activeSupportedChatApiOptions, ChatAboutVideo } from 'chat-about-video';
+
+const options = {
+  active: process.env.ACTIVE_CONFIG || 'dev',
+  base: {
+    storage: {
+      azureStorageConnectionString: process.env.AZURE_STORAGE_CONNECTION_STRING!,
+    },
+  },
+  dev: {
+    credential: { key: process.env.DEV_KEY! },
+    completionOptions: { model: 'gpt-4o' },
+  },
+  prod: {
+    credential: { key: process.env.PROD_KEY! },
+    completionOptions: { model: 'gpt-4' },
+  },
+};
+
+const chat = new ChatAboutVideo(activeSupportedChatApiOptions(options));
+```
+
 ## Mandating JSON response
 
 JSON response can be guaranteed either with a JSON Schema or without. Below example code works for both ChatGPT and Gemini:
@@ -2326,7 +2355,44 @@ true if the error is a throttling error, false otherwise.
 
 Ƭ **SupportedChatApiOptions**: [`ChatGptOptions`](#chatgptoptions) \| [`GeminiOptions`](#geminioptions)
 
+---
+
+##### MultipleSupportedChatApiOptions
+
+Ƭ **MultipleSupportedChatApiOptions**: {
+/\*\*
+
+- The name of the active options.
+  \*/
+  active: `string`;
+  /\*\*
+- The base options to be used for merging with the active options.
+  \*/
+  base?: `Partial`\<[`SupportedChatApiOptions`](#supportedchatapioptions)\> \| `null`;
+  } & Record<string, Partial<SupportedChatApiOptions> | string | null | undefined>
+
 #### Functions
+
+##### activeSupportedChatApiOptions
+
+▸ **activeSupportedChatApiOptions**(`options`): [`SupportedChatApiOptions`](#supportedchatapioptions)
+
+Get the active options from the multiple options.
+It first finds the active options using the active key, and then merges the base options with the active options, with the active options taking precedence.
+
+###### Parameters
+
+| Name      | Type                                                                  | Description                                                    |
+| :-------- | :-------------------------------------------------------------------- | :------------------------------------------------------------- |
+| `options` | [`MultipleSupportedChatApiOptions`](#multiplesupportedchatapioptions) | The multiple options. It will not be mutated by this function. |
+
+###### Returns
+
+[`SupportedChatApiOptions`](#supportedchatapioptions)
+
+The active options which can be passed into the constructor of ChatAboutVideo
+
+---
 
 ##### accumulateUsage
 

@@ -1,4 +1,4 @@
-import { ConsoleLineLogger, consoleWithoutColour, generateRandomString } from '@handy-common-utils/misc-utils';
+import { ConsoleLineLogger, consoleWithoutColour, generateRandomString, merge } from '@handy-common-utils/misc-utils';
 import { withRetry } from '@handy-common-utils/promise-utils';
 import path from 'node:path';
 
@@ -48,6 +48,42 @@ export type ConversationWithChatGpt = ConversationWith<ChatGptApi>;
 export type ConversationWithGemini = ConversationWith<GeminiApi>;
 
 export type SupportedChatApiOptions = ChatGptOptions | GeminiOptions;
+
+/**
+ * Options for multiple supported chat APIs.
+ * Its "base" property is the base options to be used for merging with the active options.
+ * Its "active" property specifies the name of the active options.
+ * The active options will be merged with the base options, with the active options taking precedence.
+ */
+export type MultipleSupportedChatApiOptions = {
+  /**
+   * The name of the active options.
+   */
+  active: string;
+  /**
+   * The base options to be used for merging with the active options.
+   */
+  base?: Partial<SupportedChatApiOptions> | null;
+} & Record<string, Partial<SupportedChatApiOptions> | string | null | undefined>;
+
+/**
+ * Get the active options from the multiple options.
+ * It first finds the active options using the active key, and then merges the base options with the active options.
+ * @param options The multiple options. It will not be mutated by this function.
+ * @returns The active options which can be passed into the constructor of ChatAboutVideo
+ */
+export function activeSupportedChatApiOptions(options: MultipleSupportedChatApiOptions): SupportedChatApiOptions {
+  const { active, base } = options;
+  if (!active) {
+    throw new Error('Did you forget to specify the "active" property in the options?');
+  }
+  const activeOptions = options[active];
+  if (!activeOptions) {
+    throw new Error(`Did you forget to specify the "${active}" property in the options?`);
+  }
+
+  return merge({ immutable: true, array: 'replace' }, base ?? {}, activeOptions) as SupportedChatApiOptions;
+}
 
 export class ChatAboutVideo<CLIENT = any, OPTIONS extends AdditionalCompletionOptions = any, PROMPT = any, RESPONSE = any> {
   protected options: SupportedChatApiOptions;
