@@ -6,6 +6,7 @@ import type { ChatGptApi, ChatGptOptions } from './chat-gpt';
 import type { GeminiApi, GeminiOptions } from './gemini';
 import type {
   AdditionalCompletionOptions,
+  AudioInput,
   BuildPromptOutput,
   ChatApi,
   ClientOfChatApi,
@@ -157,31 +158,34 @@ export class ChatAboutVideo<CLIENT = any, OPTIONS extends AdditionalCompletionOp
 
   /**
    * Start a conversation about a video.
-   * @param videos Array of videos or images to be used in the conversation.
-   * For each video, the video file path and the prompt before the video should be provided.
+   * @param videos Array of videos, images, or audios to be used in the conversation.
+   * For each video/audio, the file path and the prompt before it should be provided.
    * For each group of images, the image file paths and the prompt before the image group should be provided.
    * @param log Optional logger for this conversation, if not provided, the logger of ChatAboutVideo instance will be used.
    * @returns The conversation.
    */
-  async startConversation(videos: Array<VideoInput | ImagesInput>, log?: ConsoleLineLogger): Promise<Conversation<CLIENT, OPTIONS, PROMPT, RESPONSE>>;
+  async startConversation(
+    videos: Array<VideoInput | ImagesInput | AudioInput>,
+    log?: ConsoleLineLogger,
+  ): Promise<Conversation<CLIENT, OPTIONS, PROMPT, RESPONSE>>;
 
   /**
    * Start a conversation about a video.
-   * @param videos Array of videos or images to be used in the conversation.
-   * For each video, the video file path and the prompt before the video should be provided.
+   * @param videos Array of videos, images, or audios to be used in the conversation.
+   * For each video/audio, the file path and the prompt before it should be provided.
    * For each group of images, the image file paths and the prompt before the image group should be provided.
    * @param options Overriding options for this conversation
    * @param log Optional logger for this conversation, if not provided, the logger of ChatAboutVideo instance will be used.
    * @returns The conversation.
    */
   async startConversation(
-    videos: Array<VideoInput | ImagesInput>,
+    videos: Array<VideoInput | ImagesInput | AudioInput>,
     options?: OPTIONS,
     log?: ConsoleLineLogger,
   ): Promise<Conversation<CLIENT, OPTIONS, PROMPT, RESPONSE>>;
 
   async startConversation(
-    arg1?: string | Array<VideoInput | ImagesInput> | OPTIONS | ConsoleLineLogger,
+    arg1?: string | Array<VideoInput | ImagesInput | AudioInput> | OPTIONS | ConsoleLineLogger,
     arg2?: OPTIONS | ConsoleLineLogger,
     arg3?: ConsoleLineLogger,
   ): Promise<Conversation<CLIENT, OPTIONS, PROMPT, RESPONSE>> {
@@ -244,14 +248,15 @@ export class ChatAboutVideo<CLIENT = any, OPTIONS extends AdditionalCompletionOp
 
     // Multiple videos or groups of images
     if (videosOrImages) {
-      for (const videoOrImages of videosOrImages) {
-        if (videoOrImages.promptText) {
-          const { prompt: promptBeforeVideoOrImages } = await api.buildTextPrompt(videoOrImages.promptText, conversationId);
-          initialPrompt = await api.appendToPrompt(promptBeforeVideoOrImages, initialPrompt);
+      for (const media of videosOrImages) {
+        if (media.promptText) {
+          const { prompt: promptBefore } = await api.buildTextPrompt(media.promptText, conversationId);
+          initialPrompt = await api.appendToPrompt(promptBefore, initialPrompt);
         }
 
-        const video = videoOrImages as VideoInput;
-        const images = videoOrImages as ImagesInput;
+        const video = media as VideoInput;
+        const images = media as ImagesInput;
+        const audio = media as AudioInput;
         if (video.videoFile) {
           const { prompt, options: additionalOptions, cleanup } = await api.buildVideoPrompt(video.videoFile, conversationId);
           initialPrompt = await api.appendToPrompt(prompt, initialPrompt);
@@ -262,6 +267,14 @@ export class ChatAboutVideo<CLIENT = any, OPTIONS extends AdditionalCompletionOp
         }
         if (images.images) {
           const { prompt, options: additionalOptions, cleanup } = await api.buildImagesPrompt(images.images, conversationId);
+          initialPrompt = await api.appendToPrompt(prompt, initialPrompt);
+          options = { ...options, ...additionalOptions };
+          if (cleanup) {
+            cleanupFuncs.push(cleanup);
+          }
+        }
+        if (audio.audioFile) {
+          const { prompt, options: additionalOptions, cleanup } = await api.buildAudioPrompt(audio.audioFile, conversationId);
           initialPrompt = await api.appendToPrompt(prompt, initialPrompt);
           options = { ...options, ...additionalOptions };
           if (cleanup) {

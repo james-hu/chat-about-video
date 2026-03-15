@@ -1,6 +1,8 @@
 import type { ChatCompletionMessageFunctionToolCall, ResponseFormatJSONSchema } from 'openai/resources';
 
+import fs from 'node:fs/promises';
 import os from 'node:os';
+import path from 'node:path';
 import { AzureOpenAI, OpenAI } from 'openai';
 import { AzureClientOptions } from 'openai/azure';
 
@@ -319,6 +321,39 @@ export class ChatGptApi implements ChatApi<ChatGptClient, ChatGptCompletionOptio
         }
       },
     };
+  }
+
+  async buildAudioPrompt(audioFile: string, _conversationId?: string): Promise<BuildPromptOutput<ChatGptPrompt, ChatGptCompletionOptions>> {
+    const audioContent = await fs.readFile(audioFile);
+    const extension = path.extname(audioFile).toLowerCase().slice(1);
+
+    // Fallback formats supported by OpenAI
+    const formatMap: Record<string, string> = {
+      wav: 'wav',
+      mp3: 'mp3',
+    };
+    const format = formatMap[extension];
+
+    if (!format) {
+      throw new Error(`Unsupported audio format for ChatGPT: ${extension}`);
+    }
+
+    const prompt: ChatGptPrompt = [
+      {
+        role: 'user',
+        content: [
+          {
+            type: 'input_audio',
+            input_audio: {
+              data: audioContent.toString('base64'),
+              format: format as any,
+            },
+          } as any,
+        ],
+      },
+    ];
+
+    return { prompt };
   }
 }
 

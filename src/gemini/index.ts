@@ -245,6 +245,32 @@ export class GeminiApi implements ChatApi<GeminiClient, GeminiCompletionOptions,
       prompt,
     };
   }
+
+  async buildAudioPrompt(audioFile: string, _conversationId?: string): Promise<BuildPromptOutput<GeminiPrompt, GeminiCompletionOptions>> {
+    const audioContent = await fs.readFile(audioFile);
+    const extension = path.extname(audioFile).toLowerCase().slice(1);
+    const mimeType = fileExtToMimeType[extension];
+
+    if (!mimeType || !mimeType.startsWith('audio/')) {
+      throw new Error(`Unsupported audio format for Gemini: ${extension}`);
+    }
+
+    const prompt: GeminiPrompt = [
+      {
+        role: 'user',
+        parts: [
+          {
+            inlineData: {
+              data: audioContent.toString('base64'),
+              mimeType: mimeType,
+            },
+          },
+        ],
+      },
+    ];
+
+    return { prompt };
+  }
 }
 
 function isGeminiResponse(obj: any): obj is GeminiResponse {
@@ -257,6 +283,11 @@ const fileExtToMimeType: Record<string, string> = {
   png: 'image/png',
   webp: 'image/webp',
   gif: 'image/gif',
+  mp3: 'audio/mp3',
+  wav: 'audio/wav',
+  ogg: 'audio/ogg',
+  m4a: 'audio/mp4',
+  flac: 'audio/flac',
 };
 
 function isChatGptStyleTools(tools: any[] | undefined): boolean {

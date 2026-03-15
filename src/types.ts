@@ -75,6 +75,17 @@ export interface ImagesInput {
   images: Array<ImageInput>;
 }
 
+export interface AudioInput {
+  /**
+   * The prompt before the audio.
+   */
+  promptText: string;
+  /**
+   * Path to an audio file in local file system.
+   */
+  audioFile: string;
+}
+
 export interface AdditionalCompletionOptions {
   /**
    * System prompt text. If not provided, a default prompt will be used.
@@ -247,6 +258,17 @@ export interface ChatApi<CLIENT, OPTIONS extends AdditionalCompletionOptions, PR
   ): Promise<{
     prompt: PROMPT;
   }>;
+
+  /**
+   * Build prompt for sending audio content to AI.
+   * Sometimes, to include audio in the conversation, additional options and/or clean up is needed.
+   * In such case, options to be passed to generateContent function and/or a clean up callback function
+   * can be returned from this function.
+   * @param audioFile Path to the audio file.
+   * @param conversationId Unique identifier of the conversation.
+   * @returns An object containing the prompt, optional options, and an optional cleanup function.
+   */
+  buildAudioPrompt(audioFile: string, conversationId?: string): Promise<BuildPromptOutput<PROMPT, OPTIONS>>;
 
   /**
    * Build prompt for tool results.
