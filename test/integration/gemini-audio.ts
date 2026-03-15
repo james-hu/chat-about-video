@@ -12,6 +12,7 @@ import readline from 'node:readline';
 
 import { ChatAboutVideo, ConversationWithGemini } from '../../src';
 
+// eslint-disable-next-line unicorn/prefer-module
 const sampleAudioFile = path.resolve(__dirname, '../sample-media-files/engine-start.mp3');
 
 async function demo() {
