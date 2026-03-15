@@ -35,7 +35,7 @@ export type GeminiPrompt = GenerateContentRequest['contents'];
 export type GeminiClientOptions = { modelParams: ModelParams; requestOptions?: RequestOptions };
 export type GeminiCompletionOptions = AdditionalCompletionOptions & Omit<GenerateContentRequest, 'contents'>;
 export type GeminiOptions = {
-  extractVideoFrames: ExtractVideoFramesOptions;
+  extractVideoFrames?: ExtractVideoFramesOptions;
   clientSettings: GeminiClientOptions;
 } & ChatApiOptions<GeminiClientOptions, GeminiCompletionOptions>;
 
