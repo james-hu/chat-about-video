@@ -1,15 +1,17 @@
+/* eslint-disable unicorn/prefer-module */
 // This is a demo utilising Google Gemini through Google Generative Language API.
 // Google Gemini allows many frame images to be supplied because of its huge context length.
 // Video frame images are sent through Google Generative Language API directly.
 //
 // This script can be executed with a command line like this from the project root directory:
 // export GEMINI_API_KEY=...
-// ENABLE_DEBUG=true DEMO_VIDEO=~/Downloads/test1.mp4 npx ts-node test/integration/gemini-json.ts
+// ENABLE_DEBUG=true npx ts-node test/integration/gemini-json.ts
 
 import { HarmBlockThreshold, HarmCategory } from '@google/generative-ai';
 import { consoleWithColour } from '@handy-common-utils/misc-utils';
 /* eslint-disable node/no-unpublished-import */
 import chalk from 'chalk';
+import path from 'node:path';
 import readline from 'node:readline';
 
 import { ChatAboutVideo, ConversationWithGemini } from '../../src';
@@ -41,7 +43,9 @@ async function demo() {
     consoleWithColour({ debug: process.env.ENABLE_DEBUG === 'true' }, chalk),
   );
 
-  const conversation = (await chat.startConversation(process.env.DEMO_VIDEO!)) as ConversationWithGemini;
+  const conversation = (await chat.startConversation(
+    path.resolve(__dirname, '../sample-media-files/engine-start.h264.aac.mp4'),
+  )) as ConversationWithGemini;
 
   const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
   const prompt = (question: string) => new Promise<string>((resolve) => rl.question(question, resolve));

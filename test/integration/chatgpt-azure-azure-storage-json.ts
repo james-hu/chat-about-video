@@ -1,3 +1,4 @@
+/* eslint-disable unicorn/prefer-module */
 // This is a demo utilising ChatGPT hosted in Azure.
 // Video frame images are uploaded to Azure Blob Storage and then made available to GPT from there.
 //
@@ -7,11 +8,12 @@
 // export AZURE_OPENAI_DEPLOYMENT_NAME=...
 // export AZURE_STORAGE_CONNECTION_STRING=...
 // export AZURE_STORAGE_CONTAINER_NAME=...
-// ENABLE_DEBUG=true DEMO_VIDEO=~/Downloads/test1.mp4 npx ts-node test/integration/chatgpt-azure-azure-storage-json.ts
+// ENABLE_DEBUG=true npx ts-node test/integration/chatgpt-azure-azure-storage-json.ts
 
 import { consoleWithColour } from '@handy-common-utils/misc-utils';
 /* eslint-disable node/no-unpublished-import */
 import chalk from 'chalk';
+import path from 'node:path';
 import readline from 'node:readline';
 
 import { ChatAboutVideo, ConversationWithChatGpt } from '../../src';
@@ -38,7 +40,9 @@ async function demo() {
     consoleWithColour({ debug: process.env.ENABLE_DEBUG === 'true' }, chalk),
   );
 
-  const conversation = (await chat.startConversation(process.env.DEMO_VIDEO!)) as ConversationWithChatGpt;
+  const conversation = (await chat.startConversation(
+    path.resolve(__dirname, '../sample-media-files/engine-start.h264.aac.mp4'),
+  )) as ConversationWithChatGpt;
 
   const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
   const prompt = (question: string) => new Promise<string>((resolve) => rl.question(question, resolve));

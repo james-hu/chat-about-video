@@ -1,3 +1,4 @@
+/* eslint-disable unicorn/prefer-module */
 // This is a demo utilising GPT-4o or Vision preview hosted in OpenAI.
 // OpenAI API allows more than 10 (maximum allowed by Azure's OpenAI API) images to be supplied.
 // Video frame images are uploaded to Azure Blob Storage and then made available to GPT from there.
@@ -9,11 +10,12 @@
 // export AZURE_STORAGE_CONNECTION_STRING=...
 // export OPENAI_MODEL_NAME=...
 // export AZURE_STORAGE_CONTAINER_NAME=...
-// ENABLE_DEBUG=true DEMO_VIDEO_1=~/Downloads/test1.mp4 DEMO_VIDEO_2=~/Downloads/test2.mp4 npx ts-node test/integration/chatgpt-openai-azure-storage-multi-video.ts
+// ENABLE_DEBUG=true npx ts-node test/integration/chatgpt-openai-azure-storage-multi-video.ts
 //
 
 import { consoleWithColour } from '@handy-common-utils/misc-utils';
 import chalk from 'chalk';
+import path from 'node:path';
 import readline from 'node:readline';
 
 import { ChatAboutVideo, ConversationWithChatGpt } from '../../src';
@@ -41,9 +43,9 @@ async function demo() {
   );
 
   const conversation = (await chat.startConversation([
-    { videoFile: process.env.DEMO_VIDEO_1!, promptText: 'This is the first video:' },
-    { videoFile: process.env.DEMO_VIDEO_2!, promptText: 'This is the second video:' },
-    { videoFile: process.env.DEMO_VIDEO_1!, promptText: 'This is the third video:' },
+    { videoFile: path.resolve(__dirname, '../sample-media-files/engine-start.h264.aac.mp4'), promptText: 'This is the first video:' },
+    { videoFile: path.resolve(__dirname, '../sample-media-files/test-tone.h264.pcms32be.mov'), promptText: 'This is the second video:' },
+    { videoFile: path.resolve(__dirname, '../sample-media-files/engine-start.h264.aac.mp4'), promptText: 'This is the third video:' },
   ])) as ConversationWithChatGpt;
 
   const rl = readline.createInterface({ input: process.stdin, output: process.stdout });

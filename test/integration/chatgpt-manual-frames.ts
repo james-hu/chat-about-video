@@ -1,3 +1,4 @@
+/* eslint-disable unicorn/prefer-module */
 // This is a demo that extracts frame images from two video files using ffmpeg and creates a conversation with those two groups of images.
 // Video frame images are uploaded to Azure Blob Storage and then made available to GPT from there.
 //
@@ -6,7 +7,7 @@
 // export AZURE_STORAGE_CONNECTION_STRING=...
 // export AZURE_STORAGE_CONTAINER_NAME=...
 // export OPENAI_MODEL_NAME=...
-// ENABLE_DEBUG=true DEMO_VIDEO_1=~/Downloads/test1.mp4 DEMO_VIDEO_2=~/Downloads/test2.mp4 npx ts-node test/integration/chatgpt-manual-frames.ts
+// ENABLE_DEBUG=true npx ts-node test/integration/chatgpt-manual-frames.ts
 //
 
 import { consoleWithColour } from '@handy-common-utils/misc-utils';
@@ -20,8 +21,8 @@ import { extractVideoFramesWithFfmpeg } from '../../src/video/ffmpeg';
 
 async function demo() {
   const tmpDir = os.tmpdir();
-  const video1 = process.env.DEMO_VIDEO_1!;
-  const video2 = process.env.DEMO_VIDEO_2!;
+  const video1 = path.resolve(__dirname, '../sample-media-files/engine-start.h264.aac.mp4');
+  const video2 = path.resolve(__dirname, '../sample-media-files/test-tone.h264.pcms32be.mov');
   const outputDir1 = path.join(tmpDir, 'video1-frames');
   const outputDir2 = path.join(tmpDir, 'video2-frames');
 

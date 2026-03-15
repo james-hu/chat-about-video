@@ -1,3 +1,4 @@
+/* eslint-disable unicorn/prefer-module */
 // This is a test verifying that ChatGPT style tool calling works with Gemini.
 //
 // This script can be executed with a command line like this from the project root directory:
@@ -7,6 +8,7 @@
 import { consoleWithColour } from '@handy-common-utils/misc-utils';
 /* eslint-disable node/no-unpublished-import */
 import chalk from 'chalk';
+import path from 'node:path';
 import readline from 'node:readline';
 
 import { ChatAboutVideo, ConversationWithGemini, ToolCallResult } from '../../src';
@@ -38,7 +40,9 @@ async function demo() {
     consoleWithColour({ debug: process.env.ENABLE_DEBUG === 'true' }, chalk),
   );
 
-  const conversation = (await chat.startConversation(process.env.DEMO_VIDEO!)) as ConversationWithGemini;
+  const conversation = (await chat.startConversation(
+    path.resolve(__dirname, '../sample-media-files/engine-start.h264.aac.mp4'),
+  )) as ConversationWithGemini;
 
   // ChatGPT style tools
   const tools: any[] = [
