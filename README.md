@@ -1,6 +1,6 @@
 # chat-about-video
 
-Chat about zero or one or more video clip(s) using the powerful OpenAI ChatGPT (hosted in OpenAI or Microsoft Azure) or Google Gemini (hosted in Google Could).
+Chat about zero or one or more video clip(s) or audio file(s) using the powerful OpenAI ChatGPT (hosted in OpenAI or Microsoft Azure) or Google Gemini (hosted in Google Could).
 It provides a standardized interface for interacting with OpenAI ChatGPT (OpenAI or Azure) and Google Gemini,
 
 [![Version](https://img.shields.io/npm/v/chat-about-video.svg)](https://npmjs.org/package/chat-about-video)
@@ -20,8 +20,8 @@ It provides a standardized interface for interacting with OpenAI ChatGPT (OpenAI
 
 - **Switch providers effortlessly**: Change from ChatGPT to Gemini (or vice-versa) without rewritten your conversation logic.
 - **Multi-Cloud Support**: Supports models hosted in Azure OpenAI, OpenAI, NVIDIA NIM (OpenAI compatible), and Google Cloud.
-- **Flexible Media Input**: Extract frames automatically via FFmpeg or supply your own images.
-- **Rich Conversations**: Supports multiple videos and image groups in a single chat.
+- **Flexible Media Input**: Extract frames automatically via FFmpeg, supply your own images, or provide audio files.
+- **Rich Conversations**: Supports multiple videos, image groups, and audio files in a single chat.
 - **Mandated Output**: Force JSON responses with or without schemas.
 - **Resilient**: Automatic backoff and retries for 429, 5xx, and network errors.
 - **Usage Tracking**: Built-in token usage metadata collection.
@@ -306,6 +306,7 @@ The following integration test files demonstrate various features and providers:
 | [chatgpt-azure-azure-storage-tools.ts](test/integration/chatgpt-azure-azure-storage-tools.ts)               | ChatGPT (Azure)  | Tool/Function calling                |
 | [gemini-tools.ts](test/integration/gemini-tools.ts)                                                         | Google Gemini    | Tool/Function calling                |
 | [gemini-chatgpt-style-tools.ts](test/integration/gemini-chatgpt-style-tools.ts)                             | Google Gemini    | ChatGPT-style tool calling           |
+| [gemini-audio.ts](test/integration/gemini-audio.ts)                                                         | Google Gemini    | Audio file support                   |
 | [nvidia-nim-tools.ts](test/integration/nvidia-nim-tools.ts)                                                 | NVIDIA NIM       | OpenAI-compatible tools usage        |
 
 ### Example 1: Using ChatGPT hosted in OpenAI with Azure Blob Storage
@@ -636,6 +637,56 @@ async function demo() {
 
   // ... handling tool calls as shown in other examples ...
 }
+```
+
+### Example 7: Using audio files with Gemini
+
+Source: [test/integration/gemini-audio.ts](test/integration/gemini-audio.ts)
+
+```typescript
+import { consoleWithColour } from '@handy-common-utils/misc-utils';
+import chalk from 'chalk';
+import path from 'node:path';
+import readline from 'node:readline';
+
+import { ChatAboutVideo, ConversationWithGemini } from '../src';
+
+const sampleAudioFile = path.resolve(__dirname, '../sample-media-files/engine-start.h264.aac.mp4'); // Or a real audio file like an mp3
+
+async function demo() {
+  const chat = new ChatAboutVideo(
+    {
+      credential: {
+        key: process.env.GEMINI_API_KEY!,
+      },
+      clientSettings: {
+        modelParams: {
+          model: 'gemini-2.5-flash',
+        },
+      },
+    },
+    consoleWithColour({ debug: process.env.ENABLE_DEBUG === 'true' }, chalk),
+  );
+
+  const conversation = (await chat.startConversation([{ audioFile: sampleAudioFile }])) as ConversationWithGemini;
+
+  const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
+  const prompt = (question: string) => new Promise<string>((resolve) => rl.question(question, resolve));
+
+  while (true) {
+    const question = await prompt(chalk.red('\nUser: '));
+    if (!question) continue;
+    if (['exit', 'quit', 'q', 'end'].includes(question)) {
+      await conversation.end();
+      break;
+    }
+    const answer = await conversation.say(question);
+    console.log(chalk.blue('\nAI: ' + answer));
+  }
+  rl.close();
+}
+
+demo().catch((error) => console.log(chalk.red(JSON.stringify(error, null, 2))));
 ```
 
 # API
