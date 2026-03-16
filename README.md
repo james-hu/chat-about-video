@@ -852,10 +852,10 @@ Start a conversation about a video.
 
 ###### Parameters
 
-| Name     | Type                                                                                                                                                                                                                                                               | Description                                                                                                                                                                                                                                                |
-| :------- | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `videos` | ([`VideoInput`](#interfacestypesvideoinputmd) \| [`ImagesInput`](#interfacestypesimagesinputmd))[]                                                                                                                                                                 | Array of videos or images to be used in the conversation. For each video, the video file path and the prompt before the video should be provided. For each group of images, the image file paths and the prompt before the image group should be provided. |
-| `log?`   | `LineLogger`\<(`message?`: `any`, ...`optionalParams`: `any`[]) => `void`, (`message?`: `any`, ...`optionalParams`: `any`[]) => `void`, (`message?`: `any`, ...`optionalParams`: `any`[]) => `void`, (`message?`: `any`, ...`optionalParams`: `any`[]) => `void`\> | Optional logger for this conversation, if not provided, the logger of ChatAboutVideo instance will be used.                                                                                                                                                |
+| Name     | Type                                                                                                                                                                                                                                                               | Description                                                                                                                                                                                                                                                  |
+| :------- | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `videos` | ([`VideoInput`](#interfacestypesvideoinputmd) \| [`ImagesInput`](#interfacestypesimagesinputmd) \| [`AudioInput`](#interfacestypesaudioinputmd))[]                                                                                                                 | Array of videos, images, or audios to be used in the conversation. For each video/audio, the file path and the prompt before it should be provided. For each group of images, the image file paths and the prompt before the image group should be provided. |
+| `log?`   | `LineLogger`\<(`message?`: `any`, ...`optionalParams`: `any`[]) => `void`, (`message?`: `any`, ...`optionalParams`: `any`[]) => `void`, (`message?`: `any`, ...`optionalParams`: `any`[]) => `void`, (`message?`: `any`, ...`optionalParams`: `any`[]) => `void`\> | Optional logger for this conversation, if not provided, the logger of ChatAboutVideo instance will be used.                                                                                                                                                  |
 
 ###### Returns
 
@@ -869,11 +869,11 @@ Start a conversation about a video.
 
 ###### Parameters
 
-| Name       | Type                                                                                                                                                                                                                                                               | Description                                                                                                                                                                                                                                                |
-| :--------- | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `videos`   | ([`VideoInput`](#interfacestypesvideoinputmd) \| [`ImagesInput`](#interfacestypesimagesinputmd))[]                                                                                                                                                                 | Array of videos or images to be used in the conversation. For each video, the video file path and the prompt before the video should be provided. For each group of images, the image file paths and the prompt before the image group should be provided. |
-| `options?` | `OPTIONS`                                                                                                                                                                                                                                                          | Overriding options for this conversation                                                                                                                                                                                                                   |
-| `log?`     | `LineLogger`\<(`message?`: `any`, ...`optionalParams`: `any`[]) => `void`, (`message?`: `any`, ...`optionalParams`: `any`[]) => `void`, (`message?`: `any`, ...`optionalParams`: `any`[]) => `void`, (`message?`: `any`, ...`optionalParams`: `any`[]) => `void`\> | Optional logger for this conversation, if not provided, the logger of ChatAboutVideo instance will be used.                                                                                                                                                |
+| Name       | Type                                                                                                                                                                                                                                                               | Description                                                                                                                                                                                                                                                  |
+| :--------- | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `videos`   | ([`VideoInput`](#interfacestypesvideoinputmd) \| [`ImagesInput`](#interfacestypesimagesinputmd) \| [`AudioInput`](#interfacestypesaudioinputmd))[]                                                                                                                 | Array of videos, images, or audios to be used in the conversation. For each video/audio, the file path and the prompt before it should be provided. For each group of images, the image file paths and the prompt before the image group should be provided. |
+| `options?` | `OPTIONS`                                                                                                                                                                                                                                                          | Overriding options for this conversation                                                                                                                                                                                                                     |
+| `log?`     | `LineLogger`\<(`message?`: `any`, ...`optionalParams`: `any`[]) => `void`, (`message?`: `any`, ...`optionalParams`: `any`[]) => `void`, (`message?`: `any`, ...`optionalParams`: `any`[]) => `void`, (`message?`: `any`, ...`optionalParams`: `any`[]) => `void`\> | Optional logger for this conversation, if not provided, the logger of ChatAboutVideo instance will be used.                                                                                                                                                  |
 
 ###### Returns
 
@@ -1107,6 +1107,34 @@ The full prompt which is effectively the conversation history.
 ###### Implementation of
 
 [ChatApi](#interfacestypeschatapimd).[appendToPrompt](#appendtoprompt)
+
+---
+
+##### buildAudioPrompt
+
+▸ **buildAudioPrompt**(`audioFile`, `_conversationId?`): `Promise`\<[`BuildPromptOutput`](#interfacestypesbuildpromptoutputmd)\<`ChatCompletionMessageParam`[], [`ChatGptCompletionOptions`](#chatgptcompletionoptions)\>\>
+
+Build prompt for sending audio content to AI.
+Sometimes, to include audio in the conversation, additional options and/or clean up is needed.
+In such case, options to be passed to generateContent function and/or a clean up callback function
+can be returned from this function.
+
+###### Parameters
+
+| Name               | Type     | Description                            |
+| :----------------- | :------- | :------------------------------------- |
+| `audioFile`        | `string` | Path to the audio file.                |
+| `_conversationId?` | `string` | Unique identifier of the conversation. |
+
+###### Returns
+
+`Promise`\<[`BuildPromptOutput`](#interfacestypesbuildpromptoutputmd)\<`ChatCompletionMessageParam`[], [`ChatGptCompletionOptions`](#chatgptcompletionoptions)\>\>
+
+An object containing the prompt, optional options, and an optional cleanup function.
+
+###### Implementation of
+
+[ChatApi](#interfacestypeschatapimd).[buildAudioPrompt](#buildaudioprompt)
 
 ---
 
@@ -1484,6 +1512,34 @@ The full prompt which is effectively the conversation history.
 
 ---
 
+##### buildAudioPrompt
+
+▸ **buildAudioPrompt**(`audioFile`, `_conversationId?`): `Promise`\<[`BuildPromptOutput`](#interfacestypesbuildpromptoutputmd)\<`Content`[], [`GeminiCompletionOptions`](#geminicompletionoptions)\>\>
+
+Build prompt for sending audio content to AI.
+Sometimes, to include audio in the conversation, additional options and/or clean up is needed.
+In such case, options to be passed to generateContent function and/or a clean up callback function
+can be returned from this function.
+
+###### Parameters
+
+| Name               | Type     | Description                            |
+| :----------------- | :------- | :------------------------------------- |
+| `audioFile`        | `string` | Path to the audio file.                |
+| `_conversationId?` | `string` | Unique identifier of the conversation. |
+
+###### Returns
+
+`Promise`\<[`BuildPromptOutput`](#interfacestypesbuildpromptoutputmd)\<`Content`[], [`GeminiCompletionOptions`](#geminicompletionoptions)\>\>
+
+An object containing the prompt, optional options, and an optional cleanup function.
+
+###### Implementation of
+
+[ChatApi](#interfacestypeschatapimd).[buildAudioPrompt](#buildaudioprompt)
+
+---
+
 ##### buildImagesPrompt
 
 ▸ **buildImagesPrompt**(`imageInputs`, `_conversationId`): `Promise`\<[`BuildPromptOutput`](#interfacestypesbuildpromptoutputmd)\<`Content`[], [`GeminiCompletionOptions`](#geminicompletionoptions)\>\>
@@ -1819,6 +1875,19 @@ true if the error is a throttling error, false otherwise.
 | `Optional` **startPromptText**: `string`                                                                                            | The user prompt that will be sent before the video content.<br>If not provided, nothing will be sent before the video content.                                                                                                    |
 | `Optional` **systemPromptText**: `string`                                                                                           | System prompt text. If not provided, a default prompt will be used.                                                                                                                                                               |
 
+<a name="interfacestypesaudioinputmd"></a>
+
+### Interface: AudioInput
+
+[types](#modulestypesmd).AudioInput
+
+#### Properties
+
+| Property                 | Description                                 |
+| ------------------------ | ------------------------------------------- |
+| **audioFile**: `string`  | Path to an audio file in local file system. |
+| **promptText**: `string` | The prompt before the audio.                |
+
 <a name="interfacestypesbuildpromptoutputmd"></a>
 
 ### Interface: BuildPromptOutput\<PROMPT, OPTIONS\>
@@ -1881,6 +1950,30 @@ This function is useful to build a prompt that contains conversation history.
 `Promise`\<`PROMPT`\>
 
 The full prompt which is effectively the conversation history.
+
+---
+
+##### buildAudioPrompt
+
+▸ **buildAudioPrompt**(`audioFile`, `conversationId?`): `Promise`\<[`BuildPromptOutput`](#interfacestypesbuildpromptoutputmd)\<`PROMPT`, `OPTIONS`\>\>
+
+Build prompt for sending audio content to AI.
+Sometimes, to include audio in the conversation, additional options and/or clean up is needed.
+In such case, options to be passed to generateContent function and/or a clean up callback function
+can be returned from this function.
+
+###### Parameters
+
+| Name              | Type     | Description                            |
+| :---------------- | :------- | :------------------------------------- |
+| `audioFile`       | `string` | Path to the audio file.                |
+| `conversationId?` | `string` | Unique identifier of the conversation. |
+
+###### Returns
+
+`Promise`\<[`BuildPromptOutput`](#interfacestypesbuildpromptoutputmd)\<`PROMPT`, `OPTIONS`\>\>
+
+An object containing the prompt, optional options, and an optional cleanup function.
 
 ---
 
@@ -2583,7 +2676,7 @@ A temporary conversation ID.
 
 ##### GeminiOptions
 
-Ƭ **GeminiOptions**: \{ `clientSettings`: [`GeminiClientOptions`](#geminiclientoptions) ; `extractVideoFrames`: [`ExtractVideoFramesOptions`](#interfacestypesextractvideoframesoptionsmd) } & [`ChatApiOptions`](#interfacestypeschatapioptionsmd)\<[`GeminiClientOptions`](#geminiclientoptions), [`GeminiCompletionOptions`](#geminicompletionoptions)\>
+Ƭ **GeminiOptions**: \{ `clientSettings`: [`GeminiClientOptions`](#geminiclientoptions) ; `extractVideoFrames?`: [`ExtractVideoFramesOptions`](#interfacestypesextractvideoframesoptionsmd) } & [`ChatApiOptions`](#interfacestypeschatapioptionsmd)\<[`GeminiClientOptions`](#geminiclientoptions), [`GeminiCompletionOptions`](#geminicompletionoptions)\>
 
 ---
 
@@ -2606,6 +2699,12 @@ A temporary conversation ID.
 ##### AdditionalCompletionOptions
 
 Re-exports [AdditionalCompletionOptions](#interfacestypesadditionalcompletionoptionsmd)
+
+---
+
+##### AudioInput
+
+Re-exports [AudioInput](#interfacestypesaudioinputmd)
 
 ---
 
@@ -2887,6 +2986,7 @@ A Promise that resolves with an object containing an array of download URLs for 
 #### Interfaces
 
 - [AdditionalCompletionOptions](#interfacestypesadditionalcompletionoptionsmd)
+- [AudioInput](#interfacestypesaudioinputmd)
 - [BuildPromptOutput](#interfacestypesbuildpromptoutputmd)
 - [ChatApi](#interfacestypeschatapimd)
 - [ChatApiOptions](#interfacestypeschatapioptionsmd)
