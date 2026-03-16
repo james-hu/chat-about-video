@@ -374,13 +374,52 @@ export class Conversation<CLIENT = any, OPTIONS extends AdditionalCompletionOpti
   /**
    * Submit tool call results to the conversation, and get the response from AI.
    * @param toolResults Array of tool call results.
-   * @param options Options for fine control.
+   * @param options Options for fine control
    * @returns The response/completion or tool calls.
    */
-  async submitToolCallResults(toolResults: ToolCallResult[], options?: Partial<OPTIONS>): Promise<string | undefined | ConversationResponse> {
+  async submitToolCallResults(toolResults: ToolCallResult[], options?: Partial<OPTIONS>): Promise<string | undefined | ConversationResponse>;
+
+  /**
+   * Submit tool call results to the conversation, and get the response from AI.
+   * @param toolResults Array of tool call results.
+   * @param additionalMessage Optional message to append to the prompt
+   * @param options Options for fine control
+   * @returns The response/completion or tool calls.
+   */
+  async submitToolCallResults(
+    toolResults: ToolCallResult[],
+    additionalMessage?: string,
+    options?: Partial<OPTIONS>,
+  ): Promise<string | undefined | ConversationResponse>;
+
+  /**
+   * Submit tool call results to the conversation, and get the response from AI.
+   * @param toolResults Array of tool call results.
+   * @param additionalMessageOrOptions Optional message to append to the prompt, or options for fine control.
+   * @param options Options for fine control (if additionalMessageOrOptions is a string).
+   * @returns The response/completion or tool calls.
+   */
+  async submitToolCallResults(
+    toolResults: ToolCallResult[],
+    additionalMessageOrOptions?: string | Partial<OPTIONS>,
+    options?: Partial<OPTIONS>,
+  ): Promise<string | undefined | ConversationResponse> {
+    let additionalMessage: string | undefined;
+    let opts: Partial<OPTIONS> | undefined;
+    if (typeof additionalMessageOrOptions === 'string') {
+      additionalMessage = additionalMessageOrOptions;
+      opts = options;
+    } else {
+      additionalMessage = undefined;
+      opts = additionalMessageOrOptions;
+    }
     const { prompt: toolResultsPrompt, cleanup } = await this.api.buildToolCallResultsPrompt(toolResults, this.conversationId);
-    const updatedPrompt = await this.api.appendToPrompt(toolResultsPrompt, this.prompt);
-    const effectiveOptions = { ...this.options, ...options } as OPTIONS;
+    let updatedPrompt = await this.api.appendToPrompt(toolResultsPrompt, this.prompt);
+    if (additionalMessage) {
+      const { prompt: additionalPrompt } = await this.api.buildTextPrompt(additionalMessage);
+      updatedPrompt = await this.api.appendToPrompt(additionalPrompt, updatedPrompt);
+    }
+    const effectiveOptions = { ...this.options, ...opts } as OPTIONS;
     const response = await this.progressConversation(updatedPrompt, effectiveOptions);
     if (cleanup) {
       await cleanup();
