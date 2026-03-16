@@ -1042,7 +1042,25 @@ Submit tool call results to the conversation, and get the response from AI.
 | Name          | Type                                                   | Description                 |
 | :------------ | :----------------------------------------------------- | :-------------------------- |
 | `toolResults` | [`ToolCallResult`](#interfacestypestoolcallresultmd)[] | Array of tool call results. |
-| `options?`    | `Partial`\<`OPTIONS`\>                                 | Options for fine control.   |
+| `options?`    | `Partial`\<`OPTIONS`\>                                 | Options for fine control    |
+
+###### Returns
+
+`Promise`\<`undefined` \| `string` \| [`ConversationResponse`](#interfacestypesconversationresponsemd)\>
+
+The response/completion or tool calls.
+
+▸ **submitToolCallResults**(`toolResults`, `additionalMessage?`, `options?`): `Promise`\<`undefined` \| `string` \| [`ConversationResponse`](#interfacestypesconversationresponsemd)\>
+
+Submit tool call results to the conversation, and get the response from AI.
+
+###### Parameters
+
+| Name                 | Type                                                   | Description                              |
+| :------------------- | :----------------------------------------------------- | :--------------------------------------- |
+| `toolResults`        | [`ToolCallResult`](#interfacestypestoolcallresultmd)[] | Array of tool call results.              |
+| `additionalMessage?` | `string`                                               | Optional message to append to the prompt |
+| `options?`           | `Partial`\<`OPTIONS`\>                                 | Options for fine control                 |
 
 ###### Returns
 
