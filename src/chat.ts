@@ -406,7 +406,7 @@ export class Conversation<CLIENT = any, OPTIONS extends AdditionalCompletionOpti
   ): Promise<string | undefined | ConversationResponse> {
     let additionalMessage: string | undefined;
     let opts: Partial<OPTIONS> | undefined;
-    if (typeof additionalMessageOrOptions === 'string') {
+    if (typeof additionalMessageOrOptions === 'string' || (additionalMessageOrOptions == null && typeof options === 'object')) {
       additionalMessage = additionalMessageOrOptions;
       opts = options;
     } else {
