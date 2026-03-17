@@ -222,7 +222,12 @@ export class ChatGptApi implements ChatApi<ChatGptClient, ChatGptCompletionOptio
     // const code = String(error?.code ?? error?.error?.code);
     const message = String(error?.message ?? error?.error?.message);
     // (type === 'invalid_request_error' && code === 'invalid_image_url') ||
-    return message.startsWith('400 Timeout while downloading') || message.startsWith('Timeout while downloading');
+    return (
+      message.startsWith('400 Timed out while downloading image') ||
+      message.startsWith('Timed out while downloading image') ||
+      message.startsWith('400 Timeout while downloading') ||
+      message.startsWith('Timeout while downloading')
+    );
   }
 
   async appendToPrompt(newPromptOrResponse: ChatGptPrompt | ChatGptResponse, prompt?: ChatGptPrompt): Promise<ChatGptPrompt> {
