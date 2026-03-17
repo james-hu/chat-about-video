@@ -221,7 +221,7 @@ const tools = [
   },
 ];
 
-const answer = await conversation.say("What's the weather like in Melbourne?", { tools });
+const answer = await conversation.say<ConversationResponse>("What's the weather like in Melbourne?", { tools });
 ```
 
 ### 2. Handle Tool Calls
@@ -231,10 +231,13 @@ The `say` and `submitToolCallResults` methods will return an object containing `
 ```typescript
 import { ConversationResponse, ToolCallResult } from 'chat-about-video';
 
-let response = await conversation.say('What is the weather in Melbourne?', { tools });
+let response = await conversation.say<ConversationResponse>('What is the weather in Melbourne?', { tools });
 
 // Loop to handle potential multiple rounds of tool calling
 while (typeof response !== 'string' && response?.toolCalls) {
+  if (response.responseText) {
+    console.log(`AI: ${response.responseText}`);
+  }
   const toolResults: ToolCallResult[] = [];
   for (const call of response.toolCalls) {
     console.log(`AI requests tool: ${call.name}(${JSON.stringify(call.arguments)})`);
@@ -249,7 +252,7 @@ while (typeof response !== 'string' && response?.toolCalls) {
     });
   }
   // Submit results back to the AI
-  response = await conversation.submitToolCallResults(toolResults);
+  response = await conversation.submitToolCallResults<ConversationResponse>(toolResults);
 }
 
 // Final text response
@@ -1012,9 +1015,15 @@ The usage statistics of the conversation. Or undefined if not available.
 
 ##### say
 
-▸ **say**(`message`, `options?`): `Promise`\<`undefined` \| `string` \| [`ConversationResponse`](#interfacestypesconversationresponsemd)\>
+▸ **say**\<`RT`\>(`message`, `options?`): `Promise`\<`RT`\>
 
 Say something in the conversation, and get the response from AI
+
+###### Type parameters
+
+| Name | Type                                                                                                           | Description                                                                                                                                                                                       |
+| :--- | :------------------------------------------------------------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `RT` | extends `undefined` \| `string` \| [`ConversationResponse`](#interfacestypesconversationresponsemd) = `string` | The type of the response. It can be a string \| undefined, or ConversationResponse, or the combination of them. You need to choose the correct type based on whether tool call could be returned. |
 
 ###### Parameters
 
@@ -1025,17 +1034,23 @@ Say something in the conversation, and get the response from AI
 
 ###### Returns
 
-`Promise`\<`undefined` \| `string` \| [`ConversationResponse`](#interfacestypesconversationresponsemd)\>
+`Promise`\<`RT`\>
 
-The response/completion or tool calls.
+The response text if there's no tool call, or a ConversationResponse object if there's tool call.
 
 ---
 
 ##### submitToolCallResults
 
-▸ **submitToolCallResults**(`toolResults`, `options?`): `Promise`\<`undefined` \| `string` \| [`ConversationResponse`](#interfacestypesconversationresponsemd)\>
+▸ **submitToolCallResults**\<`RT`\>(`toolResults`, `options?`): `Promise`\<`RT`\>
 
 Submit tool call results to the conversation, and get the response from AI.
+
+###### Type parameters
+
+| Name | Type                                                                                                           | Description                                                                                                                                                                                       |
+| :--- | :------------------------------------------------------------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `RT` | extends `undefined` \| `string` \| [`ConversationResponse`](#interfacestypesconversationresponsemd) = `string` | The type of the response. It can be a string \| undefined, or ConversationResponse, or the combination of them. You need to choose the correct type based on whether tool call could be returned. |
 
 ###### Parameters
 
@@ -1046,13 +1061,19 @@ Submit tool call results to the conversation, and get the response from AI.
 
 ###### Returns
 
-`Promise`\<`undefined` \| `string` \| [`ConversationResponse`](#interfacestypesconversationresponsemd)\>
+`Promise`\<`RT`\>
 
-The response/completion or tool calls.
+The response text if there's no further tool call, or a ConversationResponse object if there's further tool call.
 
-▸ **submitToolCallResults**(`toolResults`, `additionalMessage?`, `options?`): `Promise`\<`undefined` \| `string` \| [`ConversationResponse`](#interfacestypesconversationresponsemd)\>
+▸ **submitToolCallResults**\<`RT`\>(`toolResults`, `additionalMessage?`, `options?`): `Promise`\<`RT`\>
 
 Submit tool call results to the conversation, and get the response from AI.
+
+###### Type parameters
+
+| Name | Type                                                                                                           | Description                                                                                                                                                                                       |
+| :--- | :------------------------------------------------------------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `RT` | extends `undefined` \| `string` \| [`ConversationResponse`](#interfacestypesconversationresponsemd) = `string` | The type of the response. It can be a string \| undefined, or ConversationResponse, or the combination of them. You need to choose the correct type based on whether tool call could be returned. |
 
 ###### Parameters
 
@@ -1064,9 +1085,9 @@ Submit tool call results to the conversation, and get the response from AI.
 
 ###### Returns
 
-`Promise`\<`undefined` \| `string` \| [`ConversationResponse`](#interfacestypesconversationresponsemd)\>
+`Promise`\<`RT`\>
 
-The response/completion or tool calls.
+The response text if there's no further tool call, or a ConversationResponse object if there's further tool call.
 
 <a name="classeschat_gptchatgptapimd"></a>
 
@@ -2291,6 +2312,7 @@ true if the error is a throttling error, false otherwise.
 
 | Property                                                             | Description                                             |
 | -------------------------------------------------------------------- | ------------------------------------------------------- |
+| `Optional` **responseText**: `string`                                | Response text from AI.                                  |
 | `Optional` **toolCalls**: [`ToolCall`](#interfacestypestoolcallmd)[] | Array of tool calls if tool calling is requested by AI. |
 
 <a name="interfacestypesextractvideoframesoptionsmd"></a>

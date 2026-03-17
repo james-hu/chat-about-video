@@ -25,6 +25,10 @@ export interface ConversationResponse {
    * Array of tool calls if tool calling is requested by AI.
    */
   toolCalls?: ToolCall[];
+  /**
+   * Response text from AI.
+   */
+  responseText?: string;
 }
 
 export interface ToolCallResult {

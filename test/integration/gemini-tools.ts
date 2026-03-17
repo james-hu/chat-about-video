@@ -13,7 +13,7 @@ import chalk from 'chalk';
 import path from 'node:path';
 import readline from 'node:readline';
 
-import { ChatAboutVideo, ConversationWithGemini, ToolCallResult } from '../../src';
+import { ChatAboutVideo, ConversationResponse, ConversationWithGemini, ToolCallResult } from '../../src';
 
 async function demo() {
   const chat = new ChatAboutVideo(
@@ -73,7 +73,7 @@ async function demo() {
       break;
     }
 
-    let response = await conversation.say(question, {
+    let response = await conversation.say<ConversationResponse>(question, {
       tools,
       safetySettings: [{ category: HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT, threshold: HarmBlockThreshold.BLOCK_NONE }],
     });

@@ -115,7 +115,7 @@ export class GeminiApi implements ChatApi<GeminiClient, GeminiCompletionOptions,
     return this.client.generateContent(request);
   }
 
-  async getResponseText(result: GeminiResponse): Promise<string | undefined> {
+  async getResponseText(result: GeminiResponse): Promise<string> {
     return result.response.text().replace(/\n$/, '').trim();
   }
 

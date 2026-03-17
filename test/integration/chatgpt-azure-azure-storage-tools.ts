@@ -16,7 +16,7 @@ import chalk from 'chalk';
 import path from 'node:path';
 import readline from 'node:readline';
 
-import { ChatAboutVideo, ConversationWithChatGpt, ToolCallResult } from '../../src';
+import { ChatAboutVideo, ConversationResponse, ConversationWithChatGpt, ToolCallResult } from '../../src';
 
 async function demo() {
   const chat = new ChatAboutVideo(
@@ -70,7 +70,7 @@ async function demo() {
       break;
     }
 
-    let response = await conversation.say(question, { tools, max_tokens: 2000 });
+    let response = await conversation.say<ConversationResponse>(question, { tools, max_tokens: 2000 });
     while (typeof response !== 'string' && response?.toolCalls) {
       const toolResults: ToolCallResult[] = [];
       for (const call of response.toolCalls) {

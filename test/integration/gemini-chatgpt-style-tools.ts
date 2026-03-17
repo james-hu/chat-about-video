@@ -11,7 +11,7 @@ import chalk from 'chalk';
 import path from 'node:path';
 import readline from 'node:readline';
 
-import { ChatAboutVideo, ConversationWithGemini, ToolCallResult } from '../../src';
+import { ChatAboutVideo, ConversationResponse, ConversationWithGemini, ToolCallResult } from '../../src';
 
 async function demo() {
   const chat = new ChatAboutVideo(
@@ -73,7 +73,7 @@ async function demo() {
   const question = 'What is the weather in San Francisco?';
   console.log(chalk.red('\nUser: ') + question);
 
-  let response = await conversation.say(question, {
+  let response = await conversation.say<ConversationResponse>(question, {
     tools,
   });
 
