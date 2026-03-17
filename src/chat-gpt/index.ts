@@ -240,7 +240,7 @@ export class ChatGptApi implements ChatApi<ChatGptClient, ChatGptCompletionOptio
       const message = newPromptOrResponse.choices[0].message;
       prompt.push({
         role: 'assistant',
-        content: message.content,
+        content: await this.getResponseText(newPromptOrResponse),
         tool_calls: message.tool_calls,
       } as OpenAI.ChatCompletionAssistantMessageParam);
     } else {
