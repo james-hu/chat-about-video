@@ -1731,7 +1731,7 @@ The raw client.
 
 ##### getResponseText
 
-▸ **getResponseText**(`result`): `Promise`\<`undefined` \| `string`\>
+▸ **getResponseText**(`result`): `Promise`\<`string`\>
 
 Get the text from the response object
 
@@ -1743,7 +1743,7 @@ Get the text from the response object
 
 ###### Returns
 
-`Promise`\<`undefined` \| `string`\>
+`Promise`\<`string`\>
 
 ###### Implementation of
 
