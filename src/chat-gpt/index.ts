@@ -88,7 +88,15 @@ export class ChatGptApi implements ChatApi<ChatGptClient, ChatGptCompletionOptio
   }
 
   async getResponseText(result: ChatGptResponse): Promise<string | undefined> {
-    const text = result?.choices?.[0]?.message?.content;
+    const message = result?.choices?.[0]?.message;
+    const refusal = message?.refusal;
+    if (refusal) {
+      // Throw a error to be caught by the caller
+      const error = new Error(refusal) as any;
+      error.type = 'refusal';
+      throw error;
+    }
+    const text = message?.content;
     return text === null ? undefined : text;
   }
 
