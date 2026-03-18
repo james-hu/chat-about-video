@@ -1021,9 +1021,9 @@ Say something in the conversation, and get the response from AI
 
 ###### Type parameters
 
-| Name | Type                                                                                                           | Description                                                                                                                                                                                       |
-| :--- | :------------------------------------------------------------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `RT` | extends `undefined` \| `string` \| [`ConversationResponse`](#interfacestypesconversationresponsemd) = `string` | The type of the response. It can be a string \| undefined, or ConversationResponse, or the combination of them. You need to choose the correct type based on whether tool call could be returned. |
+| Name | Type                                                                                            | Description                                                                                                                                                                                       |
+| :--- | :---------------------------------------------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `RT` | extends `string` \| [`ConversationResponse`](#interfacestypesconversationresponsemd) = `string` | The type of the response. It can be a string \| undefined, or ConversationResponse, or the combination of them. You need to choose the correct type based on whether tool call could be returned. |
 
 ###### Parameters
 
@@ -1048,9 +1048,9 @@ Submit tool call results to the conversation, and get the response from AI.
 
 ###### Type parameters
 
-| Name | Type                                                                                                           | Description                                                                                                                                                                                       |
-| :--- | :------------------------------------------------------------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `RT` | extends `undefined` \| `string` \| [`ConversationResponse`](#interfacestypesconversationresponsemd) = `string` | The type of the response. It can be a string \| undefined, or ConversationResponse, or the combination of them. You need to choose the correct type based on whether tool call could be returned. |
+| Name | Type                                                                                            | Description                                                                                                                                                                         |
+| :--- | :---------------------------------------------------------------------------------------------- | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `RT` | extends `string` \| [`ConversationResponse`](#interfacestypesconversationresponsemd) = `string` | The type of the response. It can be a string or ConversationResponse, or the combination of them. You need to choose the correct type based on whether tool call could be returned. |
 
 ###### Parameters
 
@@ -1071,9 +1071,9 @@ Submit tool call results to the conversation, and get the response from AI.
 
 ###### Type parameters
 
-| Name | Type                                                                                                           | Description                                                                                                                                                                                       |
-| :--- | :------------------------------------------------------------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `RT` | extends `undefined` \| `string` \| [`ConversationResponse`](#interfacestypesconversationresponsemd) = `string` | The type of the response. It can be a string \| undefined, or ConversationResponse, or the combination of them. You need to choose the correct type based on whether tool call could be returned. |
+| Name | Type                                                                                            | Description                                                                                                                                                                         |
+| :--- | :---------------------------------------------------------------------------------------------- | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `RT` | extends `string` \| [`ConversationResponse`](#interfacestypesconversationresponsemd) = `string` | The type of the response. It can be a string or ConversationResponse, or the combination of them. You need to choose the correct type based on whether tool call could be returned. |
 
 ###### Parameters
 
@@ -1329,7 +1329,7 @@ The raw client.
 
 ##### getResponseText
 
-▸ **getResponseText**(`result`): `Promise`\<`undefined` \| `string`\>
+▸ **getResponseText**(`result`): `Promise`\<`string`\>
 
 Get the text from the response object
 
@@ -1341,7 +1341,7 @@ Get the text from the response object
 
 ###### Returns
 
-`Promise`\<`undefined` \| `string`\>
+`Promise`\<`string`\>
 
 ###### Implementation of
 
@@ -2144,7 +2144,7 @@ The raw client.
 
 ##### getResponseText
 
-▸ **getResponseText**(`response`): `Promise`\<`undefined` \| `string`\>
+▸ **getResponseText**(`response`): `Promise`\<`string`\>
 
 Get the text from the response object
 
@@ -2156,7 +2156,7 @@ Get the text from the response object
 
 ###### Returns
 
-`Promise`\<`undefined` \| `string`\>
+`Promise`\<`string`\>
 
 ---
 
