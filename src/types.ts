@@ -183,7 +183,7 @@ export interface ChatApi<CLIENT, OPTIONS extends AdditionalCompletionOptions, PR
    * Get the text from the response object
    * @param response the response object
    */
-  getResponseText(response: RESPONSE): Promise<string | undefined>;
+  getResponseText(response: RESPONSE): Promise<string>;
 
   /**
    * Extract usage metadata from the response object.

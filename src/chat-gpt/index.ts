@@ -87,18 +87,27 @@ export class ChatGptApi implements ChatApi<ChatGptClient, ChatGptCompletionOptio
     return this.client.chat.completions.create({ ...requestOptions, messages: prompt, stream: false });
   }
 
-  async getResponseText(result: ChatGptResponse): Promise<string | undefined> {
-    const message = result?.choices?.[0]?.message;
+  async getResponseText(result: ChatGptResponse): Promise<string> {
+    const choice = result?.choices?.[0];
+    const message = choice?.message;
+    const text = message?.content;
     const refusal = message?.refusal;
-    if (refusal || message?.content == null) {
+    if (refusal) {
       // Throw a error to be caught by the caller
-      const error = new Error(refusal ?? 'Unknown refusal') as any;
+      const error = new Error(refusal) as any;
       error.type = 'refusal';
-      error.response = result;
+      error.chatGptResponse = result;
       throw error;
     }
-    const text = message?.content;
-    return text === null ? undefined : text;
+    if (text == null) {
+      // Latest version of OpenAI's SDK does not throw error when content filtering kicks in
+      const finishReason = choice?.finish_reason;
+      const error = new Error(finishReason ?? 'Unknown finish reason') as any;
+      error.type = finishReason ?? 'finished';
+      error.chatGptResponse = result;
+      throw error;
+    }
+    return text;
   }
 
   async getUsageMetadata(result: ChatGptResponse): Promise<UsageMetadata | undefined> {

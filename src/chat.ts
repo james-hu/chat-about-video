@@ -366,7 +366,7 @@ export class Conversation<CLIENT = any, OPTIONS extends AdditionalCompletionOpti
    * @param options Options for fine control.
    * @returns The response text if there's no tool call, or a ConversationResponse object if there's tool call.
    */
-  async say<RT extends string | undefined | ConversationResponse = string>(message: string, options?: Partial<OPTIONS>): Promise<RT> {
+  async say<RT extends string | ConversationResponse = string>(message: string, options?: Partial<OPTIONS>): Promise<RT> {
     const { prompt: newPromptPart } = await this.api.buildTextPrompt(message);
     const updatedPrompt = await this.api.appendToPrompt(newPromptPart, this.prompt);
     const effectiveOptions = { ...this.options, ...options } as OPTIONS;
@@ -375,27 +375,27 @@ export class Conversation<CLIENT = any, OPTIONS extends AdditionalCompletionOpti
 
   /**
    * Submit tool call results to the conversation, and get the response from AI.
-   * @template RT The type of the response. It can be a string | undefined, or ConversationResponse, or the combination of them.
+   * @template RT The type of the response. It can be a string or ConversationResponse, or the combination of them.
    *              You need to choose the correct type based on whether tool call could be returned.
    * @param toolResults Array of tool call results.
    * @param options Options for fine control
    * @returns The response text if there's no further tool call, or a ConversationResponse object if there's further tool call.
    */
-  async submitToolCallResults<RT extends string | undefined | ConversationResponse = string>(
+  async submitToolCallResults<RT extends string | ConversationResponse = string>(
     toolResults: ToolCallResult[],
     options?: Partial<OPTIONS>,
   ): Promise<RT>;
 
   /**
    * Submit tool call results to the conversation, and get the response from AI.
-   * @template RT The type of the response. It can be a string | undefined, or ConversationResponse, or the combination of them.
+   * @template RT The type of the response. It can be a string or ConversationResponse, or the combination of them.
    *              You need to choose the correct type based on whether tool call could be returned.
    * @param toolResults Array of tool call results.
    * @param additionalMessage Optional message to append to the prompt
    * @param options Options for fine control
    * @returns The response text if there's no further tool call, or a ConversationResponse object if there's further tool call.
    */
-  async submitToolCallResults<RT extends string | undefined | ConversationResponse = string>(
+  async submitToolCallResults<RT extends string | ConversationResponse = string>(
     toolResults: ToolCallResult[],
     additionalMessage?: string,
     options?: Partial<OPTIONS>,
@@ -403,14 +403,14 @@ export class Conversation<CLIENT = any, OPTIONS extends AdditionalCompletionOpti
 
   /**
    * Submit tool call results to the conversation, and get the response from AI.
-   * @template RT The type of the response. It can be a string | undefined, or ConversationResponse, or the combination of them.
+   * @template RT The type of the response. It can be a string or ConversationResponse, or the combination of them.
    *              You need to choose the correct type based on whether tool call could be returned.
    * @param toolResults Array of tool call results.
    * @param additionalMessageOrOptions Optional message to append to the prompt, or options for fine control.
    * @param options Options for fine control (if additionalMessageOrOptions is a string).
    * @returns The response text if there's no further tool call, or a ConversationResponse object if there's further tool call.
    */
-  async submitToolCallResults<RT extends string | undefined | ConversationResponse = string>(
+  async submitToolCallResults<RT extends string | ConversationResponse = string>(
     toolResults: ToolCallResult[],
     additionalMessageOrOptions?: string | Partial<OPTIONS>,
     options?: Partial<OPTIONS>,
