@@ -218,8 +218,12 @@ export class ChatGptApi implements ChatApi<ChatGptClient, ChatGptCompletionOptio
   }
 
   isServerError(error: any): boolean {
-    return ['500', 'InternalServerError', '502', 'BadGateway', '503', 'ServiceUnavailable', '504', 'GatewayTimeout'].includes(
-      String(error?.status ?? error?.code ?? error?.error?.code),
+    return (
+      ['500', 'InternalServerError', '502', 'BadGateway', '503', 'ServiceUnavailable', '504', 'GatewayTimeout'].includes(
+        String(error?.status ?? error?.code ?? error?.error?.code),
+      ) ||
+      error?.message?.includes('The model was unable to complete inference due to an internal error') ||
+      error?.message?.startsWith('400 Error while downloading')
     );
   }
 
