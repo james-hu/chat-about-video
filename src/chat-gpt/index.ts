@@ -240,7 +240,9 @@ export class ChatGptApi implements ChatApi<ChatGptClient, ChatGptCompletionOptio
       message.startsWith('400 Timed out while downloading image') ||
       message.startsWith('Timed out while downloading image') ||
       message.startsWith('400 Timeout while downloading') ||
-      message.startsWith('Timeout while downloading')
+      message.startsWith('Timeout while downloading') ||
+      message.startsWith('400 Unable to download image from') ||
+      message.startsWith('Unable to download image from')
     );
   }
 
