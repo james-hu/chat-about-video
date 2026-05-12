@@ -44,7 +44,7 @@ export const extractVideoFramesWithFfmpeg: VideoFramesExtractor = async (
   for (let i = startSec; (endSec == null || i < endSec) && (limit == null || relativePaths.length <= limit); i += intervalSec) {
     const fileName = `${i.toFixed(3).padStart(10, '0')}.${format}`;
     const { stderr } = await execFileAsync(ffmpegPath, [...args1, `${i}`, ...args2, path.join(outputDir, fileName)]);
-    if (stderr && stderr.includes('Output file is empty, nothing was encoded')) {
+    if (stderr && (stderr.includes('Output file is empty, nothing was encoded') || stderr.includes('Nothing was written into output file'))) {
       break;
     }
     relativePaths.push(fileName);
