@@ -986,15 +986,18 @@ The conversation.
 
 #### Properties
 
-| Property                                                                                                                                                                                                                                                                                               | Description |
-| ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ----------- |
-| `Protected` **api**: [`ChatApi`](#interfacestypeschatapimd)\<`CLIENT`, `OPTIONS`, `PROMPT`, `RESPONSE`\>                                                                                                                                                                                               |             |
-| `Protected` `Optional` **cleanup**: () => `Promise`\<`any`\>                                                                                                                                                                                                                                           |             |
-| `Protected` **conversationId**: `string`                                                                                                                                                                                                                                                               |             |
-| `Protected` **log**: `undefined` \| `LineLogger`\<(`message?`: `any`, ...`optionalParams`: `any`[]) => `void`, (`message?`: `any`, ...`optionalParams`: `any`[]) => `void`, (`message?`: `any`, ...`optionalParams`: `any`[]) => `void`, (`message?`: `any`, ...`optionalParams`: `any`[]) => `void`\> |             |
-| `Protected` **options**: `OPTIONS`                                                                                                                                                                                                                                                                     |             |
-| `Protected` **prompt**: `undefined` \| `PROMPT`                                                                                                                                                                                                                                                        |             |
-| `Protected` **usage**: `undefined` \| [`UsageMetadata`](#interfacestypesusagemetadatamd)                                                                                                                                                                                                               |             |
+| Property                                                                                                                                                                                                                                                                                               | Description                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
+| ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `Protected` **api**: [`ChatApi`](#interfacestypeschatapimd)\<`CLIENT`, `OPTIONS`, `PROMPT`, `RESPONSE`\>                                                                                                                                                                                               |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
+| `Protected` **checkpoints**: `number`[] = `[]`                                                                                                                                                                                                                                                         | Prompt length after each successful [say](#say) or [submitToolCallResults](#submittoolcallresults).<br><br>Note on `PROMPT` type assumption:<br>The turn-checkpoint and [rewind](#rewind) mechanisms assume that `PROMPT` is an Array of message objects (as implemented<br>by standard providers such as Gemini and ChatGPT). Array lengths are recorded as checkpoint markers. If `PROMPT` is not an<br>Array (or is undefined), checkpoint recording and restoring safely degrade to no-ops. |
+| `Protected` **conversationId**: `string`                                                                                                                                                                                                                                                               |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
+| `Protected` **ended**: `boolean` = `false`                                                                                                                                                                                                                                                             |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
+| `Protected` **initialPromptLength**: `number`                                                                                                                                                                                                                                                          | Prompt length when this conversation was constructed, before any successful turn.<br>Rewind past every checkpoint restores the prompt to this length.                                                                                                                                                                                                                                                                                                                                           |
+| `Protected` **log**: `undefined` \| `LineLogger`\<(`message?`: `any`, ...`optionalParams`: `any`[]) => `void`, (`message?`: `any`, ...`optionalParams`: `any`[]) => `void`, (`message?`: `any`, ...`optionalParams`: `any`[]) => `void`, (`message?`: `any`, ...`optionalParams`: `any`[]) => `void`\> |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
+| `Protected` **options**: `OPTIONS`                                                                                                                                                                                                                                                                     |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
+| `Protected` **prompt**: `undefined` \| `PROMPT`                                                                                                                                                                                                                                                        |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
+| `Protected` **sharedCleanup**: `SharedCleanup`                                                                                                                                                                                                                                                         |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
+| `Protected` **usage**: `undefined` \| [`UsageMetadata`](#interfacestypesusagemetadatamd)                                                                                                                                                                                                               |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
 
 #### Methods
 
@@ -1002,9 +1005,47 @@ The conversation.
 
 ▸ **end**(): `Promise`\<`void`\>
 
+End this conversation.
+Shared resources are deleted when this is the last living conversation in the fork family.
+Calling `end` again on the same instance does nothing.
+
 ###### Returns
 
 `Promise`\<`void`\>
+
+nothing
+
+---
+
+##### fork
+
+▸ **fork**(`steps?`): [`Conversation`](#classeschatconversationmd)\<`CLIENT`, `OPTIONS`, `PROMPT`, `RESPONSE`\>
+
+Create a new conversation with a deep copy of this conversation's prompt and checkpoints.
+The fork starts with no usage of its own. Later turns and [rewind](#rewind) calls on either
+conversation do not affect the other.
+
+Pass `steps` to fork from an earlier checkpoint. That is a [fork](#fork) followed by [rewind](#rewind)
+on the new conversation only.
+
+Cleanup of shared resources (extracted frames, uploaded images) runs only after every
+conversation in the family has called [end](#end).
+
+###### Parameters
+
+| Name     | Type     | Description                                                                                                                                                             |
+| :------- | :------- | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `steps?` | `number` | Optional number of successful turns to remove from the fork, with the same meaning as [rewind](#rewind). Omitted, zero, and negative values fork at the current prompt. |
+
+###### Returns
+
+[`Conversation`](#classeschatconversationmd)\<`CLIENT`, `OPTIONS`, `PROMPT`, `RESPONSE`\>
+
+The forked conversation.
+
+**`Throws`**
+
+When this conversation or its family resources have already been ended / cleaned up.
 
 ---
 
@@ -1069,6 +1110,80 @@ The usage statistics of the conversation. Or undefined if not available.
 ###### Returns
 
 `Promise`\<`undefined` \| `string` \| [`ConversationResponse`](#interfacestypesconversationresponsemd)\>
+
+---
+
+##### promptLength
+
+▸ `Protected` **promptLength**(): `number`
+
+###### Returns
+
+`number`
+
+---
+
+##### recordCheckpoint
+
+▸ `Protected` **recordCheckpoint**(): `void`
+
+Record a checkpoint marker of the current prompt length after a successful turn.
+Assumes `this.prompt` is an Array of message objects.
+If `this.prompt` is not an Array (or is undefined), recording is safely skipped (no-op).
+
+###### Returns
+
+`void`
+
+nothing
+
+---
+
+##### restorePromptLength
+
+▸ `Protected` **restorePromptLength**(`length`): `void`
+
+Shrink the prompt back to `length`.
+Assumes `this.prompt` is an Array of message objects (as used by Gemini and ChatGPT APIs).
+If `this.prompt` is not an Array (or is undefined), shrinking is safely skipped (no-op), ensuring a failed restore cannot mask the error that caused it.
+Note: If `PROMPT` is not an Array and an API call fails mid-turn, automatic prompt restoration on error will be a no-op, leaving `this.prompt` in its partially-appended state.
+
+###### Parameters
+
+| Name     | Type     | Description               |
+| :------- | :------- | :------------------------ |
+| `length` | `number` | Prompt length to restore. |
+
+###### Returns
+
+`void`
+
+nothing
+
+---
+
+##### rewind
+
+▸ **rewind**(`steps`): `void`
+
+Remove the last successful turns from the prompt.
+One turn is one successful [say](#say) or [submitToolCallResults](#submittoolcallresults).
+Usage already recorded on this conversation is left as it is.
+
+Note: Rewind assumes `this.prompt` is an Array of message objects (as used by Gemini and ChatGPT APIs).
+If `PROMPT` is not an Array (or is undefined), `rewind` becomes a no-op because no checkpoints are recorded.
+
+###### Parameters
+
+| Name    | Type     | Description                                                                                                                                                                                                             |
+| :------ | :------- | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `steps` | `number` | Number of successful turns to remove. Values past the number of successful turns remove every turn and restore the prompt to the length it had when this conversation was created. Zero and negative values do nothing. |
+
+###### Returns
+
+`void`
+
+nothing
 
 ---
 
