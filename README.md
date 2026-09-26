@@ -22,6 +22,7 @@ It provides a standardized interface for interacting with OpenAI ChatGPT (OpenAI
 - **Multi-Cloud Support**: Supports models hosted in Azure OpenAI, OpenAI, NVIDIA NIM (OpenAI compatible), and Google Cloud.
 - **Flexible Media Input**: Extract frames automatically via FFmpeg, supply your own images, or provide audio files.
 - **Rich Conversations**: Supports multiple videos, image groups, and audio files in a single chat.
+- **Conversation Branching & Rewind**: Fork conversations (`fork()`) into independent branches and rewind prompt history (`rewind()`) by turn checkpoints.
 - **Mandated Output**: Force JSON responses with or without schemas.
 - **Resilient**: Automatic backoff and retries for 429, 5xx, and network errors.
 - **Usage Tracking**: Built-in token usage metadata collection.
@@ -257,6 +258,64 @@ while (typeof response !== 'string' && response?.toolCalls) {
 
 // Final text response
 console.log('AI Answer:', response);
+```
+
+## Forking and Rewinding Conversations (`fork` and `rewind`)
+
+`chat-about-video` provides state management methods on `Conversation` instances to allow branching conversations and step rewinding without losing accumulated token usage history.
+
+### 1. Branching a Conversation (`fork`)
+
+Use `fork()` to create an independent clone of an existing conversation at its current point (or at an earlier turn).
+
+- **Isolated Prompt State**: The forked conversation gets a deep copy of the prompt history. Further turns or rewinds on either conversation do not affect the other.
+- **Reference-Counted Cleanup**: Shared resources (e.g., extracted video frame files) are preserved until _every_ forked conversation in the family has called `end()`.
+- **Usage Independence**: Token usage on the fork is tracked separately starting from zero.
+
+```typescript
+// Start a conversation
+const conversation = await chat.startConversation('/path/to/video.mp4');
+await conversation.say('Analyze the video content.');
+
+// Fork the conversation into two separate branches
+const branchA = conversation.fork();
+const branchB = conversation.fork();
+
+// Branch A explores one topic
+await branchA.say('What color is the car in the video?');
+
+// Branch B explores another topic independently
+await branchB.say('Describe the background music.');
+
+// Remember to end all forked conversations when finished
+await conversation.end();
+await branchA.end();
+await branchB.end();
+```
+
+### 2. Rewinding History (`rewind`)
+
+Use `rewind(steps)` to remove the last $N$ successful turns (`say` or `submitToolCallResults`) from the conversation prompt history.
+
+- **Preserved Token Usage**: Token usage already recorded on the conversation instance is preserved.
+- **Checkpoint Rewind**: Rewinds the prompt back to the state after the specified turn. Passing a step count larger than the number of completed turns restores the prompt back to its initial state.
+
+```typescript
+await conversation.say('First question'); // Turn 1
+await conversation.say('Second question'); // Turn 2
+
+// Rewind the last turn (drops 'Second question' and AI response)
+conversation.rewind(1);
+
+// Continue conversation from Turn 1 state
+await conversation.say('Alternative second question');
+```
+
+You can also combine `fork` and `rewind` in a single call to fork from an earlier checkpoint:
+
+```typescript
+// Fork at 1 turn prior to the current state
+const earlierFork = conversation.fork(1);
 ```
 
 ## Customisation

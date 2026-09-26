@@ -315,17 +315,83 @@ export function accumulateUsage(totalUsage: UsageMetadata, incrementalUsage: Usa
   }
 }
 
+/**
+ * Reference-counted cleanup shared by a conversation and every conversation forked from it.
+ * The underlying cleanup runs when the last living conversation in the family calls {@link Conversation.end}.
+ */
+class SharedCleanup {
+  /**
+   * Number of active conversation instances in the fork family currently referencing these shared resources.
+   * Starts at 1 for the initial conversation, increments on {@link retain} when a conversation is forked,
+   * and decrements on {@link release} when a conversation ends.
+   * When `pending` drops to 0, all conversations in the family have called {@link Conversation.end}, triggering
+   * the underlying resource `cleanup` function.
+   */
+  private pending = 1;
+
+  constructor(private readonly cleanup: (() => Promise<any>) | undefined) {}
+
+  /**
+   * Register another conversation that uses these resources.
+   * @returns nothing
+   * @throws When the resources have already been cleaned up.
+   */
+  retain(): void {
+    if (this.pending <= 0) {
+      throw new Error('Cannot fork a conversation whose resources have already been cleaned up');
+    }
+    this.pending += 1;
+  }
+
+  /**
+   * Release one conversation's claim on these resources.
+   * @returns `true` when this release ran the underlying cleanup.
+   */
+  async release(): Promise<boolean> {
+    if (this.pending <= 0) {
+      return false;
+    }
+    this.pending -= 1;
+    if (this.pending > 0) {
+      return false;
+    }
+    if (this.cleanup) {
+      await this.cleanup();
+      return true;
+    }
+    return false;
+  }
+}
+
 export class Conversation<CLIENT = any, OPTIONS extends AdditionalCompletionOptions = any, PROMPT = any, RESPONSE = any> {
   protected usage: UsageMetadata | undefined;
+  protected sharedCleanup: SharedCleanup;
+  protected ended = false;
+  /**
+   * Prompt length when this conversation was constructed, before any successful turn.
+   * Rewind past every checkpoint restores the prompt to this length.
+   */
+  protected initialPromptLength: number;
+  /**
+   * Prompt length after each successful {@link Conversation.say} or {@link Conversation.submitToolCallResults}.
+   *
+   * Note on `PROMPT` type assumption:
+   * The turn-checkpoint and {@link rewind} mechanisms assume that `PROMPT` is an Array of message objects (as implemented
+   * by standard providers such as Gemini and ChatGPT). Array lengths are recorded as checkpoint markers. If `PROMPT` is not an
+   * Array (or is undefined), checkpoint recording and restoring safely degrade to no-ops.
+   */
+  protected checkpoints: number[] = [];
 
   constructor(
     protected conversationId: string,
     protected api: ChatApi<CLIENT, OPTIONS, PROMPT, RESPONSE>,
     protected prompt: PROMPT | undefined,
     protected options: OPTIONS,
-    protected cleanup?: () => Promise<any>,
+    cleanup?: () => Promise<any>,
     protected log: ConsoleLineLogger | undefined = consoleWithoutColour(),
   ) {
+    this.sharedCleanup = new SharedCleanup(cleanup);
+    this.initialPromptLength = Array.isArray(prompt) ? prompt.length : 0;
     this.log && this.log.debug(`Conversation ${this.conversationId} started`, { conversation: this.prompt, options });
   }
 
@@ -367,10 +433,16 @@ export class Conversation<CLIENT = any, OPTIONS extends AdditionalCompletionOpti
    * @returns The response text if there's no tool call, or a ConversationResponse object if there's tool call.
    */
   async say<RT extends string | ConversationResponse = string>(message: string, options?: Partial<OPTIONS>): Promise<RT> {
-    const { prompt: newPromptPart } = await this.api.buildTextPrompt(message);
-    const updatedPrompt = await this.api.appendToPrompt(newPromptPart, this.prompt);
-    const effectiveOptions = { ...this.options, ...options } as OPTIONS;
-    return this.progressConversation(updatedPrompt, effectiveOptions) as Promise<RT>;
+    const committedLength = this.promptLength();
+    try {
+      const { prompt: newPromptPart } = await this.api.buildTextPrompt(message);
+      const updatedPrompt = await this.api.appendToPrompt(newPromptPart, this.prompt);
+      const effectiveOptions = { ...this.options, ...options } as OPTIONS;
+      return (await this.progressConversation(updatedPrompt, effectiveOptions)) as RT;
+    } catch (error) {
+      this.restorePromptLength(committedLength);
+      throw error;
+    }
   }
 
   /**
@@ -424,18 +496,26 @@ export class Conversation<CLIENT = any, OPTIONS extends AdditionalCompletionOpti
       additionalMessage = undefined;
       opts = additionalMessageOrOptions;
     }
-    const { prompt: toolResultsPrompt, cleanup } = await this.api.buildToolCallResultsPrompt(toolResults, this.conversationId);
-    let updatedPrompt = await this.api.appendToPrompt(toolResultsPrompt, this.prompt);
-    if (additionalMessage) {
-      const { prompt: additionalPrompt } = await this.api.buildTextPrompt(additionalMessage);
-      updatedPrompt = await this.api.appendToPrompt(additionalPrompt, updatedPrompt);
+    const committedLength = this.promptLength();
+    let callCleanup: (() => Promise<any>) | undefined;
+    try {
+      const { prompt: toolResultsPrompt, cleanup } = await this.api.buildToolCallResultsPrompt(toolResults, this.conversationId);
+      callCleanup = cleanup;
+      let updatedPrompt = await this.api.appendToPrompt(toolResultsPrompt, this.prompt);
+      if (additionalMessage) {
+        const { prompt: additionalPrompt } = await this.api.buildTextPrompt(additionalMessage);
+        updatedPrompt = await this.api.appendToPrompt(additionalPrompt, updatedPrompt);
+      }
+      const effectiveOptions = { ...this.options, ...opts } as OPTIONS;
+      return (await this.progressConversation(updatedPrompt, effectiveOptions)) as RT;
+    } catch (error) {
+      this.restorePromptLength(committedLength);
+      throw error;
+    } finally {
+      if (callCleanup) {
+        await callCleanup();
+      }
     }
-    const effectiveOptions = { ...this.options, ...opts } as OPTIONS;
-    const response = await this.progressConversation(updatedPrompt, effectiveOptions);
-    if (cleanup) {
-      await cleanup();
-    }
-    return response as RT;
   }
 
   protected async progressConversation(updatedPrompt: PROMPT, effectiveOptions: OPTIONS): Promise<string | undefined | ConversationResponse> {
@@ -480,15 +560,124 @@ export class Conversation<CLIENT = any, OPTIONS extends AdditionalCompletionOpti
 
     const toolCalls = await this.api.getToolCalls(response);
     const responseText = await this.api.getResponseText(response);
+    this.recordCheckpoint();
 
     return toolCalls && toolCalls.length > 0 ? { toolCalls, responseText } : responseText;
   }
 
+  /**
+   * Create a new conversation with a deep copy of this conversation's prompt and checkpoints.
+   * The fork starts with no usage of its own. Later turns and {@link rewind} calls on either
+   * conversation do not affect the other.
+   *
+   * Pass `steps` to fork from an earlier checkpoint. That is a {@link fork} followed by {@link rewind}
+   * on the new conversation only.
+   *
+   * Cleanup of shared resources (extracted frames, uploaded images) runs only after every
+   * conversation in the family has called {@link end}.
+   *
+   * @param steps Optional number of successful turns to remove from the fork, with the same meaning as {@link rewind}.
+   *              Omitted, zero, and negative values fork at the current prompt.
+   * @returns The forked conversation.
+   * @throws When this conversation or its family resources have already been ended / cleaned up.
+   */
+  fork(steps?: number): Conversation<CLIENT, OPTIONS, PROMPT, RESPONSE> {
+    if (this.ended) {
+      throw new Error('Cannot fork a conversation that has already ended');
+    }
+    this.sharedCleanup.retain();
+    let forked: Conversation<CLIENT, OPTIONS, PROMPT, RESPONSE>;
+    try {
+      forked = new Conversation(
+        generateTempConversationId(),
+        this.api,
+        this.prompt == null ? undefined : structuredClone(this.prompt),
+        { ...this.options },
+        undefined,
+        this.log,
+      );
+    } catch (error) {
+      void this.sharedCleanup.release();
+      throw error;
+    }
+    forked.sharedCleanup = this.sharedCleanup;
+    forked.initialPromptLength = this.initialPromptLength;
+    forked.checkpoints = [...this.checkpoints];
+    if (steps != null) {
+      forked.rewind(steps);
+    }
+    return forked;
+  }
+
+  /**
+   * Remove the last successful turns from the prompt.
+   * One turn is one successful {@link say} or {@link submitToolCallResults}.
+   * Usage already recorded on this conversation is left as it is.
+   *
+   * Note: Rewind assumes `this.prompt` is an Array of message objects (as used by Gemini and ChatGPT APIs).
+   * If `PROMPT` is not an Array (or is undefined), `rewind` becomes a no-op because no checkpoints are recorded.
+   *
+   * @param steps Number of successful turns to remove. Values past the number of successful turns
+   *              remove every turn and restore the prompt to the length it had when this conversation
+   *              was created. Zero and negative values do nothing.
+   * @returns nothing
+   */
+  rewind(steps: number): void {
+    if (!Number.isFinite(steps) || steps <= 0 || this.checkpoints.length === 0) {
+      return;
+    }
+    const drop = Math.min(Math.floor(steps), this.checkpoints.length);
+    this.checkpoints.splice(this.checkpoints.length - drop, drop);
+    const length = this.checkpoints.at(-1) ?? this.initialPromptLength;
+    this.restorePromptLength(length);
+  }
+
+  /**
+   * End this conversation.
+   * Shared resources are deleted when this is the last living conversation in the fork family.
+   * Calling `end` again on the same instance does nothing.
+   * @returns nothing
+   */
   async end(): Promise<void> {
-    if (this.cleanup) {
-      await this.cleanup();
+    if (this.ended) {
+      return;
+    }
+    this.ended = true;
+    const cleanedUp = await this.sharedCleanup.release();
+    if (cleanedUp) {
       this.log && this.log.debug(`Conversation ${this.conversationId} cleaned up`, { totalUsage: this.usage });
     }
+  }
+
+  protected promptLength(): number {
+    return Array.isArray(this.prompt) ? this.prompt.length : 0;
+  }
+
+  /**
+   * Record a checkpoint marker of the current prompt length after a successful turn.
+   * Assumes `this.prompt` is an Array of message objects.
+   * If `this.prompt` is not an Array (or is undefined), recording is safely skipped (no-op).
+   * @returns nothing
+   */
+  protected recordCheckpoint(): void {
+    if (Array.isArray(this.prompt)) {
+      this.checkpoints.push(this.prompt.length);
+    }
+  }
+
+  /**
+   * Shrink the prompt back to `length`.
+   * Assumes `this.prompt` is an Array of message objects (as used by Gemini and ChatGPT APIs).
+   * If `this.prompt` is not an Array (or is undefined), shrinking is safely skipped (no-op), ensuring a failed restore cannot mask the error that caused it.
+   * Note: If `PROMPT` is not an Array and an API call fails mid-turn, automatic prompt restoration on error will be a no-op, leaving `this.prompt` in its partially-appended state.
+   * @param length Prompt length to restore.
+   * @returns nothing
+   */
+  protected restorePromptLength(length: number): void {
+    if (!Array.isArray(this.prompt) || length < 0 || length > this.prompt.length) {
+      return;
+    }
+    this.prompt.length = length;
   }
 }
 
